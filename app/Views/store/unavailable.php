@@ -1,0 +1,1 @@
+<?= view('store/partials/header', ['title'=>'فروشگاه | گره']) ?><main class="container"><div class="empty" style="margin:40px 0">دریافت اطلاعات محصول در حال حاضر امکان‌پذیر نیست. لطفاً بعداً تلاش کنید.</div></main><?= view('store/partials/footer') ?>

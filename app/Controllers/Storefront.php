@@ -14,7 +14,7 @@ class Storefront extends BaseController
 
     public function shop(): string
     {
-        return view('store/shop', ['products' => $this->products(24)]);
+        return view('store/shop', ['products' => $this->products(24, true)]);
     }
 
     public function product(string $slug)
@@ -34,10 +34,25 @@ class Storefront extends BaseController
         }
     }
 
-    private function products(int $limit): array
+    private function products(int $limit, bool $filter = false): array
     {
         try {
-            $products = (new ProductModel())->where('status', 'active')->orderBy('id', 'DESC')->findAll($limit);
+            $query = (new ProductModel())->where('status', 'active');
+            if ($filter) {
+                $search = trim((string) $this->request->getGet('q'));
+                if ($search !== '') {
+                    $query->like('name', $search);
+                }
+                $categorySlug = trim((string) $this->request->getGet('category'));
+                if ($categorySlug !== '') {
+                    $category = (new \\App\\Models\\CategoryModel())->where('slug', $categorySlug)->first();
+                    if ($category === null) {
+                        return [];
+                    }
+                    $query->where('category_id', $category['id']);
+                }
+            }
+            $products = $query->orderBy('id', 'DESC')->findAll($limit);
             if ($products === []) {
                 return [];
             }

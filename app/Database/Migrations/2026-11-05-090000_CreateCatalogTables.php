@@ -36,12 +36,12 @@ class CreateCatalogTables extends Migration
         $this->forge->addUniqueKey('slug');
         $this->forge->addKey('parent_id');
         $this->forge->addKey(['status', 'sort_order']);
+        $this->forge->addForeignKey('parent_id', 'categories', 'id', 'CASCADE', 'SET NULL', 'fk_categories_parent');
         $this->forge->createTable('categories', true, [
             'ENGINE' => 'InnoDB',
             'CHARSET' => 'utf8mb4',
             'COLLATE' => 'utf8mb4_unicode_ci',
         ]);
-        $this->forge->addForeignKey('parent_id', 'categories', 'id', 'CASCADE', 'SET NULL', 'fk_categories_parent');
 
         $this->forge->addField([
             'id' => ['type' => 'BIGINT', 'unsigned' => true, 'auto_increment' => true],
@@ -87,13 +87,13 @@ class CreateCatalogTables extends Migration
         $this->forge->addKey(['brand_id', 'status']);
         $this->forge->addKey(['status', 'published_at']);
         $this->forge->addKey('is_featured');
+        $this->forge->addForeignKey('category_id', 'categories', 'id', 'CASCADE', 'SET NULL', 'fk_products_category');
+        $this->forge->addForeignKey('brand_id', 'brands', 'id', 'CASCADE', 'SET NULL', 'fk_products_brand');
         $this->forge->createTable('products', true, [
             'ENGINE' => 'InnoDB',
             'CHARSET' => 'utf8mb4',
             'COLLATE' => 'utf8mb4_unicode_ci',
         ]);
-        $this->forge->addForeignKey('category_id', 'categories', 'id', 'CASCADE', 'SET NULL', 'fk_products_category');
-        $this->forge->addForeignKey('brand_id', 'brands', 'id', 'CASCADE', 'SET NULL', 'fk_products_brand');
 
         $this->forge->addField([
             'id' => ['type' => 'BIGINT', 'unsigned' => true, 'auto_increment' => true],
@@ -108,12 +108,12 @@ class CreateCatalogTables extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addKey(['product_id', 'sort_order']);
         $this->forge->addKey(['product_id', 'is_primary']);
+        $this->forge->addForeignKey('product_id', 'products', 'id', 'CASCADE', 'CASCADE', 'fk_product_media_product');
         $this->forge->createTable('product_media', true, [
             'ENGINE' => 'InnoDB',
             'CHARSET' => 'utf8mb4',
             'COLLATE' => 'utf8mb4_unicode_ci',
         ]);
-        $this->forge->addForeignKey('product_id', 'products', 'id', 'CASCADE', 'CASCADE', 'fk_product_media_product');
 
         $this->forge->addField([
             'id' => ['type' => 'BIGINT', 'unsigned' => true, 'auto_increment' => true],
@@ -134,12 +134,12 @@ class CreateCatalogTables extends Migration
         $this->forge->addUniqueKey('sku');
         $this->forge->addKey('product_id');
         $this->forge->addKey(['product_id', 'is_active', 'sort_order']);
+        $this->forge->addForeignKey('product_id', 'products', 'id', 'CASCADE', 'CASCADE', 'fk_product_variants_product');
         $this->forge->createTable('product_variants', true, [
             'ENGINE' => 'InnoDB',
             'CHARSET' => 'utf8mb4',
             'COLLATE' => 'utf8mb4_unicode_ci',
         ]);
-        $this->forge->addForeignKey('product_id', 'products', 'id', 'CASCADE', 'CASCADE', 'fk_product_variants_product');
 
         $this->forge->addField([
             'id' => ['type' => 'BIGINT', 'unsigned' => true, 'auto_increment' => true],
@@ -150,12 +150,12 @@ class CreateCatalogTables extends Migration
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey('variant_id');
+        $this->forge->addForeignKey('variant_id', 'product_variants', 'id', 'CASCADE', 'CASCADE', 'fk_inventory_items_variant');
         $this->forge->createTable('inventory_items', true, [
             'ENGINE' => 'InnoDB',
             'CHARSET' => 'utf8mb4',
             'COLLATE' => 'utf8mb4_unicode_ci',
         ]);
-        $this->forge->addForeignKey('variant_id', 'product_variants', 'id', 'CASCADE', 'CASCADE', 'fk_inventory_items_variant');
 
         $this->forge->addField([
             'id' => ['type' => 'BIGINT', 'unsigned' => true, 'auto_increment' => true],
@@ -170,12 +170,12 @@ class CreateCatalogTables extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addKey(['variant_id', 'created_at']);
         $this->forge->addKey(['reference_type', 'reference_id']);
+        $this->forge->addForeignKey('variant_id', 'product_variants', 'id', 'CASCADE', 'RESTRICT', 'fk_inventory_movements_variant');
         $this->forge->createTable('inventory_movements', true, [
             'ENGINE' => 'InnoDB',
             'CHARSET' => 'utf8mb4',
             'COLLATE' => 'utf8mb4_unicode_ci',
         ]);
-        $this->forge->addForeignKey('variant_id', 'product_variants', 'id', 'CASCADE', 'RESTRICT', 'fk_inventory_movements_variant');
     }
 
     public function down()

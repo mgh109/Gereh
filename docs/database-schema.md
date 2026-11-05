@@ -1,6 +1,6 @@
 # GEREH — Initial Database Model
 
-This is the logical model. Concrete columns, indexes, foreign keys and migrations will follow after currency and variant rules are finalized.
+This is the logical model. The first executable catalog migration is in `app/Database/Migrations/2026-11-05-090000_CreateCatalogTables.php`. Monetary columns in the application database use integer Toman values; gateway-specific conversion belongs in the payment adapter.
 
 ## Identity and access
 - customers: unique mobile, verification state, profile and status.
@@ -14,8 +14,8 @@ This is the logical model. Concrete columns, indexes, foreign keys and migration
 - brands: name, slug, logo and status.
 - products: title, slug, description, brand, category, publication state and SEO.
 - product_media: path, alt text, sort order and media role.
-- product_variants: SKU, size, color, price, compare-at price and active state.
-- inventory_items: variant stock and low-stock threshold.
+- product_variants: SKU, barcode, size, color, optional price override and active state. A null variant price inherits the product base price.
+- inventory_items: one current stock row per variant and low-stock threshold.
 - inventory_movements: auditable stock changes and source references.
 
 ## Cart and orders
@@ -43,7 +43,7 @@ Shipping configuration is maintained through the admin panel. Orders must store 
 
 ## Conventions
 - MySQL InnoDB and utf8mb4.
-- Integer monetary values; no floating point prices.
+- Integer Toman monetary values; no floating point prices. Convert to the gateway-required unit only at the payment boundary.
 - Unique indexes for slugs, SKUs, mobile numbers, coupon codes and gateway references where appropriate.
 - Index product filters, order lookup, customer history and payment callback lookup.
 - Foreign keys with explicit deletion policies.

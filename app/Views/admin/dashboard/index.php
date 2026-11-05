@@ -10,7 +10,7 @@
 <nav class="nav">
 <a class="active" href="<?= site_url('admin') ?>">داشبورد</a><a href="#">محصولات</a><a href="#">دسته‌بندی‌ها</a><a href="#">برندها</a><a href="#">سفارش‌ها</a><a href="#">مشتریان</a><a href="#">تخفیف‌ها</a><a href="#">ارسال</a><a href="#">وبلاگ</a><a href="#">مدیران و دسترسی</a><a href="#">تنظیمات</a>
 </nav></aside>
-<main class="main"><header class="top"><strong>داشبورد</strong><span><?= esc($adminName ?? 'مدیر') ?> · <a class="logout" href="<?= site_url('admin/logout') ?>">خروج</a></span></header>
+<main class="main"><header class="top"><strong>داشبورد</strong><span><?= esc($adminName ?? 'مدیر') ?> · <form method="post" action="<?= site_url('admin/logout') ?>" style="display:inline"><?= csrf_field() ?><button class="logout" type="submit" style="border:0;background:none;font:inherit;cursor:pointer">خروج</button></form></span></header>
 <div class="content"><h1 class="title">خلاصه فروشگاه</h1><p class="sub">نمای کلی وضعیت کاتالوگ و موجودی</p>
 <div class="cards"><div class="card"><span>همه محصولات</span><strong id="products">—</strong></div><div class="card"><span>محصولات فعال</span><strong id="active">—</strong></div><div class="card"><span>دسته‌بندی‌های فعال</span><strong id="categories">—</strong></div><div class="card"><span>تنوع‌های کم‌موجود</span><strong id="stock">—</strong></div></div>
 <section class="section"><h2>شروع مدیریت فروشگاه</h2><p>ساختار عمومی پنل آماده شده است. بخش‌های محصولات، سفارش‌ها، مشتریان، تخفیف‌ها و تنظیمات در مراحل بعدی به سرویس‌های واقعی متصل می‌شوند.</p></section>

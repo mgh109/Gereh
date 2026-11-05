@@ -4,6 +4,7 @@
 
 | Area | Decision |
 |---|---|
+| Runtime | PHP 8.3 |
 | Backend | CodeIgniter 4 |
 | Database | MySQL, InnoDB, utf8mb4 |
 | Authentication | Customer mobile OTP; separate admin authentication |
@@ -13,7 +14,7 @@
 | Storefront | GEREH / StepHub Figma; mobile-first; preserve approved UX |
 
 ## Objectives
-1. Establish a clean CodeIgniter 4 application baseline.
+1. Establish a clean CodeIgniter 4 application baseline on PHP 8.3.
 2. Separate storefront, admin, identity, catalog, checkout, payment, shipping and content responsibilities.
 3. Use environment-based configuration; keep secrets out of Git.
 4. Establish database and migration conventions.
@@ -79,7 +80,7 @@ Directories should be created alongside their implementation, not as empty place
 - Persist timestamps consistently and localize dates for Persian presentation.
 
 ## Phase 0 acceptance checklist
-- [ ] Target PHP version and required extensions confirmed.
+- [ ] PHP 8.3 runtime and required extensions verified on the target host.
 - [ ] CodeIgniter 4 app starter installed and booting.
 - [ ] MySQL connection verified.
 - [ ] Environment configuration verified.
@@ -90,4 +91,4 @@ Directories should be created alongside their implementation, not as empty place
 - [ ] Local setup documented and reproducible.
 
 ## Dependencies to confirm
-Target hosting PHP version/extensions must be known before pinning the final compatibility matrix. OTP provider and credentials must be selected before enabling live OTP delivery.
+PHP 8.3 is the confirmed target runtime. Required PHP extensions and hosting configuration still need to be verified before deployment. OTP provider and credentials must be selected before enabling live OTP delivery.

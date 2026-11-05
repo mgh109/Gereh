@@ -44,7 +44,7 @@ class Storefront extends BaseController
             $mediaModel = new ProductMediaModel();
             foreach ($products as &$product) {
                 $image = $mediaModel->where('product_id', $product['id'])->orderBy('sort_order', 'ASC')->first();
-                $product['image_url'] = $image['url'] ?? null;
+                $product['image_url'] = (!empty($image['file_path']) ? base_url(ltrim($image['file_path'], '/')) : null);
             }
             unset($product);
             return $products;

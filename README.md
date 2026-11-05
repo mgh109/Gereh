@@ -3,6 +3,7 @@
 Custom shoe-store e-commerce platform built with CodeIgniter 4 and MySQL.
 
 ## Confirmed stack
+- PHP: 8.3
 - Backend: CodeIgniter 4
 - Database: MySQL / InnoDB / utf8mb4
 - Customer authentication: mobile OTP
@@ -12,7 +13,7 @@ Custom shoe-store e-commerce platform built with CodeIgniter 4 and MySQL.
 - Storefront: approved GEREH / StepHub Figma; mobile-first UX
 
 ## Status
-Phase 0 establishes architecture, configuration and security requirements. The executable CodeIgniter app starter and features will be added in implementation steps after confirming the target hosting PHP version and extensions.
+Phase 0 establishes architecture, configuration and security requirements. The executable CodeIgniter app starter and features will be added in implementation steps. The target hosting runtime is PHP 8.3.
 
 See docs/phase-0-foundation.md, docs/database-schema.md and docs/security-baseline.md.
 

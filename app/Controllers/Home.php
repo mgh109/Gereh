@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use CodeIgniter\HTTP\ResponseInterface;
-use CodeIgniter\Exceptions\PageNotFoundException;
 
 class Home extends BaseController
 {

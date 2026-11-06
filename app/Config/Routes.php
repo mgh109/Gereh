@@ -66,6 +66,7 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
         $routes->get('customers/(:num)', 'CustomersController::show/$1');
         $routes->get('settings/sms', 'SmsSettingsController::index');
         $routes->post('settings/sms', 'SmsSettingsController::save', ['filter' => 'csrf']);
+        $routes->post('settings/sms/templates', 'SmsSettingsController::saveTemplates', ['filter' => 'csrf']);
         $routes->post('settings/sms/check', 'SmsSettingsController::check', ['filter' => 'csrf']);
         $routes->get('banners', 'BannersController::index');
         $routes->post('banners', 'BannersController::save', ['filter'=>'csrf']);

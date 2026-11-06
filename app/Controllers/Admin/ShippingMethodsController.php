@@ -37,7 +37,9 @@ final class ShippingMethodsController extends BaseController
             'is_active'=>$this->request->getPost('is_active')==='1'?1:0,
         ];
         try{
-            (new ShippingService())->save($id,$fields);
+            $service=new ShippingService();
+            if($id===0)$service->create(trim((string)$this->request->getPost('code')),$fields);
+            else $service->save($id,$fields);
             return redirect()->to(site_url('admin/shipping'))->with('shipping_success','روش ارسال ذخیره شد.');
         }catch(InvalidArgumentException|DomainException $exception){
             return redirect()->back()->with('shipping_error',$exception->getMessage());

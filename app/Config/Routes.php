@@ -5,6 +5,7 @@ use CodeIgniter\Router\RouteCollection;
 /** @var RouteCollection $routes */
 $routes->get('/', 'Storefront::home', ['as' => 'store.home']);
 $routes->get('shop', 'Storefront::shop', ['as' => 'store.shop']);
+$routes->get('size-guide', static fn () => view('store/size_guide'), ['as' => 'store.size-guide']);
 $routes->get('product/(:segment)', 'Storefront::product/$1', ['as' => 'store.product']);
 
 $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static function (RouteCollection $routes) {

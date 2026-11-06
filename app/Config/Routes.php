@@ -59,6 +59,8 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
         $routes->get('/', 'DashboardController::index', ['as' => 'admin.dashboard']);
         $routes->get('products', 'ProductsController::index', ['as' => 'admin.products']);
         $routes->get('taxonomy', 'TaxonomyController::index');
+        $routes->get('orders', 'OrdersController::index');
+        $routes->get('orders/(:num)', 'OrdersController::show/$1');
         $routes->post('taxonomy/(:segment)', 'TaxonomyController::save/$1', ['filter' => 'csrf']);
         $routes->get('products/create', 'CatalogEditorController::edit');
         $routes->post('products/create', 'CatalogEditorController::save', ['filter' => 'csrf']);

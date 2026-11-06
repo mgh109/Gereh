@@ -66,8 +66,47 @@ class OrderController extends BaseController
 
     public function checkout()
     {
-        // Deliberately disabled until verified OTP and payment initiation are connected.
-        // Do not allow unpaid orders to be created without a working payment path.
-        return $this->error('ثبت سفارش تا اتصال احراز هویت و درگاه پرداخت فعال نیست.', 503);
+        // Feature flag defaults OFF. Do not activate on production until
+        // real provider, callback and stock/concurrency tests pass.
+        if (! filter_var(env('GEREH_CHECKOUT_ENABLED', false), FILTER_VALIDATE_BOOLEAN)) {
+            return $this->error('پرداخت تا زمان تأیید درگاه واقعی غیرفعال است.', 503);
+        }
+        $customerId = $this->customerId();
+        if ($customerId < 1) {
+            return $this->error('برای ثبت سفارش ابتدا وارد شوید.', 401);
+        }
+        $data = $this->request->getJSON(true);
+        $key = $this->request->getHeaderLine('Idempotency-Key');
+        if (! is_array($data) || ! is_array($data['recipient'] ?? null) || $key === '') {
+            return $this->error('مشخصات گیرنده و کلید یکتای درخواست الزامی هستند.', 422);
+        }
+        if (($data['shipping_method'] ?? 'standard') !== 'standard') {
+            return $this->error('روش ارسال انتخاب‌شده فعلاً پشتیبانی نمی‌شود.', 422);
+        }
+        try {
+            $order = (new OrderService())->create(
+                $customerId,
+                (array) session()->get('store_cart'),
+                $data['recipient'],
+                $key
+            );
+            $payment = (new \\App\\Services\\Payments\\PaymentInitiationService())->initiate(
+                $customerId,
+                (int) $order['id']
+            );
+            return $this->envelope([
+                'order_id' => (int) $order['id'],
+                'order_number' => $order['order_number'],
+                'total_toman' => (int) $order['total_toman'],
+                'payment' => $payment,
+            ], 201);
+        } catch (\\InvalidArgumentException $exception) {
+            return $this->error($exception->getMessage(), 422);
+        } catch (\\DomainException $exception) {
+            return $this->error($exception->getMessage(), 409);
+        } catch (\\Throwable $exception) {
+            log_message('error', 'Checkout failed: {type}', ['type' => get_class($exception)]);
+            return $this->error('ثبت سفارش یا ارتباط با درگاه ممکن نیست.', 503);
+        }
     }
 }

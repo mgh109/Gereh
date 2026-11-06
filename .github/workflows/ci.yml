@@ -88,3 +88,30 @@ jobs:
         run: |
           php spark migrate --all
           php spark migrate:status
+
+      - name: HTTP smoke tests (catalog and auth guards)
+        run: |
+          php spark serve --host 127.0.0.1 --port 8080 > /tmp/gereh-serve.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for n in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8080/robots.txt >/dev/null; then break; fi
+            sleep 1
+          done
+          check_status() {
+            expected="$1"
+            url="$2"
+            got=$(curl -sS -o /tmp/gereh-http-response -w '%{http_code}' "$url")
+            if [ "$got" != "$expected" ]; then
+              echo "Expected $expected, got $got for $url"
+              cat /tmp/gereh-http-response
+              tail -n 100 /tmp/gereh-serve.log
+              exit 1
+            fi
+          }
+          check_status 200 http://127.0.0.1:8080/api/v1/products
+          check_status 200 http://127.0.0.1:8080/api/v1/categories
+          check_status 200 http://127.0.0.1:8080/api/v1/brands
+          check_status 401 http://127.0.0.1:8080/api/v1/me
+          check_status 401 http://127.0.0.1:8080/api/v1/orders
+          check_status 200 http://127.0.0.1:8080/sitemap.xml

@@ -118,6 +118,8 @@ jobs:
           }
           check_status 200 http://127.0.0.1:8080/api/v1/products
           check_status 200 http://127.0.0.1:8080/api/v1/home
+          check_status 200 http://127.0.0.1:8080/api/v1/shipping/quotes
+          check_status 302 http://127.0.0.1:8080/admin/shipping
           check_status 302 http://127.0.0.1:8080/admin/banners
           check_status 302 http://127.0.0.1:8080/admin/settings/sms
           check_status 200 http://127.0.0.1:8080/api/v1/categories
@@ -180,3 +182,8 @@ jobs:
             exit 1
           fi
           php -r '$r=json_decode(file_get_contents("/tmp/gereh-cart-added"),true); if(($r["data"]["total"]??0)!==120000 || ($r["data"]["count"]??0)!==1) {fwrite(STDERR,"Incorrect cart total\n");exit(1);}'
+          curl -fsS -b /tmp/gereh-cookies \
+            'http://127.0.0.1:8080/api/v1/shipping/quotes?province=%D8%AA%D9%87%D8%B1%D8%A7%D9%86' \
+            > /tmp/gereh-shipping.json
+          php -r '$r=json_decode(file_get_contents("/tmp/gereh-shipping.json"),true);if(($r["data"]["subtotal_toman"]??null)!==120000){fwrite(STDERR,"Wrong shipping subtotal\n");exit(1);}'
+

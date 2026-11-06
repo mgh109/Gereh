@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - name: PHPUnit unit tests
+        run: vendor/bin/phpunit --configuration phpunit.xml.dist
+
       - name: PHP syntax check
         run: find app -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 

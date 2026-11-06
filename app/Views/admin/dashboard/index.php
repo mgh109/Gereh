@@ -51,26 +51,23 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <section class="page-head"><a class="store-link" href="<?= site_url('/') ?>" target="_blank">مشاهده فروشگاه</a><div class="page-title"><h1>پیشخوان</h1><p>نگاهی به وضعیت امروز فروشگاه</p></div></section>
 <section class="dashboard">
 <div class="stats">
-<article class="stat"><div class="stat-head"><span>درآمد امروز</span><img src="https://www.figma.com/api/mcp/asset/5bd26.svg" alt=""></div><strong class="stat-value">۲۴٬۸۵۰٬۰۰۰ تومان</strong><span class="stat-note">↑ ۱۸٪ نسبت به دیروز</span></article>
-<article class="stat"><div class="stat-head"><span>سفارش‌های جدید</span><img src="https://www.figma.com/api/mcp/asset/d88f1.svg" alt=""></div><strong class="stat-value">۳۶ سفارش</strong><span class="stat-note">۸ سفارش در انتظار پردازش</span></article>
-<article class="stat"><div class="stat-head"><span>محصولات فعال</span><img src="https://www.figma.com/api/mcp/asset/b7b77.svg" alt=""></div><strong class="stat-value" id="active">—</strong><span class="stat-note">۶ محصول با موجودی کم</span></article>
-<article class="stat"><div class="stat-head"><span>مشتریان</span><img src="https://www.figma.com/api/mcp/asset/53df4.svg" alt=""></div><strong class="stat-value">۱٬۲۸۴ نفر</strong><span class="stat-note">۲۴ مشتری جدید این هفته</span></article>
+<article class="stat"><div class="stat-head"><span>درآمد امروز</span><img src="https://www.figma.com/api/mcp/asset/5bd26.svg" alt=""></div><strong class="stat-value">—</strong><span class="stat-note">اطلاعات پرداخت‌های ثبت‌شده</span></article>
+<article class="stat"><div class="stat-head"><span>سفارش‌های جدید</span><img src="https://www.figma.com/api/mcp/asset/d88f1.svg" alt=""></div><strong class="stat-value">—</strong><span class="stat-note">سفارش‌های منتظر پرداخت</span></article>
+<article class="stat"><div class="stat-head"><span>محصولات فعال</span><img src="https://www.figma.com/api/mcp/asset/b7b77.svg" alt=""></div><strong class="stat-value" id="active">—</strong><span class="stat-note">اطلاعات موجودی واقعی</span></article>
+<article class="stat"><div class="stat-head"><span>مشتریان</span><img src="https://www.figma.com/api/mcp/asset/53df4.svg" alt=""></div><strong class="stat-value">—</strong><span class="stat-note">حساب‌های ثبت‌شده</span></article>
 </div>
 <div class="middle">
 <section class="panel attention"><div class="panel-title">نیازمند توجه</div><div class="attention-list">
-<div class="attention-row"><a href="#">مشاهده ‹</a><span>۸ سفارش آماده پردازش</span></div>
-<div class="attention-row"><a href="#">مشاهده ‹</a><span>۶ تنوع با موجودی کم</span></div>
-<div class="attention-row"><a href="#">مشاهده ‹</a><span>۳ درخواست مرجوعی</span></div>
-<div class="attention-row"><a href="#">مشاهده ‹</a><span>۵ دیدگاه در انتظار تأیید</span></div>
+<div class="attention-row"><a href="#">مشاهده ‹</a><span>سفارش‌های منتظر پرداخت</span></div>
+<div class="attention-row"><a href="#">مشاهده ‹</a><span>تنوع‌های دارای موجودی کم</span></div>
+<div class="attention-row"><a href="#">مشاهده ‹</a><span>گزارش مرجوعی هنوز فعال نیست</span></div>
+<div class="attention-row"><a href="#">مشاهده ‹</a><span>مدیریت دیدگاه هنوز فعال نیست</span></div>
 </div></section>
 <section class="panel chart"><div class="chart-head"><small>این هفته⌄</small><span>روند فروش هفتگی</span></div><div class="bars">
 <div class="bar-item"><div class="bar" style="height:40%"></div><span>شنبه</span></div><div class="bar-item"><div class="bar" style="height:64%"></div><span>یکشنبه</span></div><div class="bar-item"><div class="bar" style="height:51%"></div><span>دوشنبه</span></div><div class="bar-item"><div class="bar" style="height:78%"></div><span>سه‌شنبه</span></div><div class="bar-item"><div class="bar" style="height:68%"></div><span>چهارشنبه</span></div><div class="bar-item"><div class="bar highlight" style="height:91%"></div><span>پنجشنبه</span></div><div class="bar-item"><div class="bar" style="height:82%"></div><span>جمعه</span></div>
-</div><div class="chart-total">مجموع فروش هفته: ۱۸۶٬۴۵۰٬۰۰۰ تومان</div></section>
+</div><div class="chart-total">آمار نمودار در انتظار پیاده‌سازی</div></section>
 </div>
-<section class="panel orders"><div class="orders-head"><a href="#">همه سفارش‌ها ‹</a><span>آخرین سفارش‌ها</span></div><table><thead><tr><th>عملیات</th><th>وضعیت</th><th>مبلغ (تومان)</th><th>مشتری</th><th>شماره سفارش</th></tr></thead><tbody>
-<tr><td><a href="#">مشاهده</a></td><td><span class="status">در حال پردازش</span></td><td>۴٬۹۸۰٬۰۰۰</td><td>علی رضایی</td><td>#GR-1048</td></tr>
-<tr><td><a href="#">مشاهده</a></td><td><span class="status">ارسال شده</span></td><td>۳٬۴۹۰٬۰۰۰</td><td>مریم احمدی</td><td>#GR-1047</td></tr>
-<tr><td><a href="#">مشاهده</a></td><td><span class="status">تکمیل شده</span></td><td>۵٬۷۸۰٬۰۰۰</td><td>رضا محمدی</td><td>#GR-1046</td></tr>
+<section class="panel orders"><div class="orders-head"><a href="<?= site_url('admin/orders') ?>">همه سفارش‌ها ‹</a><span>آخرین سفارش‌ها</span></div><table><thead><tr><th>عملیات</th><th>وضعیت</th><th>مبلغ (تومان)</th><th>مشتری</th><th>شماره سفارش</th></tr></thead><tbody id="recent-orders"><tr><td colspan="5">در حال دریافت سفارش‌های واقعی…</td></tr>
 </tbody></table></section>
 </section>
 </main>
@@ -79,8 +76,8 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <div class="side-title">مدیریت فروشگاه گره</div><div class="rule"></div>
 <nav class="nav">
 <a class="active" href="<?= site_url('admin') ?>"><img src="https://www.figma.com/api/mcp/asset/e1f74.svg" alt=""><span>پیشخوان</span></a>
-<a href="#"><img src="https://www.figma.com/api/mcp/asset/7bc70.svg" alt=""><span>محصولات</span></a>
-<a href="#"><img src="https://www.figma.com/api/mcp/asset/409db.svg" alt=""><span>سفارش‌ها</span></a>
+<a href="<?= site_url('admin/products') ?>"><img src="https://www.figma.com/api/mcp/asset/7bc70.svg" alt=""><span>محصولات</span></a>
+<a href="<?= site_url('admin/orders') ?>"><img src="https://www.figma.com/api/mcp/asset/409db.svg" alt=""><span>سفارش‌ها</span></a>
 <a href="#"><img src="https://www.figma.com/api/mcp/asset/7bc70.svg" alt=""><span>موجودی و تنوع‌ها</span></a>
 <a href="#"><img src="https://www.figma.com/api/mcp/asset/f8188.svg" alt=""><span>دسته‌بندی و برندها</span></a>
 <a href="#"><img src="https://www.figma.com/api/mcp/asset/e6cef.svg" alt=""><span>مشتریان</span></a>

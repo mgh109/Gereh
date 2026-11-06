@@ -15,6 +15,7 @@ class CartController extends BaseController
 
     private function reply(array $summary)
     {
+        $this->response->setHeader('Cache-Control', 'no-store, private');
         return $this->respond([
             'success' => true, 'data' => $summary, 'meta' => new \stdClass(),
             'message' => null, 'errors' => null,
@@ -23,6 +24,7 @@ class CartController extends BaseController
 
     private function failure(string $message, int $code)
     {
+        $this->response->setHeader('Cache-Control', 'no-store, private');
         return $this->respond([
             'success' => false, 'data' => null, 'meta' => new \stdClass(),
             'message' => $message, 'errors' => null,

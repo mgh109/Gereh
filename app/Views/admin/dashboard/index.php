@@ -84,7 +84,7 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <a href="#"><img src="https://www.figma.com/api/mcp/asset/f8188.svg" alt=""><span>تخفیف‌ها</span></a>
 <a href="<?= site_url('admin/banners') ?>"><img src="https://www.figma.com/api/mcp/asset/26d14.svg" alt=""><span>مدیریت صفحه اصلی</span></a>
 <a href="<?= site_url('admin/articles') ?>"><img src="https://www.figma.com/api/mcp/asset/41638.svg" alt=""><span>مجله و راهنماها</span></a>
-<a href="#"><img src="https://www.figma.com/api/mcp/asset/b1127.svg" alt=""><span>تنظیمات</span></a>
+<a href="<?= site_url('admin/settings/sms') ?>"><img src="https://www.figma.com/api/mcp/asset/b1127.svg" alt=""><span>تنظیمات پیامک</span></a>
 </nav>
 <div class="rule"></div><div class="side-foot">راهنمای مدیریت　 •　 <form method="post" action="<?= site_url('admin/logout') ?>" style="display:inline"><?= csrf_field() ?><button class="logout" type="submit">خروج</button></form></div>
 </aside>

@@ -65,6 +65,9 @@ class CustomerAuthService
 
         $code = (string) random_int(100000, 999999);
         $ttl = max(60, min(600, (int) env('GEREH_OTP_TTL_SECONDS', 120)));
+        // A newly requested code supersedes all previous outstanding codes.
+        $this->db->table('otp_challenges')->where('mobile', $mobile)
+            ->where('status', 'sent')->update(['status' => 'superseded']);
         $created = $this->db->table('otp_challenges')->insert([
             'mobile' => $mobile, 'code_hash' => $this->codeHash($mobile, $code),
             'attempts' => 0, 'status' => 'pending',

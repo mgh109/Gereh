@@ -83,9 +83,10 @@ final class PaymentInitiationService
                 'سفارش گره ' . $order['order_number'],
                 $order['receiver_mobile']
             );
-            if (! $this->db->table('payment_transactions')
+            $saved = $this->db->table('payment_transactions')
                 ->where('id', $paymentId)->where('status', 'requesting')
-                ->update(['authority' => $result['authority'], 'status' => 'initiated'])) {
+                ->update(['authority' => $result['authority'], 'status' => 'initiated']);
+            if (! $saved || $this->db->affectedRows() !== 1) {
                 throw new RuntimeException('ذخیره شناسه درگاه ناموفق بود؛ نیازمند بررسی دستی است.');
             }
             return $result + ['reused' => false];

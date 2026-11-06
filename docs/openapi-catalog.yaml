@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: GEREH Public Catalog API
+  version: 1.0.0
+  description: Read-only public endpoints currently implemented. Cart, authentication, checkout and admin APIs are not yet available.
+servers:
+  - url: /api/v1
+paths:
+  /products:
+    get:
+      summary: List active products
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: per_page, in: query, schema: { type: integer, minimum: 1, maximum: 48 } }
+        - { name: q, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: brand, in: query, schema: { type: string } }
+        - { name: sort, in: query, schema: { type: string, enum: [newest, price_asc, price_desc] } }
+        - { name: min_price, in: query, schema: { type: integer, minimum: 0 } }
+        - { name: max_price, in: query, schema: { type: integer, minimum: 0 } }
+      responses:
+        '200': { description: Paginated catalog, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+        '422': { description: Invalid query parameters }
+        '500': { description: Server error }
+  /search:
+    get:
+      summary: Search catalog; same query parameters and behavior as /products
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Catalog search result, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+  /products/{slug}:
+    get:
+      summary: Product details with images and available variants
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Product found, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+        '404': { description: Product not found }
+  /categories:
+    get:
+      summary: Active categories
+      responses:
+        '200': { description: Categories, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+  /brands:
+    get:
+      summary: Active brands
+      responses:
+        '200': { description: Brands, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+components:
+  schemas:
+    Envelope:
+      type: object
+      required: [success, data, meta, message, errors]
+      properties:
+        success: { type: boolean }
+        data: { nullable: true, description: Data object or array }
+        meta: { type: object, additionalProperties: true }
+        message: { type: string, nullable: true }
+        errors: { type: object, nullable: true, additionalProperties: true }

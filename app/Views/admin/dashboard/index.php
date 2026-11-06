@@ -82,7 +82,7 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <a href="<?= site_url('admin/taxonomy') ?>"><img src="https://www.figma.com/api/mcp/asset/f8188.svg" alt=""><span>دسته‌بندی و برندها</span></a>
 <a href="<?= site_url('admin/customers') ?>"><img src="https://www.figma.com/api/mcp/asset/e6cef.svg" alt=""><span>مشتریان</span></a>
 <a href="#"><img src="https://www.figma.com/api/mcp/asset/f8188.svg" alt=""><span>تخفیف‌ها</span></a>
-<a href="#"><img src="https://www.figma.com/api/mcp/asset/26d14.svg" alt=""><span>مدیریت صفحه اصلی</span></a>
+<a href="<?= site_url('admin/banners') ?>"><img src="https://www.figma.com/api/mcp/asset/26d14.svg" alt=""><span>مدیریت صفحه اصلی</span></a>
 <a href="<?= site_url('admin/articles') ?>"><img src="https://www.figma.com/api/mcp/asset/41638.svg" alt=""><span>مجله و راهنماها</span></a>
 <a href="#"><img src="https://www.figma.com/api/mcp/asset/b1127.svg" alt=""><span>تنظیمات</span></a>
 </nav>

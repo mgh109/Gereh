@@ -66,7 +66,11 @@ class CatalogEditorController extends BaseController {
         if (!in_array($mime,['image/jpeg','image/png','image/webp'],true)) return redirect()->back()->with('errors',['image'=>'فقط تصاویر JPG، PNG و WebP مجاز هستند.']);
         $directory=FCPATH.'uploads/products/';
         if (!is_dir($directory) && !mkdir($directory,0755,true) && !is_dir($directory)) return redirect()->back()->with('errors',['image'=>'مسیر آپلود قابل نوشتن نیست.']);
-        $name=$file->getRandomName();
+        $imageSize=@getimagesize($file->getTempName());
+        if (!$imageSize || $imageSize[0]<1 || $imageSize[1]<1 || $imageSize[0]>8000 || $imageSize[1]>8000)
+            return redirect()->back()->with('errors',['image'=>'ساختار یا ابعاد تصویر معتبر نیست.']);
+        $extension=['image/jpeg'=>'.jpg','image/png'=>'.png','image/webp'=>'.webp'][$mime];
+        $name=bin2hex(random_bytes(16)).$extension;
         try {
             $file->move($directory,$name);
             $model=new \App\Models\ProductMediaModel();

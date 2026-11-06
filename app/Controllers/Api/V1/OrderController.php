@@ -80,15 +80,17 @@ class OrderController extends BaseController
         if (! is_array($data) || ! is_array($data['recipient'] ?? null) || $key === '') {
             return $this->error('مشخصات گیرنده و کلید یکتای درخواست الزامی هستند.', 422);
         }
-        if (($data['shipping_method'] ?? 'standard') !== 'standard') {
-            return $this->error('روش ارسال انتخاب‌شده فعلاً پشتیبانی نمی‌شود.', 422);
+        $shippingMethod = $data['shipping_method'] ?? '';
+        if (!is_string($shippingMethod) || $shippingMethod === '') {
+            return $this->error('روش ارسال را انتخاب کنید.', 422);
         }
         try {
             $order = (new OrderService())->create(
                 $customerId,
                 (array) session()->get('store_cart'),
                 $data['recipient'],
-                $key
+                $key,
+                $shippingMethod
             );
             $payment = (new \App\Services\Payments\PaymentInitiationService())->initiate(
                 $customerId,

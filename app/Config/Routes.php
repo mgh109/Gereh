@@ -32,6 +32,8 @@ $routes->group('api/v1/admin', [
     'filter' => 'adminauth',
 ], static function (RouteCollection $routes) {
     $routes->get('dashboard', 'DashboardController::index');
+    $routes->get('orders', 'OrdersController::index');
+    $routes->get('orders/(:num)', 'OrdersController::show/$1');
 });
 
 $routes->get('payment/zarinpal/callback', 'ZarinpalCallbackController::handle');

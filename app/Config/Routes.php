@@ -19,6 +19,7 @@ $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static fu
     $routes->get('me', 'CustomerAuthController::me');
     $routes->patch('me', 'CustomerAuthController::updateMe', ['filter' => 'csrf']);
     // Cookie/session cart: CSRF is mandatory for every mutation.
+    $routes->get('shipping/quotes', 'ShippingController::index');
     $routes->get('cart', 'CartController::index');
     $routes->post('cart/items', 'CartController::add', ['filter' => 'csrf']);
     $routes->patch('cart/items/(:num)', 'CartController::update/$1', ['filter' => 'csrf']);
@@ -64,6 +65,8 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
         $routes->get('taxonomy', 'TaxonomyController::index');
         $routes->get('customers', 'CustomersController::index');
         $routes->get('customers/(:num)', 'CustomersController::show/$1');
+        $routes->get('shipping', 'ShippingMethodsController::index');
+        $routes->post('shipping/(:num)', 'ShippingMethodsController::save/$1', ['filter' => 'csrf']);
         $routes->get('settings/sms', 'SmsSettingsController::index');
         $routes->post('settings/sms', 'SmsSettingsController::save', ['filter' => 'csrf']);
         $routes->post('settings/sms/templates', 'SmsSettingsController::saveTemplates', ['filter' => 'csrf']);

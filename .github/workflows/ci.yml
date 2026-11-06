@@ -117,3 +117,13 @@ jobs:
           check_status 401 http://127.0.0.1:8080/api/v1/admin/dashboard
           check_status 200 http://127.0.0.1:8080/api/v1/auth/csrf
           check_status 200 http://127.0.0.1:8080/sitemap.xml
+          # Unsafe mutations without CSRF must be rejected before controller execution.
+          denied=$(curl -sS -o /tmp/gereh-csrf-denied -w '%{http_code}' \
+            -X POST -H 'Content-Type: application/json' \
+            --data '{"variant_id":1,"quantity":1}' \
+            http://127.0.0.1:8080/api/v1/cart/items)
+          if [ "$denied" != "403" ]; then
+            echo "Expected 403 for missing CSRF token, got $denied"
+            cat /tmp/gereh-csrf-denied
+            exit 1
+          fi

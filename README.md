@@ -12,10 +12,16 @@ Custom shoe-store e-commerce platform built with CodeIgniter 4 and MySQL.
 - Admin UI source of truth: GEREH Figma page `187:42` (not Dokohe or an independently designed template)
 - Storefront UI source of truth: GEREH Figma page `89:82`; mobile-first UX
 
-## Status
-Phase 0 architecture and security requirements are documented. A minimal CodeIgniter 4 application scaffold is now committed, including Composer dependencies, PHP 8.3 runtime checks, web/CLI entry points, initial routing, a landing page, and environment-driven MySQL configuration. Dependency installation and runtime verification are still pending.
+## Current verified status
+- PHP syntax, Composer install and CI4 CLI route registration have passed GitHub Actions.
+- Catalog, customer, OTP, order and payment-ledger **migrations** have passed on a temporary MySQL 8 service in CI.
+- The public catalog and guest-auth boundary are exercised by real HTTP smoke tests.
+- Public catalog, shared session cart, OTP/customer API and owner-scoped order reads are implemented in code.
+- **Checkout is intentionally disabled (HTTP 503).** There is no verified ZarinPal payment callback or inventory settlement path yet.
+- **SMS delivery requires provider configuration and real delivery verification.** The HTTPS webhook contract is described in `docs/customer-auth.md`.
+- Figma pixel-accurate verification, Lighthouse, full admin commerce and cPanel production smoke tests are not complete.
 
-See docs/phase-0-foundation.md, docs/database-schema.md and docs/security-baseline.md.
+Refer to `docs/customer-auth.md`, `docs/checkout-foundation.md`, `docs/openapi-catalog.yaml`, `docs/openapi-customer.yaml` and `docs/cpanel-deployment.md`.
 
 Never commit production credentials. Use environment configuration for database, SMS, payment and encryption secrets.
 

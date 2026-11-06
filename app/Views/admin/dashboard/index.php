@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>پیشخوان | مدیریت گره</title>
+<title>پیشخوان | مدیریت گره</title><link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
 <style>
 @font-face{font-family:Estedad;src:local("Estedad"),local("Estedad VF")}*{box-sizing:border-box}
 :root{--green:#012f24;--green2:#075d3c;--ink:#263b33;--muted:#81766e;--canvas:#f5f5f2;--sand:#efe3d4;--soft:#f9f4ef;--white:#fff}

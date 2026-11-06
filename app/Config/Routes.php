@@ -34,6 +34,7 @@ $routes->group('api/v1/admin', [
     $routes->get('dashboard', 'DashboardController::index');
 });
 
+$routes->get('payment/zarinpal/callback', 'ZarinpalCallbackController::handle');
 $routes->get('robots.txt', 'SeoController::robots');
 $routes->get('sitemap.xml', 'SeoController::sitemap');
 $routes->get('/', 'Storefront::home', ['as' => 'store.home']);

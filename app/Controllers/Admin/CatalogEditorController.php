@@ -17,6 +17,7 @@ class CatalogEditorController extends BaseController {
             'categories'=>(new CategoryModel())->orderBy('name')->findAll(),
             'brands'=>(new BrandModel())->orderBy('name')->findAll(),
             'variants'=>$product?(new ProductVariantModel())->where('product_id',$product['id'])->findAll():[],
+            'media'=>$product?(new \App\Models\ProductMediaModel())->where('product_id',$product['id'])->orderBy('sort_order')->findAll():[],
         ]);
     }
     public function save(?string $id=null) {
@@ -57,4 +58,36 @@ class CatalogEditorController extends BaseController {
             $db->transRollback();return redirect()->back()->with('errors',['variant'=>'ثبت تنوع ناموفق بود. SKU را بررسی کنید.']);
         }
     }
+    public function addMedia(string $id) {
+        if (!(new ProductModel())->find((int)$id)) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        $file=$this->request->getFile('image');
+        if (!$file || !$file->isValid() || $file->hasMoved() || $file->getSize()>5*1024*1024) return redirect()->back()->with('errors',['image'=>'تصویر معتبر با حجم حداکثر ۵ مگابایت انتخاب کنید.']);
+        $mime=$file->getMimeType();
+        if (!in_array($mime,['image/jpeg','image/png','image/webp'],true)) return redirect()->back()->with('errors',['image'=>'فقط تصاویر JPG، PNG و WebP مجاز هستند.']);
+        $directory=FCPATH.'uploads/products/';
+        if (!is_dir($directory) && !mkdir($directory,0755,true) && !is_dir($directory)) return redirect()->back()->with('errors',['image'=>'مسیر آپلود قابل نوشتن نیست.']);
+        $name=$file->getRandomName();
+        try {
+            $file->move($directory,$name);
+            $model=new \App\Models\ProductMediaModel();
+            if (!$model->insert(['product_id'=>(int)$id,'file_path'=>'uploads/products/'.$name,'alt_text'=>(string)$this->request->getPost('alt_text'),'media_type'=>'image','sort_order'=>0,'is_primary'=>0])) throw new \RuntimeException('DB insert failed');
+            return redirect()->back()->with('success','تصویر ذخیره شد.');
+        } catch (\Throwable $e) {
+            if (is_file($directory.$name)) @unlink($directory.$name);
+            log_message('error','Media upload failed: {message}',['message'=>$e->getMessage()]);
+            return redirect()->back()->with('errors',['image'=>'ذخیره تصویر ناموفق بود.']);
+        }
+    }
+    public function setStock(string $id, string $variantId) {
+        $variant=(new ProductVariantModel())->where('product_id',(int)$id)->find((int)$variantId);
+        if (!$variant) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        if (!$this->validate(['quantity'=>'required|is_natural'])) return redirect()->back()->with('errors',['stock'=>'موجودی نامعتبر است.']);
+        $inventory=new InventoryItemModel();
+        $row=$inventory->where('variant_id',(int)$variantId)->first();
+        $data=['quantity'=>(int)$this->request->getPost('quantity'),'updated_at'=>date('Y-m-d H:i:s')];
+        if ($row) $inventory->update($row['id'],$data);
+        else $inventory->insert(['variant_id'=>(int)$variantId,'low_stock_threshold'=>2]+$data);
+        return redirect()->back()->with('success','موجودی به‌روزرسانی شد.');
+    }
+
 }

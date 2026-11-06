@@ -11,6 +11,7 @@ $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static fu
     $routes->get('categories', 'CatalogController::categories');
     $routes->get('brands', 'CatalogController::brands');
     $routes->get('search', 'CatalogController::products');
+    $routes->get('auth/csrf', 'CustomerAuthController::csrf');
     $routes->post('auth/otp/request', 'CustomerAuthController::requestOtp', ['filter' => 'csrf']);
     $routes->post('auth/otp/verify', 'CustomerAuthController::verifyOtp', ['filter' => 'csrf']);
     $routes->post('auth/logout', 'CustomerAuthController::logout', ['filter' => 'csrf']);

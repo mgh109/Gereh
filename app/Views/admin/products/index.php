@@ -14,7 +14,7 @@
 </nav></aside>
 <main class="content">
 <header class="top"><strong>پنل مدیریت گره</strong><input class="search" type="search" placeholder="جست‌وجو در محصولات، سفارش‌ها و مشتریان…" aria-label="جست‌وجو" form="product-filters" name="q"><span><?= esc($adminName) ?></span></header>
-<section class="heading"><div><h1>محصولات</h1><div class="muted">مدیریت اطلاعات، تصاویر و وضعیت انتشار</div></div><a class="button" href="<?= site_url('/') ?>">مشاهده فروشگاه</a></section>
+<section class="heading"><div><h1>محصولات</h1><div class="muted">مدیریت اطلاعات، تصاویر و وضعیت انتشار</div></div><a class="button" href="<?= site_url('admin/products/create') ?>">+ افزودن محصول</a></section>
 <section class="panel">
 <?php if (!$databaseReady): ?><div class="note">دیتابیس هنوز راه‌اندازی نشده است؛ فهرست واقعی محصولات پس از اجرای Migration نمایش داده می‌شود.</div><?php endif; ?>
 <form id="product-filters" class="filters" method="get" action="<?= site_url('admin/products') ?>">
@@ -27,7 +27,7 @@ $q = trim((string) service('request')->getGet('q'));
 $status = (string) service('request')->getGet('status');
 $visible = array_filter($products, static fn ($p) => ($q === '' || mb_stripos((string) ($p['name'] ?? ''), $q) !== false) && ($status === '' || ($p['status'] ?? '') === $status));
 ?>
-<?php foreach ($visible as $product): ?><tr><td><?= esc($product['name']) ?></td><td>#<?= (int) $product['id'] ?></td><td><?= number_format((int) $product['price_toman']) ?></td><td><span class="tag <?= ($product['status'] ?? '') === 'active' ? '' : 'off' ?>"><?= ($product['status'] ?? '') === 'active' ? 'فعال' : 'غیرفعال' ?></span></td><td>—</td></tr><?php endforeach; ?>
+<?php foreach ($visible as $product): ?><tr><td><?= esc($product['name']) ?></td><td>#<?= (int) $product['id'] ?></td><td><?= number_format((int) $product['price_toman']) ?></td><td><span class="tag <?= ($product['status'] ?? '') === 'active' ? '' : 'off' ?>"><?= ($product['status'] ?? '') === 'active' ? 'فعال' : 'غیرفعال' ?></span></td><td><a href="<?= site_url('admin/products/'.$product['id'].'/edit') ?>">ویرایش</a></td></tr><?php endforeach; ?>
 <?php if (!$visible): ?><tr><td colspan="5" class="empty">محصولی برای نمایش وجود ندارد.</td></tr><?php endif; ?>
 </tbody></table></div>
 </section></main></div>

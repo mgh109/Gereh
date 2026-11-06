@@ -19,6 +19,8 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
     $routes->group('', ['filter' => 'adminauth'], static function (RouteCollection $routes) {
         $routes->get('/', 'DashboardController::index', ['as' => 'admin.dashboard']);
         $routes->get('products', 'ProductsController::index', ['as' => 'admin.products']);
+        $routes->get('taxonomy', 'TaxonomyController::index');
+        $routes->post('taxonomy/(:segment)', 'TaxonomyController::save/$1', ['filter' => 'csrf']);
         $routes->get('products/create', 'CatalogEditorController::edit');
         $routes->post('products/create', 'CatalogEditorController::save', ['filter' => 'csrf']);
         $routes->get('products/(:num)/edit', 'CatalogEditorController::edit/$1');

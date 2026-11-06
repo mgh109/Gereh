@@ -53,8 +53,7 @@ class CustomerPages extends BaseController
             return view('store/checkout', [
                 'cart' => $cart,
                 'checkoutEnabled' => filter_var(env('GEREH_CHECKOUT_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
-                'shippingToman' => ctype_digit((string) env('GEREH_STANDARD_SHIPPING_TOMAN', ''))
-                    ? (int) env('GEREH_STANDARD_SHIPPING_TOMAN') : null,
+                'shippingMethods' => (new \App\Services\ShippingService())->quotes((int)$cart['total']),
             ]);
         } catch (Throwable $exception) {
             log_message('error', 'Checkout page error: {type}', ['type' => get_class($exception)]);

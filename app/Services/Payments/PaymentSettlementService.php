@@ -122,6 +122,14 @@ final class PaymentSettlementService
             ]) || $this->db->transStatus() === false) {
                 throw new RuntimeException('ثبت نهایی پرداخت ناموفق بود.');
             }
+            // Queue once after verified settlement; SMS is dispatched
+            // outside the payment transaction by the outbox worker.
+            $notifier = new \App\Services\SmsNotificationService($this->db);
+            $notifier->queueForOrder($orderId, 'payment_success');
+            $notifier->queueForOrder($orderId, 'order_processing');
+            if ($this->db->transStatus() === false) {
+                throw new RuntimeException('ثبت اعلان‌های پرداخت ناموفق بود.');
+            }
             $this->db->transCommit();
             return ['order_id' => $orderId, 'status' => 'paid', 'already_settled' => false];
         } catch (Throwable $exception) {
@@ -144,6 +152,11 @@ final class PaymentSettlementService
                 }
                 if ($this->db->transStatus() === false) {
                     throw new RuntimeException('Failed to persist settlement review state.');
+                }
+                (new \App\Services\SmsNotificationService($this->db))
+                    ->queueForOrder((int) $payment['order_id'], 'payment_review');
+                if ($this->db->transStatus() === false) {
+                    throw new RuntimeException('Failed to persist settlement review notification.');
                 }
                 $this->db->transCommit();
             } catch (Throwable $recordFailure) {

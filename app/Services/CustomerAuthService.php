@@ -45,8 +45,8 @@ class CustomerAuthService
         }
         // Fail before writing a challenge if provider or hashing is not configured.
         $this->secret();
-        if (env('GEREH_SMS_WEBHOOK_URL') === null || env('GEREH_SMS_WEBHOOK_TOKEN') === null) {
-            throw new RuntimeException('سرویس پیامک فعال نیست.');
+        if (! $this->sms->isConfigured()) {
+            throw new RuntimeException('سرویس پیامک در تنظیمات فروشگاه آماده نیست.');
         }
 
         $throttler = service('throttler');

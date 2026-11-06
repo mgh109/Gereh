@@ -31,4 +31,30 @@ class BannersController extends BaseController
         else $model->insert($data);
         return redirect()->to(site_url('admin/banners'))->with('banner_success','بنر ذخیره شد.');
     }
+
+    public function upload(int $id)
+    {
+        $model=new HomeBannerModel();
+        if(!$model->find($id))throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        $file=$this->request->getFile('image');
+        if(!$file || !$file->isValid() || $file->hasMoved() || $file->getSize()>5*1024*1024)
+            return redirect()->back()->with('banner_error','تصویر معتبر تا ۵ مگابایت انتخاب کنید.');
+        $mime=(string)$file->getMimeType();
+        $extensions=['image/jpeg'=>'.jpg','image/png'=>'.png','image/webp'=>'.webp'];
+        $dimensions=@getimagesize($file->getTempName());
+        if(!isset($extensions[$mime]) || !$dimensions || $dimensions[0]>8000 || $dimensions[1]>8000)
+            return redirect()->back()->with('banner_error','ساختار یا ابعاد تصویر معتبر نیست.');
+        $directory=FCPATH.'uploads/banners/';
+        if(!is_dir($directory) && !mkdir($directory,0755,true) && !is_dir($directory))
+            return redirect()->back()->with('banner_error','مسیر ذخیره قابل نوشتن نیست.');
+        $filename=bin2hex(random_bytes(16)).$extensions[$mime];
+        try{
+            $file->move($directory,$filename);
+            $model->update($id,['image_path'=>'uploads/banners/'.$filename]);
+            return redirect()->to(site_url('admin/banners'))->with('banner_success','تصویر ذخیره شد.');
+        }catch(\Throwable $exception){
+            if(is_file($directory.$filename))@unlink($directory.$filename);
+            return redirect()->back()->with('banner_error','آپلود تصویر ناموفق بود.');
+        }
+    }
 }

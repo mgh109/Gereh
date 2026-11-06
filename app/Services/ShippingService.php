@@ -72,6 +72,35 @@ final class ShippingService
         ];
     }
 
+    public function create(string $code,array $fields): void
+    {
+        if(!preg_match('/^[a-z][a-z0-9_-]{1,29}$/D',$code)) {
+            throw new InvalidArgumentException('شناسه روش ارسال باید انگلیسی و یکتا باشد.');
+        }
+        if($this->db->table('shipping_methods')->countAllResults()>=25) {
+            throw new InvalidArgumentException('حداکثر ۲۵ روش ارسال قابل تعریف است.');
+        }
+        $this->db->transBegin();
+        try {
+            if($this->db->table('shipping_methods')->where('code',$code)->countAllResults()>0) {
+                throw new DomainException('این شناسه قبلاً ثبت شده است.');
+            }
+            $now=date('Y-m-d H:i:s');
+            if(!$this->db->table('shipping_methods')->insert([
+                'code'=>$code,'title'=>'در حال تنظیم','type'=>'flat',
+                'base_fee_toman'=>0,'is_active'=>0,'sort_order'=>100,
+                'created_at'=>$now,'updated_at'=>$now,
+            ]))throw new \RuntimeException('ساخت روش ارسال ناموفق بود.');
+            $id=(int)$this->db->insertID();
+            $this->save($id,$fields);
+            if($this->db->transStatus()===false)throw new \RuntimeException('ذخیره روش ارسال ناموفق بود.');
+            $this->db->transCommit();
+        }catch(\Throwable $exception){
+            $this->db->transRollback();
+            throw $exception;
+        }
+    }
+
     public function save(int $id,array $fields): void
     {
         $allowed=['title','description','type','base_fee_toman','free_over_toman','province_filter',

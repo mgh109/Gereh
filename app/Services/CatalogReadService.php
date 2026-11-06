@@ -93,6 +93,42 @@ class CatalogReadService
         ]];
     }
 
+    public function related(int $productId, int $limit = 6): ?array
+    {
+        $source = (new ProductModel($this->db))->where('id', $productId)
+            ->where('status', 'active')->first();
+        if ($source === null) {
+            return null;
+        }
+        if (empty($source['category_id'])) {
+            return [];
+        }
+        $products = (new ProductModel($this->db))->where('status', 'active')
+            ->where('category_id', $source['category_id'])
+            ->where('id !=', $productId)
+            ->orderBy('id', 'DESC')->findAll(min(12, max(1, $limit)));
+        $ids = array_map('intval', array_column($products, 'id'));
+        if ($ids === []) {
+            return [];
+        }
+        $media = $this->db->table('product_media')
+            ->select('product_id, file_path, alt_text')
+            ->whereIn('product_id', $ids)->orderBy('is_primary', 'DESC')
+            ->orderBy('sort_order', 'ASC')->get()->getResultArray();
+        $first = [];
+        foreach ($media as $image) {
+            $id = (int) $image['product_id'];
+            $first[$id] ??= $image;
+        }
+        foreach ($products as &$product) {
+            $image = $first[(int) $product['id']] ?? null;
+            $product['image_url'] = $image ? base_url(ltrim($image['file_path'], '/')) : null;
+            $product['image_alt'] = $image['alt_text'] ?? $product['name'];
+        }
+        unset($product);
+        return $products;
+    }
+
     public function product(string $slug): ?array
     {
         $product = (new ProductModel($this->db))->where('slug', $slug)

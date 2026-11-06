@@ -51,10 +51,10 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <section class="page-head"><a class="store-link" href="<?= site_url('/') ?>" target="_blank">مشاهده فروشگاه</a><div class="page-title"><h1>پیشخوان</h1><p>نگاهی به وضعیت امروز فروشگاه</p></div></section>
 <section class="dashboard">
 <div class="stats">
-<article class="stat"><div class="stat-head"><span>درآمد امروز</span><img src="https://www.figma.com/api/mcp/asset/5bd26.svg" alt=""></div><strong class="stat-value">—</strong><span class="stat-note">اطلاعات پرداخت‌های ثبت‌شده</span></article>
-<article class="stat"><div class="stat-head"><span>سفارش‌های جدید</span><img src="https://www.figma.com/api/mcp/asset/d88f1.svg" alt=""></div><strong class="stat-value">—</strong><span class="stat-note">سفارش‌های منتظر پرداخت</span></article>
+<article class="stat"><div class="stat-head"><span>درآمد امروز</span><img src="https://www.figma.com/api/mcp/asset/5bd26.svg" alt=""></div><strong class="stat-value" id="paid-revenue">—</strong><span class="stat-note">اطلاعات پرداخت‌های ثبت‌شده</span></article>
+<article class="stat"><div class="stat-head"><span>سفارش‌های جدید</span><img src="https://www.figma.com/api/mcp/asset/d88f1.svg" alt=""></div><strong class="stat-value" id="new-orders">—</strong><span class="stat-note">سفارش‌های منتظر پرداخت</span></article>
 <article class="stat"><div class="stat-head"><span>محصولات فعال</span><img src="https://www.figma.com/api/mcp/asset/b7b77.svg" alt=""></div><strong class="stat-value" id="active">—</strong><span class="stat-note">اطلاعات موجودی واقعی</span></article>
-<article class="stat"><div class="stat-head"><span>مشتریان</span><img src="https://www.figma.com/api/mcp/asset/53df4.svg" alt=""></div><strong class="stat-value">—</strong><span class="stat-note">حساب‌های ثبت‌شده</span></article>
+<article class="stat"><div class="stat-head"><span>مشتریان</span><img src="https://www.figma.com/api/mcp/asset/53df4.svg" alt=""></div><strong class="stat-value" id="customer-count">—</strong><span class="stat-note">حساب‌های ثبت‌شده</span></article>
 </div>
 <div class="middle">
 <section class="panel attention"><div class="panel-title">نیازمند توجه</div><div class="attention-list">
@@ -63,7 +63,7 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <div class="attention-row"><a href="#">مشاهده ‹</a><span>گزارش مرجوعی هنوز فعال نیست</span></div>
 <div class="attention-row"><a href="#">مشاهده ‹</a><span>مدیریت دیدگاه هنوز فعال نیست</span></div>
 </div></section>
-<section class="panel chart"><div class="chart-head"><small>این هفته⌄</small><span>روند فروش هفتگی</span></div><div class="bars">
+<section class="panel chart"><div class="chart-head"><small>نمودار نمونه؛ داده واقعی هنوز متصل نشده</small><span>روند فروش هفتگی</span></div><div class="bars" aria-hidden="true" style="opacity:.15">
 <div class="bar-item"><div class="bar" style="height:40%"></div><span>شنبه</span></div><div class="bar-item"><div class="bar" style="height:64%"></div><span>یکشنبه</span></div><div class="bar-item"><div class="bar" style="height:51%"></div><span>دوشنبه</span></div><div class="bar-item"><div class="bar" style="height:78%"></div><span>سه‌شنبه</span></div><div class="bar-item"><div class="bar" style="height:68%"></div><span>چهارشنبه</span></div><div class="bar-item"><div class="bar highlight" style="height:91%"></div><span>پنجشنبه</span></div><div class="bar-item"><div class="bar" style="height:82%"></div><span>جمعه</span></div>
 </div><div class="chart-total">آمار نمودار در انتظار پیاده‌سازی</div></section>
 </div>
@@ -90,6 +90,20 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 </aside>
 </div>
 <script>
-fetch('<?= site_url('admin/api/summary') ?>',{headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>{if(!r.ok)throw new Error();return r.json()}).then(({data})=>{document.getElementById('active').textContent=new Intl.NumberFormat('fa-IR').format(data.active_products)+' محصول'}).catch(()=>{});
+const formatFa=n=>new Intl.NumberFormat('fa-IR').format(Number(n)||0);
+const setStat=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+fetch('<?= site_url('api/v1/admin/dashboard') ?>',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(({data})=>{
+setStat('active',formatFa(data.active_products)+' محصول');
+setStat('paid-revenue',formatFa(data.revenue_toman)+' تومان');
+setStat('new-orders',formatFa(data.new_orders)+' سفارش');
+setStat('customer-count',formatFa(data.customers)+' نفر');
+}).catch(()=>{['active','paid-revenue','new-orders','customer-count'].forEach(id=>setStat(id,'ناموجود'))});
+fetch('<?= site_url('api/v1/admin/orders?per_page=5') ?>',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(({data})=>{
+const tbody=document.getElementById('recent-orders');tbody.textContent='';
+if(!Array.isArray(data)||!data.length){tbody.insertRow().insertCell().textContent='سفارشی ثبت نشده است.';return}
+for(const order of data){
+const tr=tbody.insertRow();const a=document.createElement('a');a.href='<?= site_url('admin/orders') ?>/'+Number(order.id);a.textContent='مشاهده';tr.insertCell().appendChild(a);
+tr.insertCell().textContent=order.order_status||'—';tr.insertCell().textContent=formatFa(order.total_toman);tr.insertCell().textContent=order.receiver_name||'—';tr.insertCell().textContent=order.order_number||'—';
+}}).catch(()=>{document.getElementById('recent-orders').textContent='دریافت سفارش‌ها ممکن نیست.'});
 </script>
 </body></html>

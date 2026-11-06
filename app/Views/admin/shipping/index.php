@@ -5,10 +5,17 @@
 <?php if(session()->getFlashdata('shipping_error')): ?><p role="alert" class="mb-4 rounded-xl bg-red-50 p-4 text-red-700"><?= esc(session()->getFlashdata('shipping_error')) ?></p><?php endif; ?>
 <?php if(session()->getFlashdata('shipping_success')): ?><p role="status" class="mb-4 rounded-xl bg-green-50 p-4 text-green-800"><?= esc(session()->getFlashdata('shipping_success')) ?></p><?php endif; ?>
 <div class="grid gap-5">
-<?php foreach($methods as $method): ?>
+<?php foreach(array_merge($methods,[[
+  'id'=>0,'code'=>'','title'=>'','description'=>'','type'=>'flat',
+  'base_fee_toman'=>0,'free_over_toman'=>null,'province_filter'=>null,
+  'estimated_days_min'=>null,'estimated_days_max'=>null,
+  'sort_order'=>100,'is_active'=>0
+]]) as $method): ?>
 <form method="post" action="<?= site_url('admin/shipping/'.(int)$method['id']) ?>" class="grid gap-4 rounded-2xl bg-white p-5 md:grid-cols-2">
 <?= csrf_field() ?>
-<div class="md:col-span-2"><h2 class="text-lg font-bold"><?= esc($method['title']) ?></h2><span class="text-xs text-stone-500" dir="ltr"><?= esc($method['code']) ?></span></div>
+<div class="md:col-span-2"><h2 class="text-lg font-bold"><?= $method['id']?esc($method['title']):'افزودن روش ارسال دلخواه' ?></h2><span class="text-xs text-stone-500" dir="ltr"><?= esc($method['code']) ?></span></div>
+<?php if(!$method['id']): ?><label class="grid gap-1 text-sm md:col-span-2">شناسه انگلیسی یکتا
+<input name="code" maxlength="30" pattern="[a-z][a-z0-9_-]{1,29}" required placeholder="my_courier" class="rounded-xl border border-stone-200 p-3" dir="ltr"></label><?php endif; ?>
 <label class="grid gap-1 text-sm">عنوان روش ارسال<input name="title" maxlength="120" required value="<?= esc($method['title'],'attr') ?>" class="rounded-xl border border-stone-200 p-3"></label>
 <label class="grid gap-1 text-sm">نوع تعرفه<select name="type" class="rounded-xl border border-stone-200 p-3"><option value="flat" <?= $method['type']==='flat'?'selected':'' ?>>هزینه ثابت / رایگان مشروط</option><option value="pickup" <?= $method['type']==='pickup'?'selected':'' ?>>تحویل حضوری رایگان</option></select></label>
 <label class="grid gap-1 text-sm md:col-span-2">توضیحات<textarea name="description" maxlength="300" rows="2" class="rounded-xl border border-stone-200 p-3"><?= esc($method['description']??'') ?></textarea></label>

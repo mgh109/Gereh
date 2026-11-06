@@ -36,3 +36,11 @@ jobs:
             find writable/logs -type f -name '*.log' -maxdepth 1 -exec tail -n 80 {} \; || true
             exit 1
           }
+
+      - name: Assert critical public and cart routes are registered
+        run: |
+          CI_ENVIRONMENT=development php spark routes > /tmp/gereh-routes.txt
+          grep -F 'api/v1/products' /tmp/gereh-routes.txt
+          grep -F 'api/v1/cart/items' /tmp/gereh-routes.txt
+          grep -F 'sitemap.xml' /tmp/gereh-routes.txt
+          grep -F 'robots.txt' /tmp/gereh-routes.txt

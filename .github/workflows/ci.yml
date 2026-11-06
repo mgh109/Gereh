@@ -162,3 +162,20 @@ jobs:
             cat /tmp/gereh-csrf-denied
             exit 1
           fi
+
+          # Real AJAX cart mutation with a valid session and CSRF token.
+          variant_id=$(cat writable/cache/ci-variant-id.txt)
+          curl -fsS -b /tmp/gereh-cookies -c /tmp/gereh-cookies \
+            http://127.0.0.1:8080/api/v1/auth/csrf > /tmp/gereh-token.json
+          csrf_token=$(php -r '$x=json_decode(file_get_contents("/tmp/gereh-token.json"), true); echo $x["data"]["token"] ?? "";')
+          cart_code=$(curl -sS -b /tmp/gereh-cookies -c /tmp/gereh-cookies \
+            -o /tmp/gereh-cart-added -w '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' -H "X-CSRF-TOKEN: $csrf_token" \
+            --data "{\"variant_id\":$variant_id,\"quantity\":1}" \
+            http://127.0.0.1:8080/api/v1/cart/items)
+          if [ "$cart_code" != "200" ]; then
+            echo "Expected 200 when adding a live product, got $cart_code"
+            cat /tmp/gereh-cart-added
+            exit 1
+          fi
+          php -r '$r=json_decode(file_get_contents("/tmp/gereh-cart-added"),true); if(($r["data"]["total"]??0)!==120000 || ($r["data"]["count"]??0)!==1) {fwrite(STDERR,"Incorrect cart total\n");exit(1);}'

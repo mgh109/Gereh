@@ -90,7 +90,7 @@ class OrderController extends BaseController
                 $data['recipient'],
                 $key
             );
-            $payment = (new \\App\\Services\\Payments\\PaymentInitiationService())->initiate(
+            $payment = (new \App\Services\Payments\PaymentInitiationService())->initiate(
                 $customerId,
                 (int) $order['id']
             );
@@ -100,11 +100,11 @@ class OrderController extends BaseController
                 'total_toman' => (int) $order['total_toman'],
                 'payment' => $payment,
             ], 201);
-        } catch (\\InvalidArgumentException $exception) {
+        } catch (\InvalidArgumentException $exception) {
             return $this->error($exception->getMessage(), 422);
-        } catch (\\DomainException $exception) {
+        } catch (\DomainException $exception) {
             return $this->error($exception->getMessage(), 409);
-        } catch (\\Throwable $exception) {
+        } catch (\Throwable $exception) {
             log_message('error', 'Checkout failed: {type}', ['type' => get_class($exception)]);
             return $this->error('ثبت سفارش یا ارتباط با درگاه ممکن نیست.', 503);
         }

@@ -78,6 +78,7 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
         $routes->post('articles/(:num)/edit', 'ArticlesController::save/$1', ['filter' => 'csrf']);
         $routes->get('orders', 'OrdersController::index');
         $routes->get('orders/(:num)', 'OrdersController::show/$1');
+        $routes->post('orders/(:num)/fulfillment', 'OrdersController::fulfillment/$1', ['filter' => 'csrf']);
         $routes->post('taxonomy/(:segment)', 'TaxonomyController::save/$1', ['filter' => 'csrf']);
         $routes->get('products/create', 'CatalogEditorController::edit');
         $routes->post('products/create', 'CatalogEditorController::save', ['filter' => 'csrf']);

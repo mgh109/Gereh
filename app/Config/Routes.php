@@ -18,6 +18,8 @@ $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static fu
     $routes->delete('cart/items/(:num)', 'CartController::delete/$1', ['filter' => 'csrf']);
 });
 
+$routes->get('robots.txt', 'SeoController::robots');
+$routes->get('sitemap.xml', 'SeoController::sitemap');
 $routes->get('/', 'Storefront::home', ['as' => 'store.home']);
 $routes->get('shop', 'Storefront::shop', ['as' => 'store.shop']);
 $routes->get('size-guide', static fn () => view('store/size_guide'), ['as' => 'store.size-guide']);

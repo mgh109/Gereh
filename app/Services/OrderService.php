@@ -22,7 +22,7 @@ class OrderService
         $this->db = $db ?? Database::connect();
     }
 
-    public function create(int $customerId, array $cart, array $recipient, string $key): array
+    public function create(int $customerId, array $cart, array $recipient, string $key, string $shippingMethod = 'standard'): array
     {
         if ($customerId < 1) {
             throw new DomainException('برای ثبت سفارش باید وارد حساب کاربری شوید.');
@@ -46,12 +46,6 @@ class OrderService
             throw new InvalidArgumentException('شماره موبایل یا کد پستی نامعتبر است.');
         }
 
-        // Fail closed until a real delivery tariff has been configured on the server.
-        $shipping = env('GEREH_STANDARD_SHIPPING_TOMAN');
-        if (! is_scalar($shipping) || ! ctype_digit((string) $shipping)) {
-            throw new RuntimeException('تعرفه ارسال هنوز تنظیم نشده است.');
-        }
-        $shipping = (int) $shipping;
         if ($cart === []) {
             throw new InvalidArgumentException('سبد خرید خالی است.');
         }
@@ -116,7 +110,7 @@ class OrderService
                     throw new DomainException('قیمت یکی از محصولات معتبر نیست.');
                 }
                 $lineTotal = $price * $qty;
-                if ($shipping > intdiv(PHP_INT_MAX, 10) || $subtotal > intdiv(PHP_INT_MAX, 10) - $lineTotal - $shipping) {
+                if ($subtotal > intdiv(PHP_INT_MAX, 10) - $lineTotal - 1000000000) {
                     throw new DomainException('مبلغ سفارش از حد مجاز پرداخت بیشتر است.');
                 }
                 $subtotal += $lineTotal;
@@ -128,6 +122,12 @@ class OrderService
                     'subtotal_toman' => $lineTotal,
                 ];
             }
+            // Authoritative fee is computed from DB AFTER live product prices,
+            // while the order transaction is still open.
+            $delivery = (new ShippingService($this->db))->quote(
+                $shippingMethod, $subtotal, $recipient['province']
+            );
+            $shipping = (int) $delivery['shipping_toman'];
             $number = 'GR-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(6)));
             $now = date('Y-m-d H:i:s');
             $order = [
@@ -136,7 +136,7 @@ class OrderService
                 'receiver_mobile' => $recipient['receiver_mobile'],
                 'province' => $recipient['province'], 'city' => $recipient['city'],
                 'address' => $recipient['address'], 'postal_code' => $recipient['postal_code'],
-                'shipping_method' => 'standard', 'subtotal_toman' => $subtotal,
+                'shipping_method' => $delivery['code'], 'shipping_title' => $delivery['title'], 'subtotal_toman' => $subtotal,
                 'shipping_toman' => $shipping, 'total_toman' => $subtotal + $shipping,
                 'payment_status' => 'unpaid', 'order_status' => 'pending_payment',
                 'created_at' => $now, 'updated_at' => $now,

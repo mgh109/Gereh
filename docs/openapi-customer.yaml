@@ -88,9 +88,90 @@ paths:
         '200': { description: Updated cart }
   /checkout:
     post:
-      summary: Checkout temporarily disabled until OTP and ZarinPal integration is verified
+      summary: Feature-gated checkout creating an unpaid order and ZarinPal payment request
+      description: Disabled by default; must not be enabled until real provider and refund reconciliation testing pass.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 16, maxLength: 64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipient]
+              properties:
+                shipping_method: { type: string, enum: [standard] }
+                recipient:
+                  type: object
+                  required: [receiver_name, receiver_mobile, province, city, address, postal_code]
+                  properties:
+                    receiver_name: { type: string }
+                    receiver_mobile: { type: string, pattern: '^09[0-9]{9}
+  /orders:
+    get:
+      summary: List orders belonging to authenticated customer
       responses:
-        '503': { description: Checkout is not yet available }
+        '200': { description: Orders }
+        '401': { description: Login required }
+  /orders/{id}:
+    get:
+      summary: One order owned by authenticated customer
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Order detail }
+        '401': { description: Login required }
+        '404': { description: Order not found or not owned }
+components:
+  securitySchemes:
+    cookieSession:
+      type: apiKey
+      in: cookie
+      name: gereh_session
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: X-CSRF-TOKEN
+ }
+                    province: { type: string }
+                    city: { type: string }
+                    address: { type: string }
+                    postal_code: { type: string, pattern: '^[0-9]{10}
+  /orders:
+    get:
+      summary: List orders belonging to authenticated customer
+      responses:
+        '200': { description: Orders }
+        '401': { description: Login required }
+  /orders/{id}:
+    get:
+      summary: One order owned by authenticated customer
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Order detail }
+        '401': { description: Login required }
+        '404': { description: Order not found or not owned }
+components:
+  securitySchemes:
+    cookieSession:
+      type: apiKey
+      in: cookie
+      name: gereh_session
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: X-CSRF-TOKEN
+ }
+      responses:
+        '201': { description: Unpaid order and payment redirect URL (only when enabled) }
+        '401': { description: Customer login required }
+        '409': { description: Unavailable stock or invalid order state }
+        '422': { description: Invalid payload }
+        '503': { description: Disabled checkout or provider unavailable }
   /orders:
     get:
       summary: List orders belonging to authenticated customer

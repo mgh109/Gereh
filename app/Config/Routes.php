@@ -41,6 +41,8 @@ $routes->get('robots.txt', 'SeoController::robots');
 $routes->get('sitemap.xml', 'SeoController::sitemap');
 $routes->get('/', 'Storefront::home', ['as' => 'store.home']);
 $routes->get('shop', 'Storefront::shop', ['as' => 'store.shop']);
+$routes->get('blog', 'BlogController::index');
+$routes->get('blog/(:segment)', 'BlogController::show/$1');
 $routes->get('size-guide', static fn () => view('store/size_guide'), ['as' => 'store.size-guide']);
 $routes->get('product/(:segment)', 'Storefront::product/$1', ['as' => 'store.product']);
 $routes->get('cart', 'CartController::index', ['as' => 'store.cart']);

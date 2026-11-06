@@ -44,3 +44,47 @@ jobs:
           grep -F 'api/v1/cart/items' /tmp/gereh-routes.txt
           grep -F 'sitemap.xml' /tmp/gereh-routes.txt
           grep -F 'robots.txt' /tmp/gereh-routes.txt
+
+  migrations:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_ci_only
+          MYSQL_DATABASE: gereh_ci
+          MYSQL_USER: gereh_ci
+          MYSQL_PASSWORD: password_ci_only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot_ci_only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl, mbstring, mysqli, fileinfo
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Configure isolated CI database
+        run: |
+          cat > .env <<'EOF'
+          CI_ENVIRONMENT = development
+          app.baseURL = 'http://localhost:8080/'
+          database.default.hostname = 127.0.0.1
+          database.default.database = gereh_ci
+          database.default.username = gereh_ci
+          database.default.password = password_ci_only
+          database.default.DBDriver = MySQLi
+          database.default.port = 3306
+          EOF
+      - name: Apply migrations against MySQL
+        run: |
+          php spark migrate --all
+          php spark migrate:status

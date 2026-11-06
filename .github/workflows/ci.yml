@@ -30,4 +30,9 @@ jobs:
         run: find app -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Verify CodeIgniter CLI bootstrap
-        run: php spark routes
+        run: |
+          CI_ENVIRONMENT=development php spark routes 2>&1 || {
+            echo 'CodeIgniter CLI bootstrap failed; collecting application logs.'
+            find writable/logs -type f -name '*.log' -maxdepth 1 -exec tail -n 80 {} \; || true
+            exit 1
+          }

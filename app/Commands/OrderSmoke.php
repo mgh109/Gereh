@@ -74,6 +74,23 @@ final class OrderSmoke extends BaseCommand
             // Stock validation worked.
         }
         file_put_contents(WRITEPATH . 'cache/ci-variant-id.txt', (string) $variantId);
+        // Simulate enabled patterns on isolated CI DB; never call real SMS.
+        $db->table('sms_settings')->where('id',1)->update(['provider'=>'melipayamak','enabled'=>1]);
+        $db->table('sms_templates')->where('event_key','order_placed')->update(['enabled'=>1,'body_id'=>99001]);
+        $notifier=new \App\Services\SmsNotificationService($db);
+        if(!$notifier->queueForOrder((int)$first['id'],'order_placed')) {
+            throw new RuntimeException('Expected the first order notification to be queued.');
+        }
+        if($notifier->queueForOrder((int)$first['id'],'order_placed')) {
+            throw new RuntimeException('Duplicate order notification must be suppressed.');
+        }
+        $queued=$db->table('sms_outbox')->where('order_id',$first['id'])
+            ->where('event_key','order_placed')->get()->getRowArray();
+        if(!$queued || $queued['status']!=='pending' || (int)$queued['body_id']!==99001
+            || $queued['pattern_text']!==$first['order_number']) {
+            throw new RuntimeException('Order SMS outbox snapshot is incorrect.');
+        }
+        CLI::write('PASS: durable SMS outbox snapshot and order-event deduplication.');
         CLI::write('PASS: order totals, price snapshot, idempotency, unpaid stock and oversell rejection.');
     }
 }

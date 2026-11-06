@@ -119,6 +119,7 @@ jobs:
           check_status 200 http://127.0.0.1:8080/api/v1/products
           check_status 200 http://127.0.0.1:8080/api/v1/home
           check_status 302 http://127.0.0.1:8080/admin/banners
+          check_status 302 http://127.0.0.1:8080/admin/settings/sms
           check_status 200 http://127.0.0.1:8080/api/v1/categories
           check_status 200 http://127.0.0.1:8080/api/v1/brands
           check_status 401 http://127.0.0.1:8080/api/v1/me

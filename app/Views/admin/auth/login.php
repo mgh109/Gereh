@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ورود مدیریت | گره</title>
+    <title>ورود مدیریت | گره</title><link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
     <style>
         *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f5f7;color:#202124;font-family:Tahoma,Arial,sans-serif;padding:24px}
         .panel{width:min(100%,420px);background:#fff;border:1px solid #e7e8eb;border-radius:18px;padding:32px;box-shadow:0 16px 50px #1c24300d}

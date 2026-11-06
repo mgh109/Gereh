@@ -36,11 +36,6 @@ class SeoController extends BaseController
                     $urls[] = ['loc' => site_url($prefix . rawurlencode($row['slug'])), 'lastmod' => $row['updated_at']];
                 }
             }
-            $rows = $db->table('categories')->select('slug, updated_at')
-                ->where('status', 'active')->orderBy('id')->limit(1000)->get()->getResultArray();
-            foreach ($rows as $row) {
-                $urls[] = ['loc' => site_url('shop') . '?category=' . rawurlencode($row['slug']), 'lastmod' => $row['updated_at']];
-            }
             $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
             foreach ($urls as $entry) {

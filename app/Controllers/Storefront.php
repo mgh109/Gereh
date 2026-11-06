@@ -28,9 +28,9 @@ class Storefront extends BaseController
                 throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
             }
             $media = (new ProductMediaModel())->where('product_id', $product['id'])->orderBy('sort_order', 'ASC')->findAll();
-            $variants = (new \\App\\Models\\ProductVariantModel())->where('product_id', $product['id'])->where('is_active', 1)->orderBy('sort_order', 'ASC')->findAll();
+            $variants = (new \App\Models\\ProductVariantModel())->where('product_id', $product['id'])->where('is_active', 1)->orderBy('sort_order', 'ASC')->findAll();
             if ($variants) {
-                $stockRows = \\Config\\Database::connect()->table('inventory_items')->whereIn('variant_id', array_column($variants, 'id'))->get()->getResultArray();
+                $stockRows = \Config\Database::connect()->table('inventory_items')->whereIn('variant_id', array_column($variants, 'id'))->get()->getResultArray();
                 $stock = array_column($stockRows, 'quantity', 'variant_id');
                 foreach ($variants as &$variant) {
                     $variant['stock'] = (int) ($stock[$variant['id']] ?? 0);
@@ -49,8 +49,8 @@ class Storefront extends BaseController
     private function brands(): array
     {
         try {
-            return (new \\App\\Models\\BrandModel())->orderBy('name', 'ASC')->findAll(100);
-        } catch (\\Throwable $exception) {
+            return (new \App\Models\\BrandModel())->orderBy('name', 'ASC')->findAll(100);
+        } catch (\Throwable $exception) {
             log_message('warning', 'Storefront brands unavailable: {message}', ['message' => $exception->getMessage()]);
             return [];
         }
@@ -67,7 +67,7 @@ class Storefront extends BaseController
                 }
                 $categorySlug = trim((string) $this->request->getGet('category'));
                 if ($categorySlug !== '') {
-                    $category = (new \\App\\Models\\CategoryModel())->where('slug', $categorySlug)->first();
+                    $category = (new \App\Models\\CategoryModel())->where('slug', $categorySlug)->first();
                     if ($category === null) {
                         return [];
                     }
@@ -75,7 +75,7 @@ class Storefront extends BaseController
                 }
                 $brandSlug = trim((string) $this->request->getGet('brand'));
                 if ($brandSlug !== '') {
-                    $brand = (new \\App\\Models\\BrandModel())->where('slug', $brandSlug)->first();
+                    $brand = (new \App\Models\\BrandModel())->where('slug', $brandSlug)->first();
                     if ($brand === null) {
                         return [];
                     }

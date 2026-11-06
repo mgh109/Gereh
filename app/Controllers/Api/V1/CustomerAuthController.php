@@ -29,6 +29,16 @@ class CustomerAuthController extends BaseController
         return is_array($body) ? $body : [];
     }
 
+    public function csrf()
+    {
+        // Read-only bootstrap for same-origin clients using session CSRF.
+        return $this->json([
+            'tokenName' => csrf_token(),
+            'headerName' => 'X-CSRF-TOKEN',
+            'token' => csrf_hash(),
+        ])->setHeader('Cache-Control', 'no-store, private');
+    }
+
     public function requestOtp()
     {
         $body = $this->body();

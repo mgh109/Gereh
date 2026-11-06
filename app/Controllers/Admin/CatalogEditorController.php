@@ -82,11 +82,7 @@ class CatalogEditorController extends BaseController {
         $variant=(new ProductVariantModel())->where('product_id',(int)$id)->find((int)$variantId);
         if (!$variant) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         if (!$this->validate(['quantity'=>'required|is_natural'])) return redirect()->back()->with('errors',['stock'=>'موجودی نامعتبر است.']);
-        $inventory=new InventoryItemModel();
-        $row=$inventory->where('variant_id',(int)$variantId)->first();
-        $data=['quantity'=>(int)$this->request->getPost('quantity'),'updated_at'=>date('Y-m-d H:i:s')];
-        if ($row) $inventory->update($row['id'],$data);
-        else $inventory->insert(['variant_id'=>(int)$variantId,'low_stock_threshold'=>2]+$data);
+        (new \App\Services\InventoryService())->setAbsolute((int)$variantId,(int)$this->request->getPost('quantity'));
         return redirect()->back()->with('success','موجودی به‌روزرسانی شد.');
     }
 

@@ -122,6 +122,11 @@ jobs:
           check_status 401 http://127.0.0.1:8080/api/v1/admin/orders/1
           check_status 200 http://127.0.0.1:8080/api/v1/auth/csrf
           check_status 200 http://127.0.0.1:8080/sitemap.xml
+          check_status 200 http://127.0.0.1:8080/login
+          check_status 302 http://127.0.0.1:8080/account
+          check_status 302 http://127.0.0.1:8080/checkout
+          check_status 302 http://127.0.0.1:8080/admin/orders
+
           check_status 400 http://127.0.0.1:8080/payment/zarinpal/callback
           check_status 409 'http://127.0.0.1:8080/payment/zarinpal/callback?Status=OK&Authority=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
           # A valid session/CSRF token must still not activate checkout.

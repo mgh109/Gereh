@@ -19,6 +19,7 @@ class OrderController extends BaseController
 
     private function envelope($data, int $status = 200)
     {
+        $this->response->setHeader('Cache-Control', 'no-store, private');
         return $this->respond([
             'success' => true, 'data' => $data, 'meta' => new \stdClass(),
             'message' => null, 'errors' => null,
@@ -27,6 +28,7 @@ class OrderController extends BaseController
 
     private function error(string $message, int $status)
     {
+        $this->response->setHeader('Cache-Control', 'no-store, private');
         return $this->respond([
             'success' => false, 'data' => null, 'meta' => new \stdClass(),
             'message' => $message, 'errors' => null,

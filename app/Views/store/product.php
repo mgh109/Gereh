@@ -6,7 +6,7 @@
 $images = array_values(array_filter($media, static fn ($m) => ($m['media_type'] ?? 'image') === 'image' && !empty($m['file_path'])));
 $firstImage = $images ? base_url(ltrim($images[0]['file_path'], '/')) : null;
 ?>
-<main class="container">
+<main class="container"><?php if(session()->getFlashdata('cart_error')): ?><p role="alert" style="padding:12px;background:#fff0ec"><?= esc(session()->getFlashdata('cart_error')) ?></p><?php endif; ?>
 <p class="muted"><a href="<?= site_url('shop') ?>">فروشگاه</a> / <?= esc($product['name']) ?></p>
 <div class="detail">
 <section class="product-gallery" aria-label="گالری تصاویر محصول">
@@ -30,11 +30,11 @@ $firstImage = $images ? base_url(ltrim($images[0]['file_path'], '/')) : null;
 <section class="product-details-section"><h2>مشخصات محصول</h2><p class="muted">اطلاعات سایز و رنگ از تنوع‌های ثبت‌شده محصول نمایش داده می‌شود.</p></section>
 <section class="product-details-section"><h2>دیدگاه خریداران</h2><p class="muted">هنوز دیدگاهی ثبت نشده است.</p></section>
 </main>
-<div class="sticky-buy"><strong id="sticky-price"><?= number_format((int)$product['price_toman']) ?> تومان</strong><button class="pill" type="button" disabled title="فرایند سبد خرید در فاز ۳ فعال می‌شود">افزودن به سبد خرید</button></div>
+<form class="sticky-buy" method="post" action="<?= site_url('cart/add') ?>"><?= csrf_field() ?><input type="hidden" id="selected-variant" name="variant_id" value=""><input type="hidden" name="quantity" value="1"><strong id="sticky-price"><?= number_format((int)$product['price_toman']) ?> تومان</strong><button class="pill" id="add-cart-button" type="submit" disabled>افزودن به سبد خرید</button></form>
 <script>
 (()=>{const main=document.getElementById('main-product-image');document.querySelectorAll('.image-thumb').forEach(btn=>btn.addEventListener('click',()=>{if(!main)return;main.src=btn.dataset.src;main.alt=btn.dataset.alt;document.querySelectorAll('.image-thumb').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)))}));
 const variants=<?= json_encode(array_map(static fn($v)=>['id'=>(int)$v['id'],'color'=>(string)($v['color_name']??''),'size'=>(string)($v['size_label']??''),'price'=>(int)($v['price_toman']??$product['price_toman']),'stock'=>(int)$v['stock']],$variants),JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?>;
-let color='',size='';const colors=document.getElementById('color-options'),sizes=document.getElementById('size-options'),stock=document.getElementById('stock-status');function choose(group,value){group.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.value===value)))}function refresh(){const matched=variants.find(v=>(!colors||v.color===color)&&(!sizes||v.size===size));if(matched){const price=new Intl.NumberFormat('fa-IR').format(matched.price)+' تومان';document.getElementById('current-price').textContent=price;document.getElementById('sticky-price').textContent=price;}if(stock)stock.textContent=(!colors||color)&&(!sizes||size)?(matched?.stock>0?'موجود: '+matched.stock+' عدد':'ناموجود'):'رنگ و سایز موردنظر را انتخاب کنید.'}
+let color='',size='';const colors=document.getElementById('color-options'),sizes=document.getElementById('size-options'),stock=document.getElementById('stock-status');function choose(group,value){group.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.value===value)))}function refresh(){const matched=variants.find(v=>(!colors||v.color===color)&&(!sizes||v.size===size));if(matched){const price=new Intl.NumberFormat('fa-IR').format(matched.price)+' تومان';document.getElementById('current-price').textContent=price;document.getElementById('sticky-price').textContent=price;}const ready=(!colors||color)&&(!sizes||size);document.getElementById('selected-variant').value=ready&&matched?.stock>0?matched.id:'';document.getElementById('add-cart-button').disabled=!(ready&&matched?.stock>0);if(stock)stock.textContent=(!colors||color)&&(!sizes||size)?(matched?.stock>0?'موجود: '+matched.stock+' عدد':'ناموجود'):'رنگ و سایز موردنظر را انتخاب کنید.'}
 colors?.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{color=b.dataset.value;choose(colors,color);refresh()}));sizes?.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{size=b.dataset.value;choose(sizes,size);refresh()}));refresh()})();
 </script>
 <?= view('store/partials/footer') ?>

@@ -14,10 +14,11 @@ class Storefront extends BaseController
             return view('store/home', [
                 'products' => $catalog->products(['per_page' => 6])['data'],
                 'brands' => $catalog->brands(),
+                'banners' => (new \App\Services\HomeContentService())->banners(),
             ]);
         } catch (\Throwable $exception) {
             log_message('error', 'Storefront home catalog: {message}', ['message' => $exception->getMessage()]);
-            return view('store/home', ['products' => [], 'brands' => []]);
+            return view('store/home', ['products' => [], 'brands' => [], 'banners' => []]);
         }
     }
 

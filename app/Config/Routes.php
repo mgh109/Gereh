@@ -27,6 +27,13 @@ $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static fu
     $routes->post('checkout', 'OrderController::checkout', ['filter' => 'csrf']);
 });
 
+$routes->group('api/v1/admin', [
+    'namespace' => 'App\\Controllers\\Api\\V1\\Admin',
+    'filter' => 'adminauth',
+], static function (RouteCollection $routes) {
+    $routes->get('dashboard', 'DashboardController::index');
+});
+
 $routes->get('robots.txt', 'SeoController::robots');
 $routes->get('sitemap.xml', 'SeoController::sitemap');
 $routes->get('/', 'Storefront::home', ['as' => 'store.home']);

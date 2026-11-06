@@ -3,8 +3,8 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use CodeIgniter\Database\BaseConnection;
-use Config\Database;
+use App\Services\AdminDashboardService;
+use Throwable;
 
 class DashboardController extends BaseController
 {
@@ -17,18 +17,18 @@ class DashboardController extends BaseController
 
     public function summary()
     {
-        /** @var BaseConnection $db */
-        $db = Database::connect();
-
-        $summary = [
-            'products' => (int) $db->table('products')->where('deleted_at', null)->countAllResults(),
-            'active_products' => (int) $db->table('products')->where('status', 'active')->where('deleted_at', null)->countAllResults(),
-            'categories' => (int) $db->table('categories')->where('status', 'active')->countAllResults(),
-            'low_stock_variants' => (int) $db->table('inventory_items')
-                ->where('quantity <= low_stock_threshold', null, false)
-                ->countAllResults(),
-        ];
-
-        return $this->response->setJSON(['success' => true, 'data' => $summary]);
+        try {
+            $summary = (new AdminDashboardService())->summary();
+            return $this->response->setJSON([
+                'success' => true, 'data' => $summary, 'meta' => new \stdClass(),
+                'message' => null, 'errors' => null,
+            ]);
+        } catch (Throwable $exception) {
+            log_message('error', 'Admin dashboard statistics: {type}', ['type' => get_class($exception)]);
+            return $this->response->setStatusCode(503)->setJSON([
+                'success' => false, 'data' => null, 'meta' => new \stdClass(),
+                'message' => 'آمار داشبورد موقتاً در دسترس نیست.', 'errors' => null,
+            ]);
+        }
     }
 }

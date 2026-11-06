@@ -4,6 +4,14 @@
 <h1 class="my-5 text-2xl font-bold">سفارش <?= esc($order['order_number']) ?></h1>
 <?php if(session()->getFlashdata('order_error')): ?><p role="alert" class="my-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"><?= esc(session()->getFlashdata('order_error')) ?></p><?php endif; ?>
 <?php if(session()->getFlashdata('order_success')): ?><p role="status" class="my-4 rounded-xl bg-green-50 p-4 text-sm text-green-800"><?= esc(session()->getFlashdata('order_success')) ?></p><?php endif; ?>
+<?php if($order['payment_status']==='unpaid' && $order['order_status']==='pending_payment' && empty($order['payments'])): ?>
+<section class="mb-5 rounded-xl bg-white p-5">
+<h2 class="mb-3 font-bold">لغو سفارش پرداخت‌نشده</h2>
+<form method="post" action="<?= site_url('admin/orders/'.(int)$order['id'].'/fulfillment') ?>" onsubmit="return confirm('سفارش پرداخت‌نشده لغو شود؟')">
+<?= csrf_field() ?><input type="hidden" name="action" value="cancel">
+<button type="submit" class="rounded-lg border border-red-300 px-5 py-3 text-sm text-red-700">لغو و ثبت اعلان مشتری</button>
+</form></section>
+<?php endif; ?>
 <?php if($order['payment_status']==='paid' && in_array($order['order_status'],['processing','shipped'],true)): ?>
 <section class="mb-5 rounded-xl bg-white p-5">
 <h2 class="mb-3 font-bold">وضعیت ارسال و اطلاع‌رسانی مشتری</h2>

@@ -38,6 +38,14 @@ paths:
       responses:
         '200': { description: Product found, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
         '404': { description: Product not found }
+  /products/{id}/related:
+    get:
+      summary: Related active products in the same category
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Related products, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+        '404': { description: Source product not found }
   /categories:
     get:
       summary: Active categories

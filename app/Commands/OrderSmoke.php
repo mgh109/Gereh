@@ -90,6 +90,36 @@ final class OrderSmoke extends BaseCommand
             || $queued['pattern_text']!==$first['order_number']) {
             throw new RuntimeException('Order SMS outbox snapshot is incorrect.');
         }
+        $shipping = new \App\Services\ShippingService($db);
+        $quotes = $shipping->quotes(240000, 'تهران');
+        if(count($quotes)!==1 || $quotes[0]['code']!=='standard'
+           || (int)$quotes[0]['shipping_toman']!==25000) {
+            throw new RuntimeException('Incorrect default shipping methods or fixed fee.');
+        }
+        $db->table('shipping_methods')->where('code','express')->update([
+            'is_active'=>1,'province_filter'=>'تهران,البرز','base_fee_toman'=>55000,
+            'free_over_toman'=>300000,
+        ]);
+        $db->table('shipping_methods')->where('code','pickup')->update([
+            'is_active'=>1,'province_filter'=>'تهران',
+        ]);
+        $tehran = $shipping->quotes(350000, 'تهران');
+        if(count($tehran)!==3 || (int)$tehran[1]['shipping_toman']!==0
+           || (int)$tehran[2]['shipping_toman']!==0) {
+            throw new RuntimeException('Conditional free shipping and pickup calculations failed.');
+        }
+        $isfahan = $shipping->quotes(350000, 'اصفهان');
+        if(count($isfahan)!==1)throw new RuntimeException('Province eligibility was bypassed.');
+        $express = $service->create(
+            $customerId,[$variantId=>1],$recipient,
+            'ci-express-'.bin2hex(random_bytes(16)), 'express'
+        );
+        if($express['shipping_method']!=='express'
+            || (int)$express['shipping_toman']!==55000
+            || (int)$express['total_toman']!==175000) {
+            throw new RuntimeException('Selected shipping fee is not persisted correctly.');
+        }
+        CLI::write('PASS: configurable shipping, free threshold, region availability and order total.');
         CLI::write('PASS: durable SMS outbox snapshot and order-event deduplication.');
         CLI::write('PASS: order totals, price snapshot, idempotency, unpaid stock and oversell rejection.');
     }

@@ -74,6 +74,7 @@ class OrderService
                 ->where('idempotency_key', $key)->get()->getRowArray();
             if ($existing !== null) {
                 $this->db->transCommit();
+                unset($existing['idempotency_key']);
                 return $existing;
             }
             $customer = $this->db->query(
@@ -137,7 +138,9 @@ class OrderService
                 throw new RuntimeException('تراکنش ثبت سفارش ناموفق بود.');
             }
             $this->db->transCommit();
-            return ['id' => $orderId] + $order;
+            $result = ['id' => $orderId] + $order;
+            unset($result['idempotency_key']);
+            return $result;
         } catch (Throwable $exception) {
             $this->db->transRollback();
             throw $exception;

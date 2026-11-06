@@ -73,6 +73,7 @@ final class OrderSmoke extends BaseCommand
         } catch (DomainException $expected) {
             // Stock validation worked.
         }
+        file_put_contents(WRITEPATH . 'cache/ci-variant-id.txt', (string) $variantId);
         CLI::write('PASS: order totals, price snapshot, idempotency, unpaid stock and oversell rejection.');
     }
 }

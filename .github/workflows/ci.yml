@@ -86,11 +86,15 @@ jobs:
           database.default.password = password_ci_only
           database.default.DBDriver = MySQLi
           database.default.port = 3306
+          GEREH_CI_SMOKE = 1
+          GEREH_STANDARD_SHIPPING_TOMAN = 25000
           EOF
       - name: Apply migrations against MySQL
         run: |
           php spark migrate --all
           php spark migrate:status
+      - name: Real MySQL checkout integration smoke
+        run: php spark gereh:smoke-orders
 
       - name: HTTP smoke tests (catalog and auth guards)
         run: |

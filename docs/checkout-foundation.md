@@ -1,31 +1,41 @@
-# GEREH checkout foundation — deployment notes
+# GEREH checkout and ZarinPal integration
 
-## Current state (not a production payment flow)
+## Implemented code
 
-The following changes are implemented:
-- `customers`, `orders`, `order_items`, `payment_transactions` migrations.
-- `OrderService::create()` can atomically save a **pending, unpaid order** from a customer session cart, using live database prices and a snapshot of ordered variants.
-- Stock is checked with row locks, but **not reserved or decremented** when an unpaid order is created. Never mark the order paid or fulfill it without a verified payment and a second stock check inside the settlement transaction.
-- Customer order reads are owner-scoped: `GET /api/v1/orders` and `GET /api/v1/orders/{id}` require an authenticated `customer_id` session value.
-- `POST /api/v1/checkout` intentionally returns HTTP 503. There is currently **no trusted OTP login mechanism and no implemented payment adapter**; order creation is not exposed through this endpoint.
+- `OrderService`: creates an unpaid customer-owned order with immutable line price snapshots, current DB stock checks and customer-scoped idempotency keys.
+- `PaymentInitiationService`: claims a payment attempt under an order-row lock, calls the provider outside the transaction and persists the returned authority. Multiple simultaneous requests cannot freely create duplicate attempts.
+- `ZarinpalGateway`: HTTPS v4 request/verify calls to fixed provider hosts; internal **toman** values are converted to **rial** at the adapter boundary. Do not assume callback parameters indicate success.
+- `ZarinpalCallbackController`: accepts GET `/payment/zarinpal/callback`. Unknown authorities never initiate payments. A callback with `Status=OK` triggers server-side verification.
+- `PaymentSettlementService`: verifies against ZarinPal and commits order payment status, inventory decrements, movement audit rows and payment reference **atomically**. Duplicate locally settled payment attempts return a read-only result.
+- `POST /api/v1/checkout`: feature-gated. **Disabled by default** via `GEREH_CHECKOUT_ENABLED=false`. When explicitly enabled, expects an authenticated customer session, CSRF, `Idempotency-Key` header and JSON body containing `recipient`, optionally `shipping_method=standard`. It creates an order and returns the provider redirect URL.
+- No fake orders or successful payments are generated. Missing merchant ID, provider failures and insecure callback settings fail closed.
 
-## Production prerequisites
+## Money and provider
 
-1. Implement OTP request/verify with provider-backed delivery, expiry, rate limits, attempt limits, hashed OTP storage, session regeneration and CSRF. Set `customer_id` on the server only after successful verification.
-2. Configure delivery pricing and allowed shipping methods. `OrderService` currently supports only `standard` and refuses to create orders until `GEREH_STANDARD_SHIPPING_TOMAN` is a non-negative integer in the server environment.
-3. Implement ZarinPal adapter with merchant credentials stored exclusively in environment. Persist payment attempts and unique provider identifiers.
-4. On a **server-verified** success callback, perform a single atomic settlement transaction: lock payment + order, reject/replay previously settled states, recheck and decrement inventory, log movements, mark order paid, then commit. Failed stock verification must not silently mark an order paid; it needs a reconciliation/refund flow.
-5. Add order-state auditing, checkout form/UX, shipping configuration, address management, cancellation/expiry, payment retry policy, and integration tests against actual MySQL.
-6. Run database migrations in staging before enabling checkout and back up the DB. Do not run seed/dummy orders in production.
+ZarinPal v4 paths:
+- `https://api.zarinpal.com/pg/v4/payment/request.json`
+- `https://api.zarinpal.com/pg/v4/payment/verify.json`
+- `https://www.zarinpal.com/pg/StartPay/{authority}`
 
-## API contracts currently available
+Sandbox uses the sandbox.zarinpal.com host. Confirm the live merchant API's **currency contract** with the provider before enabling production; GEREH stores TOMAN and currently sends ten times that amount as RIAL.
 
-- `GET /api/v1/orders`: 401 if no authenticated customer session.
-- `GET /api/v1/orders/{id}`: 401 if unauthenticated; 404 if order is not owned by caller.
-- `POST /api/v1/checkout`: 503 fail-closed regardless of payload, protected by CSRF.
+## Known missing work: DO NOT ENABLE PRODUCTION PAYMENTS
 
-The `OrderService` create method is internal-only for now. It expects `customerId`, `cart` (variant ID to quantity), validated recipient fields (`receiver_name`, `receiver_mobile`, `province`, `city`, `address`, `postal_code`), and a unique idempotency key. Customer ownership and the idempotency uniqueness constraint are enforced by the database.
+1. Prove real ZarinPal sandbox request + redirect + callback + verification + duplicate callback, followed by real-provider verification.
+2. Build a persistent **manual-review and refund workflow** for successful provider payments with insufficient inventory or local DB failures. The existing code fails closed and logs critical errors, but automatic refunds and customer support tooling are not implemented.
+3. Implement recovery for interrupted `requesting` payment attempts and unknown/ambiguous provider results; never blindly retry requests that might already have succeeded.
+4. Add real MySQL concurrency integration tests, including two simultaneous checkouts, expired payments, one-last-item race, duplicate authority and forced failures.
+5. Verify SMS OTP login with a live provider, protected customer sessions, shipping configuration, access controls, status transitions and browser UX.
+6. Build a Figma-matching checkout UI and payment result page; the callback currently responds with JSON.
+7. Review production rate limiting, audit alerts, secrets, secure cookies, HTTPS and provider contract.
 
-## Verification
+**Checkout must remain disabled until all these requirements are satisfied.** The currently green CI checks PHP syntax, selected unit tests, migration execution and HTTP smoke tests. It does NOT certify full money movement.
 
-Code syntax and route registration are checked in GitHub Actions. Migration execution, concurrent transaction behavior, OTP, real SMS delivery, gateway callbacks and Figma-level UI have **not** been verified. This is a foundation, not a completed checkout.
+## Required server env
+
+- `GEREH_CHECKOUT_ENABLED=false` (until release approval)
+- `ZARINPAL_MERCHANT_ID`: real merchant credential, never commit
+- `ZARINPAL_SANDBOX=true` for staging
+- `ZARINPAL_CALLBACK_URL=https://your-domain.example/payment/zarinpal/callback`
+- `GEREH_STANDARD_SHIPPING_TOMAN`: non-negative integer tariff
+- HTTPS base URL, valid sessions and configured OTP provider.

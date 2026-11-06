@@ -10,7 +10,7 @@
 <body>
 <div class="shell">
 <aside class="sidebar"><div class="logo">گره <small style="font-size:11px;font-weight:400">مدیریت فروشگاه</small></div><nav class="nav" aria-label="مدیریت">
-<a href="<?= site_url('admin') ?>">پیشخوان</a><a class="active" href="<?= site_url('admin/products') ?>">محصولات</a><a href="<?= site_url('/') ?>">مشاهده فروشگاه</a>
+<a href="<?= site_url('admin') ?>">پیشخوان</a><a class="active" href="<?= site_url('admin/products') ?>">محصولات</a><a href="<?= site_url('admin/taxonomy') ?>">برندها و دسته‌ها</a><a href="<?= site_url('/') ?>">مشاهده فروشگاه</a>
 </nav></aside>
 <main class="content">
 <header class="top"><strong>پنل مدیریت گره</strong><input class="search" type="search" placeholder="جست‌وجو در محصولات، سفارش‌ها و مشتریان…" aria-label="جست‌وجو" form="product-filters" name="q"><span><?= esc($adminName) ?></span></header>

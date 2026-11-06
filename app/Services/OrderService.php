@@ -116,6 +116,9 @@ class OrderService
                     throw new DomainException('قیمت یکی از محصولات معتبر نیست.');
                 }
                 $lineTotal = $price * $qty;
+                if ($shipping > intdiv(PHP_INT_MAX, 10) || $subtotal > intdiv(PHP_INT_MAX, 10) - $lineTotal - $shipping) {
+                    throw new DomainException('مبلغ سفارش از حد مجاز پرداخت بیشتر است.');
+                }
                 $subtotal += $lineTotal;
                 $lines[] = [
                     'product_id' => (int) $row['product_id'], 'variant_id' => $id,

@@ -126,8 +126,32 @@ final class PaymentSettlementService
             return ['order_id' => $orderId, 'status' => 'paid', 'already_settled' => false];
         } catch (Throwable $exception) {
             $this->db->transRollback();
-            // DO NOT mark paid if stock is missing. The received funds require
-            // manual reconciliation and a refund workflow.
+            // Provider returned code 100, but local settlement failed.
+            // Mark the payment for manual reconciliation without claiming
+            // fulfillment or destroying the provider reference.
+            try {
+                $this->db->transBegin();
+                $this->db->table('payment_transactions')
+                    ->where('id', $payment['id'])->where('status', 'initiated')
+                    ->update(['status' => 'review_required', 'ref_id' => $refId, 'verified_at' => date('Y-m-d H:i:s')]);
+                if ($this->db->affectedRows() === 1) {
+                    $this->db->table('orders')->where('id', $payment['order_id'])
+                        ->where('payment_status', 'unpaid')->update([
+                            'payment_status' => 'review_required',
+                            'order_status' => 'payment_review',
+                            'updated_at' => date('Y-m-d H:i:s'),
+                        ]);
+                }
+                if ($this->db->transStatus() === false) {
+                    throw new RuntimeException('Failed to persist settlement review state.');
+                }
+                $this->db->transCommit();
+            } catch (Throwable $recordFailure) {
+                $this->db->transRollback();
+                log_message('critical', 'Could not persist payment review for {id}: {type}', [
+                    'id' => (int) $payment['id'], 'type' => get_class($recordFailure),
+                ]);
+            }
             log_message('critical', 'ZarinPal settlement needs review for transaction {id}: {type}', [
                 'id' => (int) $payment['id'], 'type' => get_class($exception),
             ]);

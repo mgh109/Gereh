@@ -42,3 +42,10 @@ Without URL, token and HMAC secret, OTP requests fail closed with 503. The login
 - Remove expired OTP challenges periodically using a scheduled cleanup job (not implemented).
 - Use a shared Redis/Memcached rate-limit store when deploying multiple application instances. File cache is suitable only for one node.
 - Do not claim OTP ready until real gateway response, phone delivery, replay tests, security headers and operational alerting pass.
+
+
+## ملی پیامک (Melipayamak)
+
+گزینه `melipayamak` اکنون مستقیماً از REST رسمی ملی پیامک با `BaseServiceNumber` و پترن خدماتی OTP استفاده می‌کند. تنظیمات عملیاتی (فعال‌سازی و Body ID) در `/admin/settings/sms` ذخیره می‌شوند؛ نام کاربری و رمز فقط از `GEREH_MELIPAYAMAK_USERNAME` و `GEREH_MELIPAYAMAK_PASSWORD` سرور خوانده می‌شود. ارسال پیش‌فرض غیرفعال است. `webhook` همچنان به‌عنوان گزینه دوم موجود است.
+
+آموزش کامل: `docs/melipayamak-setup.md`. تأیید واقعی تحویل پیامک به شماره تستی هنوز باید با حساب ملی پیامک شما انجام شود.

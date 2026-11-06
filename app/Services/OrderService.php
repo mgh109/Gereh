@@ -85,6 +85,16 @@ class OrderService
                 throw new DomainException('حساب مشتری معتبر نیست.');
             }
 
+            // Recheck after locking the customer row: concurrent requests
+            // with the same idempotency key must reuse the first order.
+            $existing = $this->db->table('orders')->where('customer_id', $customerId)
+                ->where('idempotency_key', $key)->get()->getRowArray();
+            if ($existing !== null) {
+                $this->db->transCommit();
+                unset($existing['idempotency_key']);
+                return $existing;
+            }
+
             $lines = [];
             $subtotal = 0;
             ksort($normalized, SORT_NUMERIC);

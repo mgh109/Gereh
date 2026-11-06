@@ -44,6 +44,9 @@ $routes->get('shop', 'Storefront::shop', ['as' => 'store.shop']);
 $routes->get('size-guide', static fn () => view('store/size_guide'), ['as' => 'store.size-guide']);
 $routes->get('product/(:segment)', 'Storefront::product/$1', ['as' => 'store.product']);
 $routes->get('cart', 'CartController::index', ['as' => 'store.cart']);
+$routes->get('login', 'CustomerPages::login');
+$routes->get('account', 'CustomerPages::account');
+$routes->get('checkout', 'CustomerPages::checkout');
 $routes->post('cart/add', 'CartController::add', ['filter' => 'csrf']);
 $routes->post('cart/update', 'CartController::update', ['filter' => 'csrf']);
 

@@ -150,6 +150,9 @@ class OrderService
                     throw new RuntimeException('ثبت اقلام سفارش ناموفق بود.');
                 }
             }
+            // Queue a notification within the order transaction; never send
+            // an SMS before the order commit or during a database lock.
+            (new SmsNotificationService($this->db))->queueForOrder($orderId, 'order_placed');
             if ($this->db->transStatus() === false) {
                 throw new RuntimeException('تراکنش ثبت سفارش ناموفق بود.');
             }

@@ -60,4 +60,32 @@ final class OrderFulfillmentService
             throw $exception;
         }
     }
+
+    /**
+     * Cancel only unpaid orders that have never initiated a payment.
+     * Paid and in-flight payments require an explicit refund workflow.
+     */
+    public function cancelUnpaid(int $orderId): array
+    {
+        if($orderId<1)throw new InvalidArgumentException('شناسه سفارش معتبر نیست.');
+        $this->db->transBegin();
+        try {
+            $order=$this->db->query('SELECT id,order_status,payment_status FROM orders WHERE id=? FOR UPDATE',[$orderId])->getRowArray();
+            if(!$order)throw new DomainException('سفارش یافت نشد.');
+            if($order['payment_status']!=='unpaid'||$order['order_status']!=='pending_payment')
+                throw new DomainException('سفارش قابل لغو مستقیم نیست؛ پرداخت را بررسی کنید.');
+            $payments=$this->db->table('payment_transactions')->where('order_id',$orderId)->countAllResults();
+            if($payments!==0)throw new DomainException('برای سفارشی با درخواست پرداخت، لغو فقط پس از بررسی مالی مجاز است.');
+            if(!$this->db->table('orders')->where('id',$orderId)->update([
+                'order_status'=>'cancelled','updated_at'=>date('Y-m-d H:i:s'),
+            ]))throw new RuntimeException('ثبت لغو سفارش ناموفق بود.');
+            (new SmsNotificationService($this->db))->queueForOrder($orderId,'order_cancelled');
+            if($this->db->transStatus()===false)throw new RuntimeException('تراکنش لغو سفارش ناموفق بود.');
+            $this->db->transCommit();
+            return ['order_id'=>$orderId,'status'=>'cancelled'];
+        }catch(Throwable $exception){
+            $this->db->transRollback();
+            throw $exception;
+        }
+    }
 }

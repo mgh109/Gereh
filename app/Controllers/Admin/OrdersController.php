@@ -56,7 +56,9 @@ final class OrdersController extends BaseController
         try {
             $action=(string)$this->request->getPost('action');
             $tracking=trim((string)$this->request->getPost('tracking_code'));
-            (new \App\Services\OrderFulfillmentService())->transition($id,$action,$tracking?:null);
+            $service=new \App\Services\OrderFulfillmentService();
+            if($action==='cancel')$service->cancelUnpaid($id);
+            else $service->transition($id,$action,$tracking?:null);
             return redirect()->to(site_url('admin/orders/'.$id))
                 ->with('order_success','وضعیت سفارش بروزرسانی شد؛ اعلان در صف پیامک قرار گرفت.');
         } catch (InvalidArgumentException | \DomainException $exception) {

@@ -14,7 +14,10 @@ class Storefront extends BaseController
 
     public function shop(): string
     {
-        return view('store/shop', ['products' => $this->products(24, true)]);
+        return view('store/shop', [
+            'products' => $this->products(24, true),
+            'brands' => $this->brands(),
+        ]);
     }
 
     public function product(string $slug)
@@ -31,6 +34,16 @@ class Storefront extends BaseController
         } catch (\Throwable $exception) {
             log_message('warning', 'Storefront product unavailable: {message}', ['message' => $exception->getMessage()]);
             return view('store/unavailable');
+        }
+    }
+
+    private function brands(): array
+    {
+        try {
+            return (new \\App\\Models\\BrandModel())->orderBy('name', 'ASC')->findAll(100);
+        } catch (\\Throwable $exception) {
+            log_message('warning', 'Storefront brands unavailable: {message}', ['message' => $exception->getMessage()]);
+            return [];
         }
     }
 
@@ -51,8 +64,32 @@ class Storefront extends BaseController
                     }
                     $query->where('category_id', $category['id']);
                 }
+                $brandSlug = trim((string) $this->request->getGet('brand'));
+                if ($brandSlug !== '') {
+                    $brand = (new \\App\\Models\\BrandModel())->where('slug', $brandSlug)->first();
+                    if ($brand === null) {
+                        return [];
+                    }
+                    $query->where('brand_id', $brand['id']);
+                }
+                $minPrice = $this->request->getGet('min_price');
+                $maxPrice = $this->request->getGet('max_price');
+                if (is_scalar($minPrice) && ctype_digit((string) $minPrice)) {
+                    $query->where('price_toman >=', (int) $minPrice);
+                }
+                if (is_scalar($maxPrice) && ctype_digit((string) $maxPrice)) {
+                    $query->where('price_toman <=', (int) $maxPrice);
+                }
             }
-            $products = $query->orderBy('id', 'DESC')->findAll($limit);
+            $sort = $filter ? (string) $this->request->getGet('sort') : '';
+            if ($sort === 'price_asc') {
+                $query->orderBy('price_toman', 'ASC');
+            } elseif ($sort === 'price_desc') {
+                $query->orderBy('price_toman', 'DESC');
+            } else {
+                $query->orderBy('id', 'DESC');
+            }
+            $products = $query->findAll($limit);
             if ($products === []) {
                 return [];
             }

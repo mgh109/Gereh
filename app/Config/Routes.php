@@ -16,6 +16,9 @@ $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static fu
     $routes->post('cart/items', 'CartController::add', ['filter' => 'csrf']);
     $routes->patch('cart/items/(:num)', 'CartController::update/$1', ['filter' => 'csrf']);
     $routes->delete('cart/items/(:num)', 'CartController::delete/$1', ['filter' => 'csrf']);
+    $routes->get('orders', 'OrderController::index');
+    $routes->get('orders/(:num)', 'OrderController::show/$1');
+    $routes->post('checkout', 'OrderController::checkout', ['filter' => 'csrf']);
 });
 
 $routes->get('robots.txt', 'SeoController::robots');

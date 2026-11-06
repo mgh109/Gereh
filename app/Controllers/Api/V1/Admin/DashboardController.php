@@ -13,6 +13,7 @@ class DashboardController extends BaseController
 
     public function index()
     {
+        $this->response->setHeader('Cache-Control', 'no-store, private');
         try {
             return $this->respond([
                 'success' => true, 'data' => (new AdminDashboardService())->summary(),

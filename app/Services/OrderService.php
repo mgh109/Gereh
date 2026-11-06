@@ -112,6 +112,9 @@ class OrderService
                     throw new DomainException('موجودی یکی از محصولات کافی نیست.');
                 }
                 $price = (int) ($row['price_toman'] ?? $row['product_price']);
+                if ($price < 1 || $price > intdiv(PHP_INT_MAX, max(10, $qty))) {
+                    throw new DomainException('قیمت یکی از محصولات معتبر نیست.');
+                }
                 $lineTotal = $price * $qty;
                 $subtotal += $lineTotal;
                 $lines[] = [

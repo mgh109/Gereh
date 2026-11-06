@@ -20,19 +20,34 @@ final class MelipayamakClient
 
     public function sendPattern(string $mobile,string $code,int $bodyId): void
     {
+        if (preg_match('/^[0-9]{6}$/D',$code)!==1) {
+            throw new InvalidArgumentException('کد ورود نامعتبر است.');
+        }
+        $this->sendPatternText($mobile,$code,$bodyId);
+    }
+
+    /**
+     * Pattern placeholders are joined in the SAME order as the approved
+     * Melipayamak pattern. Do not pass freeform user text.
+     * Returns a provider acceptance receipt, not a delivery confirmation.
+     */
+    public function sendPatternText(string $mobile,string $text,int $bodyId): string
+    {
         if (preg_match('/^09[0-9]{9}$/D',$mobile)!==1
-            ||preg_match('/^[0-9]{6}$/D',$code)!==1||$bodyId<1) {
-            throw new InvalidArgumentException('پارامترهای پیامک ورود نامعتبر است.');
+            ||$bodyId<1 || $text==='' || strlen($text)>500
+            || preg_match('/[\\r\\n]/',$text)===1) {
+            throw new InvalidArgumentException('پارامترهای پیامک خدماتی نامعتبر است.');
         }
         $username=trim((string)env('GEREH_MELIPAYAMAK_USERNAME',''));
         $password=(string)env('GEREH_MELIPAYAMAK_PASSWORD','');
         if ($username==='' || $password==='') {
             throw new RuntimeException('اطلاعات اتصال ملی پیامک تنظیم نشده است.');
         }
-        $this->call('BaseServiceNumber',[
+        $result=$this->call('BaseServiceNumber',[
             'username'=>$username,'password'=>$password,
-            'text'=>$code,'to'=>$mobile,'bodyId'=>$bodyId,
+            'text'=>$text,'to'=>$mobile,'bodyId'=>$bodyId,
         ]);
+        return (string)($result['Value']??$result['value']);
     }
 
     public function credit(): ?float

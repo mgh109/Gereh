@@ -26,6 +26,7 @@ class SeoController extends BaseController
                 ['loc' => site_url('/'), 'lastmod' => null],
                 ['loc' => site_url('shop'), 'lastmod' => null],
                 ['loc' => site_url('size-guide'), 'lastmod' => null],
+                ['loc' => site_url('blog'), 'lastmod' => null],
             ];
             foreach (['products' => 'product/'] as $table => $prefix) {
                 // Keep under the sitemap protocol's 50,000 URL limit.
@@ -35,6 +36,13 @@ class SeoController extends BaseController
                 foreach ($rows as $row) {
                     $urls[] = ['loc' => site_url($prefix . rawurlencode($row['slug'])), 'lastmod' => $row['updated_at']];
                 }
+            }
+            $articles = $db->table('articles')->select('slug, updated_at')
+                ->where('status', 'published')
+                ->where('published_at <=', date('Y-m-d H:i:s'))
+                ->orderBy('id', 'ASC')->limit(4000)->get()->getResultArray();
+            foreach ($articles as $article) {
+                $urls[] = ['loc' => site_url('blog/' . rawurlencode($article['slug'])), 'lastmod' => $article['updated_at']];
             }
             $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';

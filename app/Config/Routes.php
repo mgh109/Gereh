@@ -3,6 +3,15 @@
 use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
+// Public, read-only catalog endpoints; web SSR uses the same service without internal HTTP.
+$routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static function (RouteCollection $routes) {
+    $routes->get('products', 'CatalogController::products');
+    $routes->get('products/(:segment)', 'CatalogController::product/$1');
+    $routes->get('categories', 'CatalogController::categories');
+    $routes->get('brands', 'CatalogController::brands');
+    $routes->get('search', 'CatalogController::products');
+});
+
 $routes->get('/', 'Storefront::home', ['as' => 'store.home']);
 $routes->get('shop', 'Storefront::shop', ['as' => 'store.shop']);
 $routes->get('size-guide', static fn () => view('store/size_guide'), ['as' => 'store.size-guide']);

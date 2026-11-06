@@ -34,8 +34,20 @@ $qs = static function (array $updates): string {
 <form action="<?= site_url('shop') ?>" method="get"><label for="sort-products" class="muted">مرتب‌سازی</label>
 <?php foreach (['q','category','brand','min_price','max_price'] as $key): $value=request()->getGet($key); if(is_scalar($value) && (string)$value !== ''): ?><input type="hidden" name="<?= esc($key) ?>" value="<?= esc((string)$value,'attr') ?>"><?php endif; endforeach; ?>
 <select id="sort-products" name="sort" onchange="this.form.submit()"><option value="">جدیدترین</option><option value="price_asc" <?= $selected('sort','price_asc') ?>>ارزان‌ترین</option><option value="price_desc" <?= $selected('sort','price_desc') ?>>گران‌ترین</option></select></form></div>
-<div class="result-info"><span><?= count($products) ?> محصول</span><span>نتایج جست‌وجو و فیلتر</span></div>
+<div class="result-info"><span><?= (int) ($pagination['total'] ?? count($products)) ?> محصول</span><span>نتایج جست‌وجو و فیلتر</span></div>
 <?= view('store/partials/cards',['products'=>$products]) ?>
+<?php if (($pagination['last_page'] ?? 0) > 1): ?>
+<nav class="flex flex-wrap items-center justify-center gap-3 py-6" aria-label="صفحات محصولات">
+<?php
+$currentPage = (int) $pagination['page'];
+$lastPage = (int) $pagination['last_page'];
+?>
+<?php if ($currentPage > 1): ?><a class="rounded-lg border px-4 py-2" href="<?= esc($qs(['page' => (string) ($currentPage - 1)]), 'attr') ?>" rel="prev">صفحه قبل</a><?php endif; ?>
+<span class="text-sm" aria-live="polite">صفحه <?= $currentPage ?> از <?= $lastPage ?></span>
+<?php if ($currentPage < $lastPage): ?><a class="rounded-lg border px-4 py-2" href="<?= esc($qs(['page' => (string) ($currentPage + 1)]), 'attr') ?>" rel="next">صفحه بعد</a><?php endif; ?>
+</nav>
+<?php endif; ?>
+
 </main>
 <div id="filter-cover" class="drawer-cover" hidden></div>
 <aside id="filter-drawer" class="filter-drawer" aria-label="فیلتر محصولات" aria-modal="true" role="dialog" hidden>

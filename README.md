@@ -17,9 +17,11 @@ Custom shoe-store e-commerce platform built with CodeIgniter 4 and MySQL.
 - Catalog, customer, OTP, order and payment-ledger **migrations** have passed on a temporary MySQL 8 service in CI.
 - The public catalog and guest-auth boundary are exercised by real HTTP smoke tests.
 - Public catalog, shared session cart, OTP/customer API and owner-scoped order reads are implemented in code.
-- **Checkout is intentionally disabled (HTTP 503).** There is no verified ZarinPal payment callback or inventory settlement path yet.
+- **Checkout is disabled by default (HTTP 503)** via `GEREH_CHECKOUT_ENABLED=false`. A ZarinPal v4 initiation/callback/settlement implementation exists, but live provider confirmation, reconciliation/refund handling and full concurrency tests remain unverified.
 - **SMS delivery requires provider configuration and real delivery verification.** The HTTPS webhook contract is described in `docs/customer-auth.md`.
-- Figma pixel-accurate verification, Lighthouse, full admin commerce and cPanel production smoke tests are not complete.
+- SSR login/profile, gated checkout, AJAX cart drawer, orders/customer/article admin pages, editable homepage banner slots and public blog have been added. Real image assets are uploaded through admin; approved Figma assets are not bundled.
+- MySQL order integration smoke now checks actual price snapshots, idempotency, stock validation, and authenticated API cart addition (CSRF + cookies + live DB price).
+- Figma pixel-accurate comparison, Lighthouse, live payment/SMS, comprehensive admin commerce and cPanel production smoke tests remain incomplete.
 
 Refer to `docs/customer-auth.md`, `docs/checkout-foundation.md`, `docs/openapi-catalog.yaml`, `docs/openapi-customer.yaml` and `docs/cpanel-deployment.md`.
 
@@ -29,7 +31,7 @@ Never commit production credentials. Use environment configuration for database,
 
 All implementation commits go directly to `main`. Every phase is considered complete only after implementation, visual comparison with the corresponding Figma frames, route/access checks, and relevant CI/runtime tests. Never report a phase as finished based solely on a commit.
 
-1. **Foundation** — CI4 bootstrap, schema, migrations, authentication/security foundation. Code exists; database migrations and runtime verification are pending.
+1. **Foundation** — CI4 bootstrap, schema, migrations, authentication/security foundation. Database migrations and HTTP smoke checks have passed in GitHub Actions.
 2. **Storefront UI** — Figma-faithful home, catalog, product detail, navigation, search and filters.
 3. **Customer journey** — cart, OTP login, checkout, order tracking and customer profile.
 4. **Admin catalog** — dashboard, product list/editor, categories, brands, variants and inventory.

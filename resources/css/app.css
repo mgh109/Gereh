@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@source "../../app/Views/**/*.php";
+@source "../../app/Controllers/**/*.php";
+@theme {
+  --color-gereh-900:#012f24;
+  --color-gereh-700:#075d3c;
+  --color-gereh-cream:#efe3d4;
+  --color-gereh-paper:#f9f4ef;
+  --color-gereh-muted:#81766e;
+  --font-sans:Estedad,Tahoma,sans-serif;
+}
+@layer base {
+  body { @apply bg-gereh-paper text-gereh-900 font-sans; }
+  button,input,select,textarea { font:inherit; }
+  [hidden] { display:none!important; }
+}
+@layer components {
+  .gereh-container { @apply mx-auto w-full max-w-6xl px-3.5; }
+  .gereh-card { @apply rounded-xl bg-white; }
+  .gereh-button { @apply inline-flex items-center justify-center rounded-xl bg-gereh-900 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50; }
+  .gereh-input { @apply w-full rounded-xl border border-gereh-cream bg-white p-3 text-sm outline-none focus:border-gereh-700; }
+  .gereh-heading { @apply text-xl font-bold; }
+  .gereh-muted { @apply text-xs text-gereh-muted; }
+}

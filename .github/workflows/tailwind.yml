@@ -1,0 +1,22 @@
+name: Tailwind build check
+on:
+  push:
+    branches: [main]
+    paths: ['resources/css/**','app/Views/**','package.json','.github/workflows/tailwind.yml']
+  pull_request:
+    paths: ['resources/css/**','app/Views/**','package.json']
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run build:css
+      - run: test -s public/assets/css/app.css
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gereh-tailwind-css
+          path: public/assets/css/app.css

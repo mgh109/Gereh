@@ -10,6 +10,11 @@ $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static fu
     $routes->get('categories', 'CatalogController::categories');
     $routes->get('brands', 'CatalogController::brands');
     $routes->get('search', 'CatalogController::products');
+    // Cookie/session cart: CSRF is mandatory for every mutation.
+    $routes->get('cart', 'CartController::index');
+    $routes->post('cart/items', 'CartController::add', ['filter' => 'csrf']);
+    $routes->patch('cart/items/(:num)', 'CartController::update/$1', ['filter' => 'csrf']);
+    $routes->delete('cart/items/(:num)', 'CartController::delete/$1', ['filter' => 'csrf']);
 });
 
 $routes->get('/', 'Storefront::home', ['as' => 'store.home']);

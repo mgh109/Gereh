@@ -31,7 +31,7 @@ $routes->post('cart/update', 'CartController::update', ['filter' => 'csrf']);
 $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static function (RouteCollection $routes) {
     $routes->get('login', 'AuthController::login', ['as' => 'admin.login']);
     $routes->post('login', 'AuthController::attempt', ['filter' => 'csrf']);
-    $routes->post('logout', 'AuthController::logout', ['filter' => 'adminauth,csrf']);
+    $routes->post('logout', 'AuthController::logout', ['filter' => ['adminauth', 'csrf']]);
 
     $routes->group('', ['filter' => 'adminauth'], static function (RouteCollection $routes) {
         $routes->get('/', 'DashboardController::index', ['as' => 'admin.dashboard']);

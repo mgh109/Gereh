@@ -9,7 +9,7 @@ class Storefront extends BaseController
 {
     public function home(): string
     {
-        return view('store/home', ['products' => $this->products(6)]);
+        return view('store/home', ['products' => $this->products(6), 'brands' => $this->brands()]);
     }
 
     public function shop(): string
@@ -28,7 +28,16 @@ class Storefront extends BaseController
                 throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
             }
             $media = (new ProductMediaModel())->where('product_id', $product['id'])->orderBy('sort_order', 'ASC')->findAll();
-            return view('store/product', ['product' => $product, 'media' => $media]);
+            $variants = (new \\App\\Models\\ProductVariantModel())->where('product_id', $product['id'])->where('is_active', 1)->orderBy('sort_order', 'ASC')->findAll();
+            if ($variants) {
+                $stockRows = \\Config\\Database::connect()->table('inventory_items')->whereIn('variant_id', array_column($variants, 'id'))->get()->getResultArray();
+                $stock = array_column($stockRows, 'quantity', 'variant_id');
+                foreach ($variants as &$variant) {
+                    $variant['stock'] = (int) ($stock[$variant['id']] ?? 0);
+                }
+                unset($variant);
+            }
+            return view('store/product', ['product' => $product, 'media' => $media, 'variants' => $variants]);
         } catch (\CodeIgniter\Exceptions\PageNotFoundException $exception) {
             throw $exception;
         } catch (\Throwable $exception) {

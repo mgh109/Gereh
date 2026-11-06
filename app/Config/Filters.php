@@ -29,8 +29,8 @@ class Filters extends BaseFilters
     ];
 
     public array $required = [
-        'before' => ['forcehttps', 'pagecache'],
-        'after' => ['pagecache', 'performance', 'toolbar'],
+        'before' => ['forcehttps'],
+        'after' => ['performance', 'toolbar'],
     ];
 
     public array $globals = [

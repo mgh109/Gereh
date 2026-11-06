@@ -17,6 +17,7 @@ class CustomerAuthController extends BaseController
 
     private function json($data = null, int $status = 200, ?string $message = null)
     {
+        $this->response->setHeader('Cache-Control', 'no-store, private');
         return $this->respond([
             'success' => $status < 400, 'data' => $data, 'meta' => new \stdClass(),
             'message' => $message, 'errors' => null,

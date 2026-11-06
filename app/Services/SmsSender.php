@@ -11,8 +11,24 @@ use RuntimeException;
  */
 class SmsSender
 {
+    public function isConfigured(): bool
+    {
+        return (new SmsSettingsService())->configured();
+    }
+
     public function sendOtp(string $mobile, string $code): void
     {
+        $settings = (new SmsSettingsService())->read();
+        if ((int)$settings['enabled'] !== 1) {
+            throw new RuntimeException('ارسال پیامک در تنظیمات فروشگاه غیرفعال است.');
+        }
+        if ($settings['provider'] === 'melipayamak') {
+            (new MelipayamakClient())->sendPattern($mobile, $code, (int)$settings['otp_body_id']);
+            return;
+        }
+        if ($settings['provider'] !== 'webhook') {
+            throw new RuntimeException('ارائه‌دهنده پیامک پشتیبانی نمی‌شود.');
+        }
         $url = trim((string) env('GEREH_SMS_WEBHOOK_URL', ''));
         $token = trim((string) env('GEREH_SMS_WEBHOOK_TOKEN', ''));
         if ($url === '' || $token === '' || ! str_starts_with($url, 'https://')) {

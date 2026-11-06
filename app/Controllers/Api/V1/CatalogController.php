@@ -68,6 +68,19 @@ class CatalogController extends BaseController
         }
     }
 
+    public function related(int $id)
+    {
+        try {
+            $products = $this->catalog()->related($id);
+            return $products === null
+                ? $this->failure('محصول پیدا نشد.', 404)
+                : $this->reply($products);
+        } catch (\Throwable $exception) {
+            log_message('error', 'Catalog API related: {message}', ['message' => $exception->getMessage()]);
+            return $this->failure('دریافت محصولات مشابه ممکن نیست.', 500);
+        }
+    }
+
     public function brands()
     {
         try {

@@ -11,6 +11,11 @@ $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static fu
     $routes->get('categories', 'CatalogController::categories');
     $routes->get('brands', 'CatalogController::brands');
     $routes->get('search', 'CatalogController::products');
+    $routes->post('auth/otp/request', 'CustomerAuthController::requestOtp', ['filter' => 'csrf']);
+    $routes->post('auth/otp/verify', 'CustomerAuthController::verifyOtp', ['filter' => 'csrf']);
+    $routes->post('auth/logout', 'CustomerAuthController::logout', ['filter' => 'csrf']);
+    $routes->get('me', 'CustomerAuthController::me');
+    $routes->patch('me', 'CustomerAuthController::updateMe', ['filter' => 'csrf']);
     // Cookie/session cart: CSRF is mandatory for every mutation.
     $routes->get('cart', 'CartController::index');
     $routes->post('cart/items', 'CartController::add', ['filter' => 'csrf']);

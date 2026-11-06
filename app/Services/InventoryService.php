@@ -113,4 +113,63 @@ class InventoryService
             throw $exception;
         }
     }
+
+    /**
+     * Absolute inventory correction performed under a database row lock.
+     * Every non-zero adjustment is recorded in inventory_movements.
+     */
+    public function setAbsolute(int $variantId, int $quantity, string $note = 'Admin stock correction'): array
+    {
+        if ($variantId < 1 || $quantity < 0 || $quantity > 100000000) {
+            throw new RuntimeException('شناسه تنوع یا مقدار موجودی نامعتبر است.');
+        }
+        $this->db->transBegin();
+        try {
+            $variant = $this->db->query(
+                'SELECT id FROM product_variants WHERE id = ? FOR UPDATE',
+                [$variantId]
+            )->getRowArray();
+            if ($variant === null) {
+                throw new RuntimeException('تنوع محصول پیدا نشد.');
+            }
+            $inventory = $this->db->query(
+                'SELECT id, quantity FROM inventory_items WHERE variant_id = ? FOR UPDATE',
+                [$variantId]
+            )->getRowArray();
+            $previous = $inventory ? (int) $inventory['quantity'] : 0;
+            $now = date('Y-m-d H:i:s');
+            if ($inventory === null) {
+                $this->db->table('inventory_items')->insert([
+                    'variant_id' => $variantId,
+                    'quantity' => $quantity,
+                    'low_stock_threshold' => 2,
+                    'updated_at' => $now,
+                ]);
+            } else {
+                $this->db->table('inventory_items')->where('id', $inventory['id'])
+                    ->update(['quantity' => $quantity, 'updated_at' => $now]);
+            }
+            $delta = $quantity - $previous;
+            if ($delta !== 0) {
+                $this->db->table('inventory_movements')->insert([
+                    'variant_id' => $variantId,
+                    'quantity_delta' => $delta,
+                    'movement_type' => 'correction',
+                    'reference_type' => 'admin',
+                    'reference_id' => (int) (session()->get('admin_id') ?? 0) ?: null,
+                    'note' => mb_substr($note, 0, 500),
+                    'created_at' => $now,
+                ]);
+            }
+            if ($this->db->transStatus() === false) {
+                throw new RuntimeException('ثبت موجودی و گردش انبار ناموفق بود.');
+            }
+            $this->db->transCommit();
+            return ['variant_id' => $variantId, 'previous_quantity' => $previous, 'quantity' => $quantity, 'delta' => $delta];
+        } catch (Throwable $exception) {
+            $this->db->transRollback();
+            throw $exception;
+        }
+    }
+
 }

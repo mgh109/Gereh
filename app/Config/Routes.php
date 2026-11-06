@@ -26,6 +26,8 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
         $routes->get('products/(:num)/edit', 'CatalogEditorController::edit/$1');
         $routes->post('products/(:num)/edit', 'CatalogEditorController::save/$1', ['filter' => 'csrf']);
         $routes->post('products/(:num)/variants', 'CatalogEditorController::addVariant/$1', ['filter' => 'csrf']);
+        $routes->post('products/(:num)/media', 'CatalogEditorController::addMedia/$1', ['filter' => 'csrf']);
+        $routes->post('products/(:num)/variants/(:num)/stock', 'CatalogEditorController::setStock/$1/$2', ['filter' => 'csrf']);
         $routes->get('api/summary', 'DashboardController::summary', ['as' => 'admin.api.summary']);
     });
 });

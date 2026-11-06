@@ -15,6 +15,8 @@ final class SmsSettingsController extends BaseController
         try {
             return view('admin/settings/sms', [
                 'settings'=>(new SmsSettingsService())->publicStatus(),
+                'templates'=>(new \App\Services\SmsNotificationService())->templates(),
+                'recent'=>(new \App\Services\SmsNotificationService())->recent(30),
             ]);
         } catch(Throwable $exception) {
             log_message('error','SMS settings read: {type}',['type'=>get_class($exception)]);
@@ -37,6 +39,33 @@ final class SmsSettingsController extends BaseController
         } catch(Throwable $exception) {
             log_message('error','SMS settings save: {type}',['type'=>get_class($exception)]);
             return redirect()->back()->with('sms_error','ذخیره تنظیمات پیامک ممکن نیست.');
+        }
+    }
+
+    public function saveTemplates()
+    {
+        try {
+            $entries = $this->request->getPost('templates');
+            if (!is_array($entries)) {
+                throw new InvalidArgumentException('اطلاعات الگوها نامعتبر است.');
+            }
+            $prepared = [];
+            foreach (\App\Services\SmsNotificationService::EVENTS as $event => $definition) {
+                $row = $entries[$event] ?? [];
+                if (!is_array($row)) throw new InvalidArgumentException('تنظیمات رویداد نامعتبر است.');
+                $prepared[$event] = [
+                    'body_id' => $row['body_id'] ?? '',
+                    'enabled' => ($row['enabled'] ?? null) === '1',
+                ];
+            }
+            (new \App\Services\SmsNotificationService())->saveTemplates($prepared);
+            return redirect()->to(site_url('admin/settings/sms'))
+                ->with('sms_success','الگوهای رویدادهای فروشگاه ذخیره شدند.');
+        } catch (InvalidArgumentException $exception) {
+            return redirect()->back()->with('sms_error',$exception->getMessage());
+        } catch (Throwable $exception) {
+            log_message('error','SMS event templates: {type}',['type'=>get_class($exception)]);
+            return redirect()->back()->with('sms_error','ثبت الگوها امکان‌پذیر نیست.');
         }
     }
 

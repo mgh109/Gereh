@@ -1,0 +1,52 @@
+openapi: 3.0.3
+info:
+  title: GEREH Admin API (currently implemented)
+  version: 1.0.0
+  description: Only read-only admin dashboard and orders endpoints are currently implemented. Requires an authenticated, active admin session. CRUD modules remain incomplete.
+servers:
+  - url: /api/v1/admin
+paths:
+  /dashboard:
+    get:
+      summary: Live dashboard statistics from database
+      responses:
+        '200': { description: Live catalog/customer/order/payment summary }
+        '401': { description: Admin login required }
+        '503': { description: Database statistics unavailable }
+  /orders:
+    get:
+      summary: Paginated admin orders
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - name: payment_status
+          in: query
+          schema: { type: string, enum: [unpaid, paid, review_required, failed] }
+        - name: order_status
+          in: query
+          schema: { type: string, enum: [pending_payment, processing, payment_review, cancelled, shipped, delivered] }
+      responses:
+        '200': { description: Paginated orders and total count }
+        '401': { description: Admin login required }
+        '422': { description: Invalid filters }
+  /orders/{id}:
+    get:
+      summary: Admin order detail including line items and payment attempt statuses
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Existing order }
+        '401': { description: Admin login required }
+        '404': { description: Order not found }
+components:
+  securitySchemes:
+    adminSession:
+      type: apiKey
+      in: cookie
+      name: gereh_session
+security:
+  - adminSession: []

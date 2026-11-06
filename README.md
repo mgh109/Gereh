@@ -18,7 +18,7 @@ Custom shoe-store e-commerce platform built with CodeIgniter 4 and MySQL.
 - The public catalog and guest-auth boundary are exercised by real HTTP smoke tests.
 - Public catalog, shared session cart, OTP/customer API and owner-scoped order reads are implemented in code.
 - **Checkout is disabled by default (HTTP 503)** via `GEREH_CHECKOUT_ENABLED=false`. A ZarinPal v4 initiation/callback/settlement implementation exists, but live provider confirmation, reconciliation/refund handling and full concurrency tests remain unverified.
-- **SMS delivery requires provider configuration and real delivery verification.** The HTTPS webhook contract is described in `docs/customer-auth.md`.
+- **National SMS (Melipayamak) pattern adapter is implemented**, with admin controls at `/admin/settings/sms`. Credentials live only in `.env`; a provider-approved OTP Body ID must be configured in admin. Real SMS delivery still needs verification. See `docs/melipayamak-setup.md`.
 - SSR login/profile, gated checkout, AJAX cart drawer, orders/customer/article admin pages, editable homepage banner slots and public blog have been added. Real image assets are uploaded through admin; approved Figma assets are not bundled.
 - MySQL order integration smoke now checks actual price snapshots, idempotency, stock validation, and authenticated API cart addition (CSRF + cookies + live DB price).
 - Figma pixel-accurate comparison, Lighthouse, live payment/SMS, comprehensive admin commerce and cPanel production smoke tests remain incomplete.

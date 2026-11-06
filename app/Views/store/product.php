@@ -24,7 +24,7 @@ $firstImage = $images ? base_url(ltrim($images[0]['file_path'], '/')) : null;
 <?php if ($sizes): ?><div class="options"><h3>انتخاب سایز</h3><div class="choice-group" id="size-options" role="group" aria-label="سایز"><?php foreach(array_keys($sizes) as $size): ?><button type="button" data-value="<?= esc($size,'attr') ?>" aria-pressed="false"><?= esc($size) ?></button><?php endforeach; ?></div></div><?php endif; ?>
 <p id="stock-status" class="muted" aria-live="polite">رنگ و سایز موردنظر را انتخاب کنید.</p>
 <?php else: ?><p class="muted">تنوع قابل خرید برای این محصول ثبت نشده است.</p><?php endif; ?>
-<a href="<?= site_url('shop') ?>" class="muted">راهنمای خرید و انتخاب سایز</a>
+<a href="<?= site_url('size-guide') ?>" class="muted">راهنمای خرید و انتخاب سایز</a>
 </section></div>
 <section class="product-details-section"><h2>معرفی محصول</h2><p><?= nl2br(esc($product['description'] ?? '')) ?></p></section>
 <section class="product-details-section"><h2>مشخصات محصول</h2><p class="muted">اطلاعات سایز و رنگ از تنوع‌های ثبت‌شده محصول نمایش داده می‌شود.</p></section>

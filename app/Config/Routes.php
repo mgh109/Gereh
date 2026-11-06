@@ -5,6 +5,7 @@ use CodeIgniter\Router\RouteCollection;
 /** @var RouteCollection $routes */
 // Public, read-only catalog endpoints; web SSR uses the same service without internal HTTP.
 $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static function (RouteCollection $routes) {
+    $routes->get('home', 'HomeController::index');
     $routes->get('products', 'CatalogController::products');
     $routes->get('products/(:num)/related', 'CatalogController::related/$1');
     $routes->get('products/(:segment)', 'CatalogController::product/$1');
@@ -63,6 +64,9 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
         $routes->get('taxonomy', 'TaxonomyController::index');
         $routes->get('customers', 'CustomersController::index');
         $routes->get('customers/(:num)', 'CustomersController::show/$1');
+        $routes->get('banners', 'BannersController::index');
+        $routes->post('banners', 'BannersController::save', ['filter'=>'csrf']);
+        $routes->post('banners/(:num)/image', 'BannersController::upload/$1', ['filter'=>'csrf']);
         $routes->get('articles', 'ArticlesController::index');
         $routes->get('articles/create', 'ArticlesController::edit');
         $routes->post('articles/create', 'ArticlesController::save', ['filter' => 'csrf']);

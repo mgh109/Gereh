@@ -1,4 +1,43 @@
 <?= view('store/partials/header', ['title' => $product['meta_title'] ?: ($product['name'] . ' | گره'), 'description' => $product['meta_description'] ?: ($product['short_description'] ?: $product['name']), 'canonical' => site_url('product/' . rawurlencode($product['slug']))]) ?>
+<?php
+$activeOfferPrices = [];
+$offerAvailable = false;
+foreach ($variants as $variant) {
+    $priceToman = (int) ($variant['price_toman'] ?? $product['price_toman']);
+    if ($priceToman > 0) {
+        $activeOfferPrices[] = $priceToman * 10; // IRR; catalog amounts are in toman.
+    }
+    $offerAvailable = $offerAvailable || (int) ($variant['stock'] ?? 0) > 0;
+}
+$productSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Product',
+    'name' => $product['name'],
+    'url' => site_url('product/' . rawurlencode($product['slug'])),
+    'description' => trim((string) ($product['short_description'] ?: strip_tags((string) ($product['description'] ?? '')))),
+];
+$productImageUrls = [];
+foreach ($media as $image) {
+    if (($image['media_type'] ?? 'image') === 'image' && ! empty($image['file_path'])) {
+        $productImageUrls[] = base_url(ltrim($image['file_path'], '/'));
+    }
+}
+if ($productImageUrls !== []) {
+    $productSchema['image'] = $productImageUrls;
+}
+if ($activeOfferPrices !== []) {
+    $productSchema['offers'] = [
+        '@type' => 'AggregateOffer',
+        'priceCurrency' => 'IRR',
+        'lowPrice' => min($activeOfferPrices),
+        'highPrice' => max($activeOfferPrices),
+        'offerCount' => count($activeOfferPrices),
+        'availability' => $offerAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        'url' => site_url('product/' . rawurlencode($product['slug'])),
+    ];
+}
+?>
+<script type="application/ld+json"><?= json_encode($productSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 <style>
 .product-gallery{display:grid;gap:12px}.product-gallery .product-image{border-radius:14px;overflow:hidden;aspect-ratio:1}.thumbs{display:flex;gap:9px;overflow:auto}.thumbs button{padding:0;border:2px solid transparent;border-radius:9px;width:72px;height:72px;overflow:hidden;flex:none;background:#efe3d4;cursor:pointer}.thumbs button[aria-pressed=true]{border-color:#075d3c}.thumbs img{width:100%;height:100%;object-fit:cover}.options{margin:18px 0}.options h3{font-size:14px}.choice-group{display:flex;gap:8px;flex-wrap:wrap}.choice-group button{border:1px solid #ddd5cb;background:white;padding:11px 16px;border-radius:9px;color:#012f24;cursor:pointer}.choice-group button[aria-pressed=true]{background:#012f24;color:#fff;border-color:#012f24}.choice-group button:disabled{opacity:.4;cursor:not-allowed}.price-old{text-decoration:line-through;color:#81766e;font-size:13px}.product-details-section{background:white;padding:20px;border-radius:12px;margin:18px 0}.product-details-section h2{font-size:17px}.sticky-buy{z-index:12}.sticky-buy button:disabled{opacity:.5;cursor:not-allowed}@media(max-width:700px){.sticky-buy{position:fixed;bottom:60px;left:0;right:0;z-index:12}.detail{margin-bottom:140px}}
 </style>

@@ -1,4 +1,10 @@
-<?= view('store/partials/header', ['title'=>'فروشگاه | گره']) ?>
+<?php
+$shopTitle='فروشگاه کفش گره';$shopDescription='مشاهده و مقایسه مدل‌های کفش در فروشگاه گره؛ انتخاب بر اساس برند، سایز و قیمت.';
+$categoryLabel=['men'=>'مردانه','women'=>'زنانه','unisex'=>'یونیسکس','sport'=>'ورزشی'][is_string(request()->getGet('category'))?request()->getGet('category'):'']??null;
+if($categoryLabel){$shopTitle='خرید کفش '.$categoryLabel.' | گره';$shopDescription='مشاهده مشخصات و قیمت کفش '.$categoryLabel.'؛ انتخاب سایز و مدل در فروشگاه گره.';}
+foreach($brands as $brand)if($brand['slug']===request()->getGet('brand')){$shopTitle='کفش '.$brand['name'].' | گره';$shopDescription='مشخصات، سایز و قیمت مدل‌های کفش '.$brand['name'].' در فروشگاه گره.';}
+?>
+<?= view('store/partials/header', ['title'=>$shopTitle,'description'=>$shopDescription,'noindex'=>empty($products)]) ?>
 <?php
 $selected = static fn (string $key, string $value): string => (string) request()->getGet($key) === $value ? 'selected' : '';
 $qs = static function (array $updates): string {
@@ -16,7 +22,7 @@ $qs = static function (array $updates): string {
 .shop-heading{margin:18px 0 16px}.shop-heading h1{font-size:23px;margin:0 0 6px}.category-tabs{display:flex;gap:8px;overflow:auto;margin:16px 0}.category-tabs a{padding:10px 18px;background:white;border-radius:9px;font-size:12px;white-space:nowrap}.category-tabs a[aria-current=page]{background:#012f24;color:#fff}.brand-strip{display:flex;gap:12px;overflow:auto;padding:10px 0 18px}.brand-strip a{background:#fff;border:1px solid #efe3d4;min-width:80px;text-align:center;border-radius:10px;padding:13px 9px;font-size:12px}.brand-strip a[aria-current=page]{border-color:#075d3c;background:#e7f1ec}.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.toolbar button,.toolbar select{background:#fff;border:1px solid #efe3d4;border-radius:10px;padding:13px;color:#012f24;width:100%;font-size:13px}.toolbar button{cursor:pointer}.drawer-cover{position:fixed;inset:0;background:#012f2480;z-index:19}.filter-drawer{position:fixed;right:0;top:0;bottom:0;width:min(360px,90vw);z-index:20;background:#f9f4ef;padding:24px;overflow:auto;box-shadow:-10px 0 30px #012f2420}.filter-drawer h2{margin-top:0}.filter-drawer label{display:block;margin:18px 0 7px;font-size:13px}.filter-drawer select,.filter-drawer input{width:100%;border:1px solid #efe3d4;background:white;padding:13px;border-radius:9px}.filter-actions{display:flex;gap:10px;margin-top:26px}.filter-actions button{border:0;background:#012f24;color:white;padding:13px;border-radius:10px;flex:1}.filter-actions a{background:#efe3d4;padding:13px;border-radius:10px}.result-info{display:flex;justify-content:space-between;margin:15px 0;font-size:12px;color:#81766e}
 </style>
 <main class="shop-screen container"><div class="desktop-shop-content">
-<div class="shop-heading"><h1>فروشگاه گره</h1><p class="muted">کفش مناسب قدم‌های تو</p></div>
+<div class="shop-heading"><h1><?= esc(str_replace(' | گره','',$shopTitle)) ?></h1><p class="muted">کفش مناسب قدم‌های تو</p></div>
 <form class="shop-search-form" action="<?= site_url('shop') ?>" method="get" role="search">
 <input class="search" name="q" value="<?= esc((string) request()->getGet('q'), 'attr') ?>" placeholder="جست‌وجوی محصولات…" aria-label="جست‌وجوی محصولات">
 <button type="submit" aria-label="جست‌وجوی محصولات">جست‌وجو</button>
@@ -25,7 +31,7 @@ $qs = static function (array $updates): string {
 <?php endforeach; ?>
 </form>
 <nav class="category-tabs" aria-label="دسته‌بندی محصولات">
-<?php foreach ([''=>'همه','men'=>'مردانه','women'=>'زنانه','sport'=>'ورزشی'] as $slug=>$label): ?>
+<?php foreach ([''=>'همه','men'=>'مردانه','women'=>'زنانه','unisex'=>'یونیسکس','sport'=>'ورزشی'] as $slug=>$label): ?>
 <a href="<?= esc($qs(['category'=>$slug]),'attr') ?>" <?= (string) request()->getGet('category') === $slug ? 'aria-current="page"' : '' ?>><?= esc($label) ?></a>
 <?php endforeach; ?>
 </nav>
@@ -58,7 +64,7 @@ $lastPage = (int) $pagination['last_page'];
 <button type="button" id="close-filters" aria-label="بستن فیلتر" style="float:left;border:0;background:none;font-size:24px">×</button><h2>فیلتر محصولات</h2>
 <form action="<?= site_url('shop') ?>" method="get">
 <?php foreach (['q','sort'] as $key): $value=request()->getGet($key); if(is_scalar($value) && (string)$value !== ''): ?><input type="hidden" name="<?= esc($key) ?>" value="<?= esc((string)$value,'attr') ?>"><?php endif; endforeach; ?>
-<label for="filter-category">دسته‌بندی</label><select id="filter-category" name="category"><option value="">همه دسته‌ها</option><option value="men" <?= $selected('category','men') ?>>مردانه</option><option value="women" <?= $selected('category','women') ?>>زنانه</option><option value="sport" <?= $selected('category','sport') ?>>ورزشی</option></select>
+<label for="filter-category">دسته‌بندی</label><select id="filter-category" name="category"><option value="">همه دسته‌ها</option><option value="men" <?= $selected('category','men') ?>>مردانه</option><option value="women" <?= $selected('category','women') ?>>زنانه</option><option value="unisex" <?= $selected('category','unisex') ?>>یونیسکس</option><option value="sport" <?= $selected('category','sport') ?>>ورزشی</option></select>
 <label for="filter-brand">برند</label><select id="filter-brand" name="brand"><option value="">همه برندها</option><?php foreach ($brands as $brand): ?><option value="<?= esc($brand['slug'],'attr') ?>" <?= $selected('brand',$brand['slug']) ?>><?= esc($brand['name']) ?></option><?php endforeach; ?></select>
 <?= view('store/partials/size_filter', ['sizeId'=>'filter-size','sizeValue'=>request()->getGet('size'),'sizes'=>$sizes ?? []]) ?>
 <p class="muted mt-2">سایز را جست‌وجو یا انتخاب کن؛ فقط محصولات موجود در آن سایز نمایش داده می‌شوند.</p>

@@ -39,14 +39,15 @@ $routes->group('api/v1/admin', [
 });
 
 $routes->get('payment/zarinpal/callback', 'ZarinpalCallbackController::handle');
-$routes->get('robots.txt', 'SeoController::robots');
-$routes->get('sitemap.xml', 'SeoController::sitemap');
-$routes->get('/', 'Storefront::home', ['as' => 'store.home']);
-$routes->get('shop', 'Storefront::shop', ['as' => 'store.shop']);
-$routes->get('blog', 'BlogController::index');
-$routes->get('blog/(:segment)', 'BlogController::show/$1');
-$routes->get('size-guide', static fn () => view('store/size_guide'), ['as' => 'store.size-guide']);
-$routes->get('product/(:segment)', 'Storefront::product/$1', ['as' => 'store.product']);
+$routes->match(['GET','HEAD'], 'robots.txt', 'SeoController::robots');
+$routes->match(['GET','HEAD'], 'sitemap.xml', 'SeoController::sitemap');
+$routes->match(['GET','HEAD'], '/', 'Storefront::home', ['as' => 'store.home']);
+$routes->match(['GET','HEAD'], 'shop', 'Storefront::shop', ['as' => 'store.shop']);
+$routes->match(['GET','HEAD'], 'blog', 'BlogController::index');
+$routes->match(['GET','HEAD'], 'blog/(:segment)', 'BlogController::show/$1');
+$routes->match(['GET','HEAD'], 'size-guide', static fn () => view('store/size_guide'), ['as' => 'store.size-guide']);
+$routes->match(['GET','HEAD'], 'product/(:segment)', 'Storefront::product/$1', ['as' => 'store.product']);
+$routes->post('products/(:num)/comments', 'ProductCommentsController::submit/$1', ['filter'=>'csrf']);
 $routes->get('cart', 'CartController::index', ['as' => 'store.cart']);
 $routes->get('favorites', static fn () => view('store/favorites'), ['as' => 'store.favorites']);
 $routes->get('login', 'CustomerPages::login');
@@ -64,9 +65,12 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
     $routes->post('logout', 'AuthController::logout', ['filter' => ['adminauth', 'csrf']]);
 
     $routes->group('', ['filter' => 'adminauth'], static function (RouteCollection $routes) {
-        $routes->get('/', 'DashboardController::index', ['as' => 'admin.dashboard']);
+        $routes->match(['GET','HEAD'], '/', 'DashboardController::index', ['as' => 'admin.dashboard']);
         $routes->get('products', 'ProductsController::index', ['as' => 'admin.products']);
+        $routes->post('products/(:num)/status', 'ProductsController::status/$1', ['filter'=>'csrf']);
         $routes->get('inventory', 'InventoryController::index');
+        $routes->get('comments', 'CommentsController::index');
+        $routes->post('comments/(:num)/status', 'CommentsController::status/$1', ['filter'=>'csrf']);
         $routes->get('taxonomy', 'TaxonomyController::index');
         $routes->get('customers', 'CustomersController::index');
         $routes->get('customers/(:num)', 'CustomersController::show/$1');

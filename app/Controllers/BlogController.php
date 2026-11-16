@@ -24,7 +24,7 @@ class BlogController extends BaseController
             return view('store/blog/index',['articles'=>$articles,'page'=>$page,'pages'=>(int)ceil($total/12)]);
         } catch(Throwable $exception) {
             log_message('error','Blog error: {type}',['type'=>get_class($exception)]);
-            return view('store/unavailable');
+            return $this->response->setStatusCode(503)->setHeader('Retry-After','300')->setBody(view('store/unavailable'));
         }
     }
 

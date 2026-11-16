@@ -105,6 +105,7 @@ class CatalogService
             throw new RuntimeException('محصول موردنظر پیدا نشد.');
         }
 
+        if ($status==='active' && (int)$model->find($productId)['price_toman']<=0) throw new RuntimeException('برای انتشار، قیمت معتبر وارد کنید.');
         return $model->update($productId, ['status' => $status]);
     }
 

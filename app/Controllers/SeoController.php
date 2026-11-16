@@ -11,8 +11,6 @@ class SeoController extends BaseController
     {
         $body = "User-agent: *\n"
             . "Disallow: /admin\n"
-            . "Disallow: /cart\n"
-            . "Disallow: /checkout\n"
             . "Disallow: /api/\n"
             . "Sitemap: " . site_url('sitemap.xml') . "\n";
         return $this->response->setContentType('text/plain', 'utf-8')->setBody($body);
@@ -35,6 +33,11 @@ class SeoController extends BaseController
                     ->orderBy('id', 'ASC')->limit(45000)->get()->getResultArray();
                 foreach ($rows as $row) {
                     $urls[] = ['loc' => site_url($prefix . rawurlencode($row['slug'])), 'lastmod' => $row['updated_at']];
+                }
+            }
+            foreach (['categories'=>['category','status','active'],'brands'=>['brand','is_active',1]] as $table=>[$parameter,$field,$value]) {
+                foreach($db->table($table.' t')->select('t.slug')->where('t.'.$field,$value)->where('EXISTS (SELECT 1 FROM products p WHERE p.' . ($table==='brands'?'brand_id':'category_id') . '=t.id AND p.status=\'active\' AND p.deleted_at IS NULL)',null,false)->limit(400)->get()->getResultArray() as $row) {
+                    $urls[]=['loc'=>site_url('shop').'?'.http_build_query([$parameter=>$row['slug']]),'lastmod'=>null];
                 }
             }
             $articles = $db->table('articles')->select('slug, updated_at')

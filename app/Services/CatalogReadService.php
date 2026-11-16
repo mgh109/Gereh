@@ -146,6 +146,7 @@ class CatalogReadService
         if ($product === null) {
             return null;
         }
+        $product['brand_name']=!empty($product['brand_id']) ? ((new BrandModel($this->db))->find($product['brand_id'])['name']??null) : null;
         $id = (int) $product['id'];
         $media = $this->db->table('product_media')->where('product_id', $id)
             ->orderBy('is_primary','DESC')->orderBy('sort_order')->get()->getResultArray();

@@ -7,6 +7,7 @@ $links = [
     ['dashboard', 'admin', 'پیشخوان', '88cd6.svg'],
     ['products', 'admin/products', 'محصولات', '7bc70.svg'],
     ['orders', 'admin/orders', 'سفارش‌ها', '409db.svg'],
+    ['comments','admin/comments','دیدگاه محصولات','41638.svg'],
     ['inventory', 'admin/inventory', 'موجودی و تنوع‌ها', '7bc70.svg'],
     ['taxonomy', 'admin/taxonomy', 'دسته‌بندی و برندها', 'f8188.svg'],
     ['customers', 'admin/customers', 'مشتریان', 'e6cef.svg'],

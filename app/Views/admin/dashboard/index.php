@@ -78,6 +78,7 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <a href="<?= site_url('admin/orders') ?>"><img src="<?= base_url('assets/figma/admin/409db.svg') ?>" alt=""><span>سفارش‌ها</span></a>
 <a href="<?= site_url('admin/inventory') ?>"><img src="<?= base_url('assets/figma/admin/7bc70.svg') ?>" alt=""><span>موجودی و تنوع‌ها</span></a>
 <a href="<?= site_url('admin/taxonomy') ?>"><img src="<?= base_url('assets/figma/admin/f8188.svg') ?>" alt=""><span>دسته‌بندی و برندها</span></a>
+<a href="<?= site_url('admin/comments') ?>"><span>دیدگاه محصولات</span></a>
 <a href="<?= site_url('admin/customers') ?>"><img src="<?= base_url('assets/figma/admin/e6cef.svg') ?>" alt=""><span>مشتریان</span></a>
 <a href="<?= site_url('admin/shipping') ?>"><span>روش‌های ارسال</span></a>
 <a href="<?= site_url('admin/banners') ?>"><img src="<?= base_url('assets/figma/admin/26d14.svg') ?>" alt=""><span>مدیریت صفحه اصلی</span></a>

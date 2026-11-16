@@ -1,4 +1,4 @@
-<?= view('store/partials/header', ['title'=>'گره؛ همراه هر قدم', 'homeDesign'=>true]) ?>
+<?= view('store/partials/header', ['title'=>'فروشگاه کفش گره | خرید کفش مردانه و زنانه', 'homeDesign'=>true]) ?>
 <?php
 $asset = static fn ($name) => base_url('assets/figma/'.$name);
 $image = static fn ($banner, $fallback) => !empty($banner['image_url']) ? $banner['image_url'] : $asset($fallback);

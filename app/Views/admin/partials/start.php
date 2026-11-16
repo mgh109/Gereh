@@ -14,6 +14,7 @@ $links = [
     ['shipping', 'admin/shipping', 'روش‌های ارسال', 'f8188.svg'],
     ['banners', 'admin/banners', 'مدیریت صفحه اصلی', '26d14.svg'],
     ['articles', 'admin/articles', 'مجله و راهنماها', '41638.svg'],
+    ['contact', 'admin/settings/contact', 'اطلاعات تماس', 'b1127.svg'],
     ['settings', 'admin/settings/sms', 'تنظیمات', 'b1127.svg'],
 ];
 if(session()->get('admin_role')==='super_admin') $links[]=['users','admin/users','مدیران','e6cef.svg'];

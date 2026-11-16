@@ -23,6 +23,7 @@ class SeoController extends BaseController
             $urls = [
                 ['loc' => site_url('/'), 'lastmod' => null],
                 ['loc' => site_url('shop'), 'lastmod' => null],
+                ['loc' => site_url('contact'), 'lastmod' => null],
                 ['loc' => site_url('size-guide'), 'lastmod' => null],
                 ['loc' => site_url('blog'), 'lastmod' => null],
             ];

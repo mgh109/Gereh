@@ -8,6 +8,7 @@ $routes->get('session/csrf', 'CsrfTokenController::show');
 // Public, read-only catalog endpoints; web SSR uses the same service without internal HTTP.
 $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static function (RouteCollection $routes) {
     $routes->get('home', 'HomeController::index');
+    $routes->get('contact', static fn () => service('response')->setJSON(['success'=>true, 'data'=>(new \App\Services\ContactSettingsService())->read(), 'meta'=>new \stdClass(), 'message'=>null, 'errors'=>null]));
     $routes->get('products', 'CatalogController::products');
     $routes->get('products/(:num)/related', 'CatalogController::related/$1');
     $routes->get('products/(:segment)', 'CatalogController::product/$1');
@@ -44,6 +45,7 @@ $routes->get('payment/zarinpal/callback', 'ZarinpalCallbackController::handle');
 $routes->match(['GET','HEAD'], 'robots.txt', 'SeoController::robots');
 $routes->match(['GET','HEAD'], 'sitemap.xml', 'SeoController::sitemap');
 $routes->match(['GET','HEAD'], '/', 'Storefront::home', ['as' => 'store.home']);
+$routes->match(['GET','HEAD'], 'contact', static fn () => view('store/contact'));
 $routes->match(['GET','HEAD'], 'shop', 'Storefront::shop', ['as' => 'store.shop']);
 $routes->match(['GET','HEAD'], 'blog', 'BlogController::index');
 $routes->match(['GET','HEAD'], 'blog/(:segment)', 'BlogController::show/$1');
@@ -82,6 +84,8 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
         $routes->get('customers/(:num)', 'CustomersController::show/$1');
         $routes->get('shipping', 'ShippingMethodsController::index');
         $routes->post('shipping/(:num)', 'ShippingMethodsController::save/$1', ['filter' => 'csrf']);
+        $routes->get('settings/contact', 'ContactSettingsController::index');
+        $routes->post('settings/contact', 'ContactSettingsController::save', ['filter'=>'csrf']);
         $routes->get('settings/sms', 'SmsSettingsController::index');
         $routes->post('settings/sms', 'SmsSettingsController::save', ['filter' => 'csrf']);
         $routes->post('settings/sms/templates', 'SmsSettingsController::saveTemplates', ['filter' => 'csrf']);

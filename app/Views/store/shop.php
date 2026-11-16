@@ -6,6 +6,7 @@ $qs = static function (array $updates): string {
     $current = is_array($current) ? $current : [];
     if (!array_key_exists('page', $updates)) unset($current['page']);
     foreach ($updates as $key => $value) {
+        if ($key !== 'page') { unset($current['page']); }
         if ($value === '') { unset($current[$key]); } else { $current[$key] = $value; }
     }
     return site_url('shop') . ($current ? '?' . http_build_query($current) : '');
@@ -14,7 +15,7 @@ $qs = static function (array $updates): string {
 <style>
 .shop-heading{margin:18px 0 16px}.shop-heading h1{font-size:23px;margin:0 0 6px}.category-tabs{display:flex;gap:8px;overflow:auto;margin:16px 0}.category-tabs a{padding:10px 18px;background:white;border-radius:9px;font-size:12px;white-space:nowrap}.category-tabs a[aria-current=page]{background:#012f24;color:#fff}.brand-strip{display:flex;gap:12px;overflow:auto;padding:10px 0 18px}.brand-strip a{background:#fff;border:1px solid #efe3d4;min-width:80px;text-align:center;border-radius:10px;padding:13px 9px;font-size:12px}.brand-strip a[aria-current=page]{border-color:#075d3c;background:#e7f1ec}.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.toolbar button,.toolbar select{background:#fff;border:1px solid #efe3d4;border-radius:10px;padding:13px;color:#012f24;width:100%;font-size:13px}.toolbar button{cursor:pointer}.drawer-cover{position:fixed;inset:0;background:#012f2480;z-index:19}.filter-drawer{position:fixed;right:0;top:0;bottom:0;width:min(360px,90vw);z-index:20;background:#f9f4ef;padding:24px;overflow:auto;box-shadow:-10px 0 30px #012f2420}.filter-drawer h2{margin-top:0}.filter-drawer label{display:block;margin:18px 0 7px;font-size:13px}.filter-drawer select,.filter-drawer input{width:100%;border:1px solid #efe3d4;background:white;padding:13px;border-radius:9px}.filter-actions{display:flex;gap:10px;margin-top:26px}.filter-actions button{border:0;background:#012f24;color:white;padding:13px;border-radius:10px;flex:1}.filter-actions a{background:#efe3d4;padding:13px;border-radius:10px}.result-info{display:flex;justify-content:space-between;margin:15px 0;font-size:12px;color:#81766e}
 </style>
-<main class="shop-screen container">
+<main class="shop-screen container"><div class="desktop-shop-content">
 <div class="shop-heading"><h1>فروشگاه گره</h1><p class="muted">کفش مناسب قدم‌های تو</p></div>
 <form class="shop-search-form" action="<?= site_url('shop') ?>" method="get" role="search">
 <input class="search" name="q" value="<?= esc((string) request()->getGet('q'), 'attr') ?>" placeholder="جست‌وجوی محصولات…" aria-label="جست‌وجوی محصولات">
@@ -51,7 +52,7 @@ $lastPage = (int) $pagination['last_page'];
 </nav>
 <?php endif; ?>
 
-</main>
+</div></main>
 <div id="filter-cover" class="drawer-cover" hidden></div>
 <aside id="filter-drawer" class="filter-drawer" aria-label="فیلتر محصولات" aria-modal="true" role="dialog" hidden>
 <button type="button" id="close-filters" aria-label="بستن فیلتر" style="float:left;border:0;background:none;font-size:24px">×</button><h2>فیلتر محصولات</h2>
@@ -65,6 +66,6 @@ $lastPage = (int) $pagination['last_page'];
 <label for="max-price">حداکثر قیمت (تومان)</label><input id="max-price" type="number" min="0" name="max_price" value="<?= esc((string) request()->getGet('max_price'),'attr') ?>">
 <div class="filter-actions"><button type="submit">نمایش نتایج</button><a href="<?= site_url('shop') ?>">پاک‌کردن</a></div></form></aside>
 <script>
-(()=>{const open=document.getElementById('show-filters'),close=document.getElementById('close-filters'),drawer=document.getElementById('filter-drawer'),cover=document.getElementById('filter-cover');let previous=null;function toggle(show){drawer.hidden=!show;cover.hidden=!show;open.setAttribute('aria-expanded',String(show));document.body.style.overflow=show?'hidden':'';if(show){previous=document.activeElement;close.focus()}else{previous?.focus()}}open.addEventListener('click',()=>toggle(true));close.addEventListener('click',()=>toggle(false));cover.addEventListener('click',()=>toggle(false));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!drawer.hidden)toggle(false)})})();
+(()=>{const open=document.getElementById('show-filters'),close=document.getElementById('close-filters'),drawer=document.getElementById('filter-drawer'),cover=document.getElementById('filter-cover');let previous=null;const desktop=window.matchMedia('(min-width:1024px)');function sync(){if(desktop.matches){drawer.hidden=false;drawer.removeAttribute('aria-modal');drawer.removeAttribute('role');document.querySelector('.shop-screen').prepend(drawer);cover.hidden=true;document.body.style.overflow=''}else{document.body.append(drawer);drawer.hidden=true;drawer.setAttribute('aria-modal','true');drawer.setAttribute('role','dialog');cover.hidden=true;document.body.style.overflow=''}open.setAttribute('aria-expanded','false')}desktop.addEventListener('change',sync);sync();function toggle(show){drawer.hidden=!show;cover.hidden=!show;open.setAttribute('aria-expanded',String(show));document.body.style.overflow=show?'hidden':'';if(show){previous=document.activeElement;close.focus()}else{previous?.focus()}}open.addEventListener('click',()=>toggle(true));close.addEventListener('click',()=>toggle(false));cover.addEventListener('click',()=>toggle(false));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!drawer.hidden)toggle(false)})})();
 </script>
 <?= view('store/partials/footer') ?>

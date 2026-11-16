@@ -1,0 +1,36 @@
+/* Desktop additions to the current Figma-based mobile storefront. */
+.desktop-store-nav,.desktop-store-actions{display:none}
+@media(max-width:1023px){.home-bestsellers .home-products>article:nth-child(n+3){display:none}}
+@media(min-width:701px) and (max-width:1023px){.home-page .home-products:not(.home-products-compact){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1024px){
+ .store-page{padding-bottom:0}.store-page .home-bottom{display:none}
+ .home-header{position:sticky;top:0;z-index:25;border-bottom:1px solid #e4d8ca;background:#f9f4ef}
+ .home-header>div{max-width:1280px;height:100px;padding:0 28px;gap:30px}
+ .home-header #menu-open{display:none}
+ .home-header>div>a{position:static;transform:none;flex:none;gap:3px}.home-header>div>a img{width:60px;height:44px}
+ .home-header #cart-drawer-trigger{position:relative;inset:auto;order:4;flex:none}
+ .desktop-store-nav{display:flex;align-items:center;gap:22px;font-size:13px;white-space:nowrap}
+ .desktop-store-actions{display:flex;align-items:center;gap:16px;margin-inline-start:auto;font-size:12px;white-space:nowrap}
+ .desktop-store-actions form{display:flex;background:#efe3d4;border-radius:10px;overflow:hidden;max-width:230px}
+ .desktop-store-actions input{width:150px;min-width:0;border:0;background:transparent;padding:12px;outline-offset:-3px}
+ .desktop-store-actions button{border:0;background:transparent;padding:8px;font-size:11px}
+ .store-page main.container,.store-page main.gereh-container,.home-page>main{max-width:1280px;padding-inline:28px;margin-inline:auto}
+ .home-page>main{padding-top:28px}.home-page .home-hero{height:420px;border-radius:18px}
+ .home-page .home-categories{margin-top:24px;gap:24px}.home-page .home-categories>a{height:220px;border-radius:14px}
+ .home-page .home-bestsellers,.home-page .home-featured{margin-block:40px}.home-page .home-section-title{margin-bottom:20px;height:42px}
+ .home-page .home-section-title>h2{font-size:24px}.home-page .home-products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin-inline:0;padding:0;overflow:visible}
+ .home-page .home-product>div:first-child{height:auto;aspect-ratio:4/5;border-radius:14px}.home-page .home-product h3{font-size:14px;margin-block:8px}.home-page .home-product>p{font-size:15px}
+ .home-page .home-promo{height:250px;border-radius:16px}.home-page .home-brands{margin:32px 0;border-radius:16px;padding:28px}
+ .store-page .home-footer{margin-top:48px}
+ .shop-screen{display:grid;grid-template-columns:260px minmax(0,1fr);gap:30px;padding-top:28px;align-items:start;min-height:65vh}
+ .desktop-shop-content{min-width:0}.shop-screen .shop-heading{margin-top:0}
+ .shop-screen>.filter-drawer{position:sticky;top:124px;inset-inline:auto;width:100%;max-height:calc(100dvh - 148px);z-index:auto;padding:24px;background:#fff;border:1px solid #e4d8ca;border-radius:14px;box-shadow:none}
+ .shop-screen #close-filters,.shop-screen #show-filters{display:none}.shop-screen .toolbar{grid-template-columns:minmax(200px,300px);justify-content:end}
+ .shop-screen .home-products{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 20px}.shop-screen .home-product>div:first-child{height:auto;aspect-ratio:4/5}.shop-screen .filter-actions{flex-wrap:wrap}
+ .product-screen .detail{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;align-items:start}
+ .product-screen .product-gallery{position:sticky;top:124px;min-width:0}.product-screen .buy{padding:24px;background:#efe3d440;border-radius:16px}
+ .product-screen .buy h1{font-size:30px;line-height:1.8;margin-top:0}.product-screen .buy p{line-height:2}
+ .store-page:has(.product-screen){padding-bottom:100px}.store-page:has(.product-screen) .sticky-buy{height:82px;max-width:1224px;inset:auto 28px 16px;margin:auto;border:1px solid #d8c9b8;border-radius:14px;padding:16px 24px;box-shadow:0 4px 24px #012f2410;flex-direction:row}.store-page:has(.product-screen) .sticky-buy::after{display:none}
+}
+@media(min-width:1024px) and (max-width:1199px){.desktop-store-nav{gap:14px}.desktop-store-actions form{display:none}.home-header>div{gap:20px}}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.home-product>div:first-child>a>img{transition:transform .2s}.home-product:hover>div:first-child>a>img{transform:scale(1.025)}}

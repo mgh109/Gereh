@@ -22,7 +22,7 @@ if(!$featured) $featured=array_slice($products,2)?:$products;
 </section>
 <section class="home-bestsellers mt-5" aria-labelledby="bestsellers-title">
 <div class="home-section-title mb-[10px] flex h-[35px] items-center justify-between gap-2 ps-[5px] pe-[10px] [&>h2]:m-0 [&>h2]:text-[19px] [&>h2]:leading-[35px] [&>h2]:font-bold [&>a]:flex [&>a]:items-center [&>a]:gap-1 [&>a]:whitespace-nowrap [&>a]:text-[13px]"><h2 id="bestsellers-title">پرفروش‌ترین‌ها</h2><a href="<?= site_url('shop') ?>">مشاهده همه <img src="<?= $asset('530b8.svg') ?>" alt="" width="12" height="16"></a></div>
-<?= view('store/partials/home_cards',['products'=>array_slice($products,0,2),'compact'=>false]) ?>
+<?= view('store/partials/home_cards',['products'=>array_slice($products,0,4),'compact'=>false]) ?>
 </section>
 <section class="home-promo relative mt-5 h-32 overflow-hidden rounded-[9px] min-[701px]:h-[220px] [&>a]:block [&>a]:h-full" aria-label="پیشنهاد خرید">
 <a href="<?= esc($link($promo),'attr') ?>"><img class="absolute inset-0 h-full w-full object-cover" src="<?= esc($image($promo,'8f210.png'),'attr') ?>" alt="" width="364" height="128" loading="lazy">

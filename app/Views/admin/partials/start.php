@@ -10,7 +10,7 @@ $links = [
     ['inventory', 'admin/inventory', 'موجودی و تنوع‌ها', '7bc70.svg'],
     ['taxonomy', 'admin/taxonomy', 'دسته‌بندی و برندها', 'f8188.svg'],
     ['customers', 'admin/customers', 'مشتریان', 'e6cef.svg'],
-    ['discounts', null, 'تخفیف‌ها', 'f8188.svg'],
+    ['shipping', 'admin/shipping', 'روش‌های ارسال', 'f8188.svg'],
     ['banners', 'admin/banners', 'مدیریت صفحه اصلی', '26d14.svg'],
     ['articles', 'admin/articles', 'مجله و راهنماها', '41638.svg'],
     ['settings', 'admin/settings/sms', 'تنظیمات', 'b1127.svg'],

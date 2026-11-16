@@ -45,7 +45,7 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <main class="main">
 <header class="topbar">
 <div class="account"><span class="role">مدیر فروشگاه</span><img src="<?= base_url('assets/figma/admin/e6cef.svg') ?>" alt=""><span class="muted"><?= esc($adminName ?? 'مدیر فروشگاه') ?></span></div>
-<div class="search"><span>جست‌وجو در محصولات، سفارش‌ها و مشتریان…</span><img src="<?= base_url('assets/figma/admin/d78e2.svg') ?>" alt=""></div>
+<form class="search" action="<?= site_url('admin/products') ?>" method="get" role="search"><input name="q" type="search" aria-label="جست‌وجوی محصولات" placeholder="جست‌وجوی محصولات…" style="width:100%;min-width:0;border:0;background:transparent;font:inherit"><button type="submit">جست‌وجو</button></form>
 <div class="top-actions"><span>پنل مدیریت گره</span><img src="<?= base_url('assets/figma/admin/cf9ce.svg') ?>" alt=""></div>
 </header>
 <section class="page-head"><a class="store-link" href="<?= site_url('/') ?>" target="_blank">مشاهده فروشگاه</a><div class="page-title"><h1>پیشخوان</h1><p>نگاهی به وضعیت امروز فروشگاه</p></div></section>
@@ -58,14 +58,12 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 </div>
 <div class="middle">
 <section class="panel attention"><div class="panel-title">نیازمند توجه</div><div class="attention-list">
-<div class="attention-row"><a href="#">مشاهده ‹</a><span>سفارش‌های منتظر پرداخت</span></div>
-<div class="attention-row"><a href="#">مشاهده ‹</a><span>تنوع‌های دارای موجودی کم</span></div>
-<div class="attention-row"><a href="#">مشاهده ‹</a><span>گزارش مرجوعی هنوز فعال نیست</span></div>
-<div class="attention-row"><a href="#">مشاهده ‹</a><span>مدیریت دیدگاه هنوز فعال نیست</span></div>
+<?php foreach (['pending_payment'=>'سفارش‌های منتظر پرداخت','processing'=>'سفارش‌های آماده پردازش','payment_review'=>'پرداخت‌های نیازمند بررسی'] as $status=>$label): ?>
+<div class="attention-row"><a href="<?= site_url('admin/orders?order_status='.$status) ?>">مشاهده ‹</a><span><?= esc($label) ?></span></div>
+<?php endforeach; ?>
+<div class="attention-row"><a href="<?= site_url('admin/inventory?stock=low') ?>">مشاهده ‹</a><span>تنوع‌های دارای موجودی کم</span></div>
 </div></section>
-<section class="panel chart"><div class="chart-head"><small>نمودار نمونه؛ داده واقعی هنوز متصل نشده</small><span>روند فروش هفتگی</span></div><div class="bars" aria-hidden="true" style="opacity:.15">
-<div class="bar-item"><div class="bar" style="height:40%"></div><span>شنبه</span></div><div class="bar-item"><div class="bar" style="height:64%"></div><span>یکشنبه</span></div><div class="bar-item"><div class="bar" style="height:51%"></div><span>دوشنبه</span></div><div class="bar-item"><div class="bar" style="height:78%"></div><span>سه‌شنبه</span></div><div class="bar-item"><div class="bar" style="height:68%"></div><span>چهارشنبه</span></div><div class="bar-item"><div class="bar highlight" style="height:91%"></div><span>پنجشنبه</span></div><div class="bar-item"><div class="bar" style="height:82%"></div><span>جمعه</span></div>
-</div><div class="chart-total">آمار نمودار در انتظار پیاده‌سازی</div></section>
+<section class="panel chart"><div class="chart-head"><small>پرداخت‌های تأییدشده در هفت روز اخیر</small><span>روند فروش هفتگی</span></div><div class="bars" id="weekly-sales" role="img" aria-label="در حال دریافت آمار فروش"></div><div class="chart-total" id="weekly-total" aria-live="polite">در حال دریافت آمار…</div></section>
 </div>
 <section class="panel orders"><div class="orders-head"><a href="<?= site_url('admin/orders') ?>">همه سفارش‌ها ‹</a><span>آخرین سفارش‌ها</span></div><table><thead><tr><th>عملیات</th><th>وضعیت</th><th>مبلغ (تومان)</th><th>مشتری</th><th>شماره سفارش</th></tr></thead><tbody id="recent-orders"><tr><td colspan="5">در حال دریافت سفارش‌های واقعی…</td></tr>
 </tbody></table></section>
@@ -81,7 +79,7 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <a href="<?= site_url('admin/inventory') ?>"><img src="<?= base_url('assets/figma/admin/7bc70.svg') ?>" alt=""><span>موجودی و تنوع‌ها</span></a>
 <a href="<?= site_url('admin/taxonomy') ?>"><img src="<?= base_url('assets/figma/admin/f8188.svg') ?>" alt=""><span>دسته‌بندی و برندها</span></a>
 <a href="<?= site_url('admin/customers') ?>"><img src="<?= base_url('assets/figma/admin/e6cef.svg') ?>" alt=""><span>مشتریان</span></a>
-<a href="#"><img src="<?= base_url('assets/figma/admin/f8188.svg') ?>" alt=""><span>تخفیف‌ها</span></a>
+<a href="<?= site_url('admin/shipping') ?>"><span>روش‌های ارسال</span></a>
 <a href="<?= site_url('admin/banners') ?>"><img src="<?= base_url('assets/figma/admin/26d14.svg') ?>" alt=""><span>مدیریت صفحه اصلی</span></a>
 <a href="<?= site_url('admin/articles') ?>"><img src="<?= base_url('assets/figma/admin/41638.svg') ?>" alt=""><span>مجله و راهنماها</span></a>
 <a href="<?= site_url('admin/settings/sms') ?>"><img src="<?= base_url('assets/figma/admin/b1127.svg') ?>" alt=""><span>تنظیمات پیامک</span></a>
@@ -94,16 +92,21 @@ const formatFa=n=>new Intl.NumberFormat('fa-IR').format(Number(n)||0);
 const setStat=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
 fetch('<?= site_url('api/v1/admin/dashboard') ?>',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(({data})=>{
 setStat('active',formatFa(data.active_products)+' محصول');
-setStat('paid-revenue',formatFa(data.revenue_toman)+' تومان');
+setStat('paid-revenue',formatFa(data.today_revenue_toman)+' تومان');
 setStat('new-orders',formatFa(data.new_orders)+' سفارش');
 setStat('customer-count',formatFa(data.customers)+' نفر');
-}).catch(()=>{['active','paid-revenue','new-orders','customer-count'].forEach(id=>setStat(id,'ناموجود'))});
+const days=data.weekly_revenue||[], chart=document.getElementById('weekly-sales');
+const max=Math.max(1,...days.map(day=>Number(day.revenue_toman)));chart.textContent='';
+for(const day of days){const item=document.createElement('div');item.className='bar-item';const bar=document.createElement('div');bar.className='bar';bar.style.height=(Number(day.revenue_toman)/max*130)+'px';const label=document.createElement('span');label.textContent=new Intl.DateTimeFormat('fa-IR',{weekday:'short'}).format(new Date(day.date+'T12:00:00'));item.title=day.date+': '+formatFa(day.revenue_toman)+' تومان';item.append(bar,label);chart.append(item)}
+const total=days.reduce((sum,day)=>sum+Number(day.revenue_toman),0);chart.setAttribute('aria-label',days.map(day=>day.date+': '+formatFa(day.revenue_toman)+' تومان').join('، '));
+setStat('weekly-total',total?('مجموع: '+formatFa(total)+' تومان'):'در هفت روز اخیر پرداخت تأییدشده‌ای ثبت نشده است.');
+}).catch(()=>{['active','paid-revenue','new-orders','customer-count','weekly-total'].forEach(id=>setStat(id,'ناموجود'))});
 fetch('<?= site_url('api/v1/admin/orders?per_page=5') ?>',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(({data})=>{
 const tbody=document.getElementById('recent-orders');tbody.textContent='';
 if(!Array.isArray(data)||!data.length){const cell=tbody.insertRow().insertCell();cell.colSpan=5;cell.textContent='سفارشی ثبت نشده است.';return}
 for(const order of data){
 const tr=tbody.insertRow();const a=document.createElement('a');a.href='<?= site_url('admin/orders') ?>/'+Number(order.id);a.textContent='مشاهده';tr.insertCell().appendChild(a);
-tr.insertCell().textContent=order.order_status||'—';tr.insertCell().textContent=formatFa(order.total_toman);tr.insertCell().textContent=order.receiver_name||'—';tr.insertCell().textContent=order.order_number||'—';
+tr.insertCell().textContent=({pending_payment:'در انتظار پرداخت',processing:'در حال پردازش',shipped:'ارسال شده',delivered:'تحویل شده',cancelled:'لغو شده',payment_review:'بررسی پرداخت'})[order.order_status]||'—';tr.insertCell().textContent=formatFa(order.total_toman);tr.insertCell().textContent=order.receiver_name||'—';tr.insertCell().textContent=order.order_number||'—';
 }}).catch(()=>{document.getElementById('recent-orders').textContent='دریافت سفارش‌ها ممکن نیست.'});
 </script>
 </body></html>

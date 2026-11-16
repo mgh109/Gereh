@@ -76,6 +76,9 @@ final class MelipayamakClient
             }
             $parsed=json_decode((string)$response->getBody(),true);
             if (!is_array($parsed)) throw new RuntimeException('ساختار پاسخ پنل پیامکی معتبر نیست.');
+            if (($parsed['StrRetStatus'] ?? $parsed['strRetStatus'] ?? '') === 'UserNameAndPasswordFailed') {
+                throw new RuntimeException('نام کاربری یا رمز وب‌سرویس ملی‌پیامک معتبر نیست.', 401);
+            }
             if ($requireReceipt && !self::isAccepted($parsed)) {
                 throw new RuntimeException('پنل پیامک درخواست ارسال را رد کرد.');
             }
@@ -85,8 +88,12 @@ final class MelipayamakClient
             return $parsed;
         } catch(Throwable $exception) {
             // Never log provider response bodies or credentials.
-            log_message('error','Melipayamak request failed: {type}',['type'=>get_class($exception)]);
-            throw new RuntimeException('ارتباط با ملی پیامک ناموفق بود.',0,$exception);
+            log_message('error', 'Melipayamak request failed: {type} origin {origin_file}:{origin_line} category {category}', [
+                'type'=>get_class($exception), 'origin_file'=>basename($exception->getFile()),
+                'origin_line'=>$exception->getLine(),
+                'category'=>$exception->getCode() === 401 ? 'invalid_credentials' : 'transport_or_provider',
+            ]);
+            throw new RuntimeException('ارتباط با ملی پیامک ناموفق بود.', $exception->getCode() === 401 ? 401 : 0, $exception);
         }
     }
 }

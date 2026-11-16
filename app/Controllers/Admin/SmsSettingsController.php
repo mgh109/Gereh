@@ -81,6 +81,9 @@ final class SmsSettingsController extends BaseController
             return redirect()->to(site_url('admin/settings/sms'))
                 ->with('sms_success','اتصال ملی پیامک برقرار است. اعتبار گزارش‌شده: '.number_format($credit));
         } catch(Throwable $exception) {
+            if ($exception->getCode() === 401) {
+                return redirect()->back()->with('sms_error','ملی‌پیامک نام کاربری یا رمز وب‌سرویس را قبول نکرد؛ مقادیر اتصال در فایل .env هاست را اصلاح کنید.');
+            }
             return redirect()->back()->with('sms_error','بررسی اتصال ملی پیامک ناموفق بود؛ اطلاعات سرور و پنل را بررسی کنید.');
         }
     }

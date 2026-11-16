@@ -37,13 +37,13 @@ $qs = static function (array $updates): string {
 </nav>
 <?php if ($brands): ?><nav class="brand-strip" aria-label="انتخاب برند">
 <a href="<?= esc($qs(['brand'=>'']),'attr') ?>" <?= !request()->getGet('brand') ? 'aria-current="page"' : '' ?>>همه برندها</a>
-<?php foreach ($brands as $brand): ?><a href="<?= esc($qs(['brand'=>$brand['slug']]),'attr') ?>" <?= (string) request()->getGet('brand') === $brand['slug'] ? 'aria-current="page"' : '' ?>><?= esc($brand['name']) ?></a><?php endforeach; ?>
+<?php foreach ($brands as $brand): ?><a href="<?= esc($qs(['brand'=>$brand['slug']]),'attr') ?>" <?= (string) request()->getGet('brand') === $brand['slug'] ? 'aria-current="page"' : '' ?>><?php if(!empty($brand['logo_path'])): ?><img src="<?= esc(base_url(ltrim($brand['logo_path'],'/')),'attr') ?>" alt="" width="58" height="32" loading="lazy" decoding="async"><?php endif; ?><span><?= esc($brand['name']) ?></span></a><?php endforeach; ?>
 </nav><?php endif; ?>
-<div class="toolbar"><button type="button" id="show-filters" aria-controls="filter-drawer" aria-expanded="false">☷ فیلتر محصولات</button>
+<div class="toolbar"><div class="result-info"><span><?= (int) ($pagination['total'] ?? count($products)) ?> محصول</span></div><button type="button" id="show-filters" aria-controls="filter-drawer" aria-expanded="false">☷ فیلتر محصولات</button>
 <form action="<?= site_url('shop') ?>" method="get"><label for="sort-products" class="muted">مرتب‌سازی</label>
 <?php foreach (['q','category','brand','min_price','max_price','size'] as $key): $value=request()->getGet($key); if(is_scalar($value) && (string)$value !== ''): ?><input type="hidden" name="<?= esc($key) ?>" value="<?= esc((string)$value,'attr') ?>"><?php endif; endforeach; ?>
 <select id="sort-products" name="sort" onchange="this.form.submit()"><option value="">جدیدترین</option><option value="price_asc" <?= $selected('sort','price_asc') ?>>ارزان‌ترین</option><option value="price_desc" <?= $selected('sort','price_desc') ?>>گران‌ترین</option></select></form></div>
-<div class="result-info"><span><?= (int) ($pagination['total'] ?? count($products)) ?> محصول</span><span>نتایج جست‌وجو و فیلتر</span></div>
+
 <?php $activeSize=request()->getGet('size'); if(is_string($activeSize) && trim($activeSize)!==''): ?><p class="mb-4 flex items-center justify-between rounded-xl bg-gereh-cream p-3 text-xs"><span>سایز انتخاب‌شده: <?= esc($activeSize) ?></span><a href="<?= esc($qs(['size'=>'']),'attr') ?>" aria-label="حذف فیلتر سایز">حذف ×</a></p><?php endif; ?>
 <?= view('store/partials/cards',['products'=>$products]) ?>
 <?php if (($pagination['last_page'] ?? 0) > 1): ?>

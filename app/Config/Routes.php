@@ -66,6 +66,9 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
 
     $routes->group('', ['filter' => 'adminauth'], static function (RouteCollection $routes) {
         $routes->match(['GET','HEAD'], '/', 'DashboardController::index', ['as' => 'admin.dashboard']);
+        $routes->get('users', 'AuthController::users');
+        $routes->post('users', 'AuthController::saveUser', ['filter'=>'csrf']);
+        $routes->post('users/(:num)', 'AuthController::saveUser/$1', ['filter'=>'csrf']);
         $routes->get('products', 'ProductsController::index', ['as' => 'admin.products']);
         $routes->post('products/(:num)/status', 'ProductsController::status/$1', ['filter'=>'csrf']);
         $routes->get('inventory', 'InventoryController::index');

@@ -68,4 +68,21 @@ class AuthController extends BaseController
 
         return redirect()->to('/admin/login');
     }
+    public function users()
+    {
+        try {
+            $users=(new \App\Services\AdminManagementService())->listing((int)session()->get('admin_id'));
+            return view('admin/users/index',['users'=>$users]);
+        }catch(\DomainException $e){return $this->response->setStatusCode(403)->setBody('مدیریت مدیران فقط برای مدیر اصلی مجاز است.');}
+    }
+    public function saveUser(?string $id=null)
+    {
+        try {
+            $service=new \App\Services\AdminManagementService();
+            $service->authorize((int)session()->get('admin_id'));
+            $service->save((int)session()->get('admin_id'),$id?(int)$id:null,(array)$this->request->getPost());
+            return redirect()->to(site_url('admin/users'))->with('success','اطلاعات مدیر ذخیره شد.');
+        }catch(\InvalidArgumentException|\DomainException $e){return redirect()->to(site_url('admin/users'))->with('error',$e->getMessage());}
+        catch(\Throwable $e){log_message('error','Admin account save failed: {type}',['type'=>get_class($e)]);return redirect()->to(site_url('admin/users'))->with('error','ذخیره انجام نشد؛ دوباره تلاش کنید.');}
+    }
 }

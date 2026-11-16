@@ -16,6 +16,7 @@ $links = [
     ['articles', 'admin/articles', 'مجله و راهنماها', '41638.svg'],
     ['settings', 'admin/settings/sms', 'تنظیمات', 'b1127.svg'],
 ];
+if(session()->get('admin_role')==='super_admin') $links[]=['users','admin/users','مدیران','e6cef.svg'];
 $activeIcons = ['products'=>'84b0d.svg','orders'=>'cfb7c.svg','inventory'=>'84b0d.svg','taxonomy'=>'59637.svg','customers'=>'2b11f.svg','banners'=>'1a183.svg','articles'=>'c5b59.svg','settings'=>'00507.svg'];
 ?>
 <!doctype html>

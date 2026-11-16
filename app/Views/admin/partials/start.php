@@ -25,7 +25,7 @@ $activeIcons = ['products'=>'84b0d.svg','orders'=>'cfb7c.svg','inventory'=>'84b0
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title><?= esc($title ?? 'مدیریت فروشگاه') ?> | مدیریت گره</title>
 <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
-<link rel="stylesheet" href="<?= base_url('assets/css/admin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/admin.css').'?v=20261116-3' ?>">
 <script src="<?= base_url('assets/js/admin.js') ?>" defer></script>
 </head>
 <body class="admin-body">

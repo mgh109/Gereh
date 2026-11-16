@@ -28,5 +28,6 @@
         <button type="submit">ورود به پنل</button>
     </form>
 </main>
+<?= view('shared/loading') ?>
 </body>
 </html>

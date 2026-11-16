@@ -120,4 +120,5 @@ const tr=tbody.insertRow();const a=document.createElement('a');a.href='<?= site_
 tr.insertCell().textContent=({pending_payment:'در انتظار پرداخت',processing:'در حال پردازش',shipped:'ارسال شده',delivered:'تحویل شده',cancelled:'لغو شده',payment_review:'بررسی پرداخت'})[order.order_status]||'—';tr.insertCell().textContent=formatFa(order.total_toman);tr.insertCell().textContent=order.receiver_name||'—';tr.insertCell().textContent=order.order_number||'—';
 }}).catch(()=>{document.getElementById('recent-orders').textContent='دریافت سفارش‌ها ممکن نیست.'});
 </script>
+<?= view('shared/loading') ?>
 </body></html>

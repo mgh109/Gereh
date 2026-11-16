@@ -16,7 +16,7 @@ use CodeIgniter\Filters\SecureHeaders;
 class Filters extends BaseFilters
 {
     public array $aliases = [
-        'csrf' => CSRF::class,
+        'csrf' => \App\Filters\FormCsrf::class,
         'toolbar' => DebugToolbar::class,
         'honeypot' => Honeypot::class,
         'invalidchars' => InvalidChars::class,

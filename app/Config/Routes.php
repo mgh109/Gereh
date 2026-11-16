@@ -3,6 +3,8 @@
 use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
+$routes->get('session/csrf', 'CsrfTokenController::show');
+
 // Public, read-only catalog endpoints; web SSR uses the same service without internal HTTP.
 $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static function (RouteCollection $routes) {
     $routes->get('home', 'HomeController::index');
@@ -70,6 +72,7 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
         $routes->post('users', 'AuthController::saveUser', ['filter'=>'csrf']);
         $routes->post('users/(:num)', 'AuthController::saveUser/$1', ['filter'=>'csrf']);
         $routes->get('products', 'ProductsController::index', ['as' => 'admin.products']);
+        $routes->get('products/(:num)/status', static fn () => redirect()->to(site_url('admin/products')));
         $routes->post('products/(:num)/status', 'ProductsController::status/$1', ['filter'=>'csrf']);
         $routes->get('inventory', 'InventoryController::index');
         $routes->get('comments', 'CommentsController::index');

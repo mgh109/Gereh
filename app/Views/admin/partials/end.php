@@ -1,1 +1,2 @@
-</div></div></body></html>
+</div></div><?= view('shared/loading') ?>
+</body></html>

@@ -17,7 +17,7 @@ $firstImage = $images ? base_url(ltrim($images[0]['file_path'], '/')) : null;
 <?php foreach ($images as $i=>$image): ?><button type="button" class="image-thumb" aria-label="تصویر <?= $i+1 ?>" aria-pressed="<?= $i===0?'true':'false' ?>" data-src="<?= esc(base_url(ltrim($image['file_path'],'/')),'attr') ?>" data-alt="<?= esc($image['alt_text'] ?: $product['name'],'attr') ?>"><img src="<?= esc(base_url(ltrim($image['file_path'],'/')),'attr') ?>" alt="" loading="lazy" decoding="async" width="80" height="80"></button><?php endforeach; ?>
 </div><?php endif; ?>
 </section>
-<section class="buy"><h1><?= esc($product['name']) ?></h1><a href="#product-comments" class="muted" style="display:inline-block;margin:12px 0">نوشتن دیدگاه و امتیاز به محصول</a><p class="muted"><?= esc($product['short_description'] ?? '') ?></p>
+<section class="buy"><h1><?= esc($product['name']) ?></h1><p class="muted"><?= esc($product['short_description'] ?? '') ?></p>
 <div class="price-old" id="old-price" <?= (int)($product['compare_at_price_toman']??0)<=(int)$product['price_toman'] ? 'hidden' : '' ?>><?= number_format((int)($product['compare_at_price_toman'] ?? 0)) ?> تومان</div>
 <span id="discount-percent" style="color:#cb3d2e;font-weight:bold" hidden></span>
 <h2 id="current-price"><?= number_format((int)$product['price_toman']) ?> تومان</h2>

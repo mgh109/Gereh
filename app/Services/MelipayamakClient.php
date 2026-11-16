@@ -76,7 +76,7 @@ final class MelipayamakClient
             }
             $parsed=json_decode((string)$response->getBody(),true);
             if (!is_array($parsed)) throw new RuntimeException('ساختار پاسخ پنل پیامکی معتبر نیست.');
-            if (($parsed['StrRetStatus'] ?? $parsed['strRetStatus'] ?? '') === 'UserNameAndPasswordFailed') {
+            if (stripos((string)($parsed['StrRetStatus'] ?? $parsed['strRetStatus'] ?? ''), 'UserNameAndPasswordFailed') !== false) {
                 throw new RuntimeException('نام کاربری یا رمز وب‌سرویس ملی‌پیامک معتبر نیست.', 401);
             }
             if ($requireReceipt && !self::isAccepted($parsed)) {

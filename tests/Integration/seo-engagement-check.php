@@ -18,7 +18,7 @@ $check($schema['offers']['price']===1000 && $schema['offers']['priceCurrency']==
 $check(str_ends_with($schema['offers']['availability'],'OutOfStock'),'Sold products keep honest stock schema');
 $check(!isset($schema['aggregateRating']),'No fabricated ratings');
 $check(!isset($seo->product($p,[['sku'=>'T-1','price_toman'=>0,'stock'=>1]],[])['offers']),'Missing price has no invalid offer');
-$db->query('CREATE TABLE products (id INTEGER PRIMARY KEY,name TEXT,status TEXT,price_toman INTEGER,deleted_at TEXT,updated_at TEXT)');
+$db->query('CREATE TABLE products (id INTEGER PRIMARY KEY,name TEXT,slug TEXT,status TEXT,price_toman INTEGER,deleted_at TEXT,updated_at TEXT)');
 $db->table('products')->insertBatch([['id'=>1,'name'=>'Published','status'=>'active','price_toman'=>100,'deleted_at'=>null],['id'=>2,'name'=>'Draft','status'=>'draft','price_toman'=>100,'deleted_at'=>null],['id'=>3,'name'=>'No price','status'=>'draft','price_toman'=>0,'deleted_at'=>null]]);
 require APPPATH.'Database/Migrations/2026-11-16-140000_AddProductEngagement.php';
 (new \App\Database\Migrations\AddProductEngagement())->up();
@@ -30,6 +30,9 @@ $service->submit(1,'Reader','Useful product',5);$check(count($service->comments(
 $id=(int)$db->insertID();$service->moderate($id,'approved');$check(count($service->comments(1))===1 && $service->stats(1)['rating_count']===1,'Approved comment is visible and counted');
 $service->moderate($id,'rejected');$check(count($service->comments(1))===0 && $service->stats(1)['rating_count']===0,'Rejected comment removed from public rating');
 $failed=false;try{$service->submit(2,'Reader','Draft comment',5);}catch(InvalidArgumentException $e){$failed=true;}$check($failed,'Draft product rejects public comment');
+$dashboard=$service->dashboard();$check($dashboard['today_views']===1 && $dashboard['total_views']===1 && $dashboard['top_products'][0]['id']===1,'Dashboard reports real visits and ranked products');
+$db->table('product_daily_views')->insert(['product_id'=>2,'day'=>date('Y-m-d',strtotime('-10 days')),'views'=>50]);
+$dashboard=$service->dashboard();$check($dashboard['total_views']===51 && $dashboard['week_views']===1 && count($dashboard['top_products'])===1,'Dashboard separates lifetime totals from seven day ranking');
 $catalog=new \App\Services\CatalogService($db);$catalog->setProductStatus(1,'archived');$catalog->setProductStatus(1,'draft');$catalog->setProductStatus(1,'active');
 $check($db->table('products')->where('id',1)->get()->getRowArray()['status']==='active','Product status transitions persist');
 $failed=false;try{$catalog->setProductStatus(3,'active');}catch(RuntimeException $e){$failed=true;}$check($failed,'Cannot publish product without a price');

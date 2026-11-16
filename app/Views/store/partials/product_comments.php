@@ -1,4 +1,4 @@
-<section class="product-details-section" id="product-comments"><h2>دیدگاه کاربران</h2><?php if(!empty($product['engagement']['rating_count'])): ?><p>امتیاز <?= esc((string)$product['engagement']['rating']) ?> از ۵، بر اساس <?= (int)$product['engagement']['rating_count'] ?> امتیاز تأییدشده</p><?php endif; ?>
+<section class="product-details-section" id="product-comments"><h2>دیدگاه کاربران</h2><p>تجربه یا پرسشت درباره این محصول را بنویس.</p><?php if(!empty($product['engagement']['rating_count'])): ?><p>امتیاز <?= esc((string)$product['engagement']['rating']) ?> از ۵، بر اساس <?= (int)$product['engagement']['rating_count'] ?> امتیاز تأییدشده</p><?php endif; ?>
 <?php foreach(['comment_success','comment_error'] as $key): if(session()->getFlashdata($key)): ?><p role="status"><?= esc(session()->getFlashdata($key)) ?></p><?php endif; endforeach; ?>
 <?php if(!$comments): ?><p class="muted">هنوز دیدگاهی منتشر نشده است.</p><?php endif; ?>
 <?php foreach($comments as $comment): ?><article style="padding:16px 0;border-bottom:1px solid #d8c9b8"><strong><?= esc($comment['author_name']) ?></strong><?php if($comment['rating']!==null): ?><span> — امتیاز <?= (int)$comment['rating'] ?> از ۵</span><?php endif; ?><p style="white-space:pre-wrap;overflow-wrap:anywhere"><?= esc($comment['body']) ?></p></article><?php endforeach; ?>
@@ -7,4 +7,4 @@
 <label>امتیاز<select class="gereh-input" name="rating"><option value="">بدون امتیاز</option><?php for($rating=5;$rating>=1;$rating--): ?><option value="<?= $rating ?>" <?= (string)old('rating','')===(string)$rating?'selected':'' ?>><?= $rating ?> از ۵</option><?php endfor; ?></select></label>
 <label>دیدگاه شما<textarea class="gereh-input" name="body" required minlength="3" maxlength="2000" rows="4"><?= esc(old('body','')) ?></textarea></label>
 <div hidden aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
-<p class="muted">دیدگاه پس از بررسی مدیر منتشر می‌شود.</p><button class="gereh-button" type="submit">ارسال دیدگاه</button></form><?php endif; ?></section>
+<p class="muted">دیدگاه پس از بررسی مدیر منتشر می‌شود.</p><button class="gereh-button" type="submit">ارسال دیدگاه</button></form><?php else: ?><p role="status">ثبت دیدگاه موقتاً در دسترس نیست.</p><?php endif; ?></section>

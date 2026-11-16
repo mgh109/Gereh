@@ -56,6 +56,10 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <article class="stat"><div class="stat-head"><span>محصولات فعال</span><img src="<?= base_url('assets/figma/admin/b7b77.svg') ?>" alt=""></div><strong class="stat-value" id="active">—</strong><span class="stat-note">اطلاعات موجودی واقعی</span></article>
 <article class="stat"><div class="stat-head"><span>مشتریان</span><img src="<?= base_url('assets/figma/admin/53df4.svg') ?>" alt=""></div><strong class="stat-value" id="customer-count">—</strong><span class="stat-note">حساب‌های ثبت‌شده</span></article>
 </div>
+<div class="stats">
+<?php foreach(['product-today-views'=>'بازدید محصولات امروز','product-week-views'=>'بازدید محصولات در ۷ روز','product-total-views'=>'کل بازدید محصولات','pending-comments'=>'دیدگاه‌های در انتظار تأیید'] as $id=>$label): ?><article class="stat"><div class="stat-head"><?= esc($label) ?></div><strong class="stat-value" id="<?= $id ?>">—</strong><span class="stat-note"><?= $id==='pending-comments'?'دیدگاه‌ها پس از تأیید در سایت نمایش داده می‌شوند.':'هر مرورگر برای هر محصول در ۳۰ دقیقه یک بازدید' ?></span></article><?php endforeach; ?>
+</div>
+<section class="panel orders"><div class="orders-head">محصولات پربازدید <small>۷ روز اخیر</small></div><p id="engagement-status" class="muted"></p><div style="overflow:auto"><table><thead><tr><th>محصول</th><th>بازدید</th><th>عملیات</th></tr></thead><tbody id="top-products"><tr><td colspan="3">در حال دریافت…</td></tr></tbody></table></div></section>
 <div class="middle">
 <section class="panel attention"><div class="panel-title">نیازمند توجه</div><div class="attention-list">
 <?php foreach (['pending_payment'=>'سفارش‌های منتظر پرداخت','processing'=>'سفارش‌های آماده پردازش','payment_review'=>'پرداخت‌های نیازمند بررسی'] as $status=>$label): ?>
@@ -92,6 +96,11 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 const formatFa=n=>new Intl.NumberFormat('fa-IR').format(Number(n)||0);
 const setStat=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
 fetch('<?= site_url('api/v1/admin/dashboard') ?>',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(({data})=>{
+const engagement=data.engagement||{}, top=document.getElementById('top-products');top.textContent='';
+for(const [id,key] of Object.entries({'product-today-views':'today_views','product-week-views':'week_views','product-total-views':'total_views','pending-comments':'pending_comments'}))setStat(id,engagement.ready?formatFa(engagement[key]):'ناموجود');
+setStat('engagement-status',engagement.ready?'بازدیدهای تکراری در ۳۰ دقیقه و ربات‌های شناخته‌شده محاسبه نمی‌شوند.':'جداول بازدید و دیدگاه نصب نشده‌اند. بروزرسانی دیتابیس را اجرا کنید.');
+if(!engagement.top_products?.length){const cell=top.insertRow().insertCell();cell.colSpan=3;cell.textContent=engagement.ready?'هنوز بازدیدی ثبت نشده است.':'آمار در دسترس نیست.';}
+for(const product of engagement.top_products||[]){const row=top.insertRow();row.insertCell().textContent=product.name;row.insertCell().textContent=formatFa(product.views);const link=document.createElement('a');link.href='<?= site_url('admin/products') ?>/'+Number(product.id)+'/edit';link.textContent='مشاهده محصول';row.insertCell().append(link);}
 setStat('active',formatFa(data.active_products)+' محصول');
 setStat('paid-revenue',formatFa(data.today_revenue_toman)+' تومان');
 setStat('new-orders',formatFa(data.new_orders)+' سفارش');
@@ -101,7 +110,7 @@ const max=Math.max(1,...days.map(day=>Number(day.revenue_toman)));chart.textCont
 for(const day of days){const item=document.createElement('div');item.className='bar-item';const bar=document.createElement('div');bar.className='bar';bar.style.height=(Number(day.revenue_toman)/max*130)+'px';const label=document.createElement('span');label.textContent=new Intl.DateTimeFormat('fa-IR',{weekday:'short'}).format(new Date(day.date+'T12:00:00'));item.title=day.date+': '+formatFa(day.revenue_toman)+' تومان';item.append(bar,label);chart.append(item)}
 const total=days.reduce((sum,day)=>sum+Number(day.revenue_toman),0);chart.setAttribute('aria-label',days.map(day=>day.date+': '+formatFa(day.revenue_toman)+' تومان').join('، '));
 setStat('weekly-total',total?('مجموع: '+formatFa(total)+' تومان'):'در هفت روز اخیر پرداخت تأییدشده‌ای ثبت نشده است.');
-}).catch(()=>{['active','paid-revenue','new-orders','customer-count','weekly-total'].forEach(id=>setStat(id,'ناموجود'))});
+}).catch(()=>{['active','paid-revenue','new-orders','customer-count','weekly-total','product-today-views','product-week-views','product-total-views','pending-comments'].forEach(id=>setStat(id,'ناموجود'))});
 fetch('<?= site_url('api/v1/admin/orders?per_page=5') ?>',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(({data})=>{
 const tbody=document.getElementById('recent-orders');tbody.textContent='';
 if(!Array.isArray(data)||!data.length){const cell=tbody.insertRow().insertCell();cell.colSpan=5;cell.textContent='سفارشی ثبت نشده است.';return}

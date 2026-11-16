@@ -35,6 +35,7 @@ class AdminDashboardService
             $weekly[] = ['date' => $day, 'revenue_toman' => (int) ($byDay[$day] ?? 0)];
         }
         return [
+            'engagement' => (new ProductEngagementService($this->db))->dashboard(),
             'today_revenue_toman' => (int) ($byDay[$today] ?? 0),
             'weekly_revenue' => $weekly,
             'processing_orders' => (int) $this->db->table('orders')->where('order_status', 'processing')->countAllResults(),

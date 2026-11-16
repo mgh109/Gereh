@@ -34,6 +34,15 @@ final class ProductEngagementService
         if(!$this->db->table('product_comments')->where('id',$id)->countAllResults())throw new InvalidArgumentException('دیدگاه پیدا نشد.');
         $this->db->table('product_comments')->where('id',$id)->update(['status'=>$status,'moderated_at'=>date('Y-m-d H:i:s')]);
     }
+    public function dashboard(): array
+    {
+        if (!$this->ready()) return ['ready'=>false,'total_views'=>null,'today_views'=>null,'week_views'=>null,'pending_comments'=>null,'top_products'=>[]];
+        $today=date('Y-m-d');$start=date('Y-m-d',strtotime('-6 days'));
+        $counts=$this->db->table('product_daily_views')->select('COALESCE(SUM(views),0) AS total_views',false)->get()->getRowArray();
+        $sum=fn($since)=>(int)($this->db->table('product_daily_views')->selectSum('views')->where('day >=',$since)->get()->getRowArray()['views']??0);
+        $top=$this->db->table('product_daily_views v')->select('p.id,p.name,p.slug,SUM(v.views) AS views',false)->join('products p','p.id=v.product_id')->where('p.deleted_at',null)->where('v.day >=',$start)->groupBy(['p.id','p.name','p.slug'])->orderBy('views','DESC')->orderBy('p.id','ASC')->limit(10)->get()->getResultArray();
+        return ['ready'=>true,'total_views'=>(int)$counts['total_views'],'today_views'=>$sum($today),'week_views'=>$sum($start),'pending_comments'=>(int)$this->db->table('product_comments')->where('status','pending')->countAllResults(),'top_products'=>array_map(static fn($p)=>['id'=>(int)$p['id'],'name'=>$p['name'],'slug'=>$p['slug'],'views'=>(int)$p['views']],$top)];
+    }
     public function stats(int $productId):array
     {
         $views=$this->db->table('product_daily_views')->selectSum('views')->where('product_id',$productId)->get()->getRowArray();

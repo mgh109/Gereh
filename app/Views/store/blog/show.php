@@ -3,7 +3,7 @@
 'description'=>$article['meta_description']?:($article['excerpt']?:$article['title']),
 'canonical'=>site_url('blog/'.rawurlencode($article['slug']))
 ]) ?>
-<main class="gereh-container mx-auto max-w-3xl px-4 py-8">
+<main class="article-screen gereh-container mx-auto max-w-3xl px-4 py-8">
 <nav class="gereh-muted mb-5 text-sm"><a href="<?= site_url('blog') ?>">مجله گره</a> / <?= esc($article['title']) ?></nav>
 <article class="gereh-card rounded-2xl bg-white p-5 sm:p-8">
 <h1 class="mb-3 text-2xl font-bold"><?= esc($article['title']) ?></h1>
@@ -12,6 +12,6 @@
 <?php if(!empty($article['excerpt'])): ?><p class="my-5 text-base font-semibold"><?= esc($article['excerpt']) ?></p><?php endif; ?>
 <div class="prose max-w-none leading-9 whitespace-pre-line"><?= esc($article['content']) ?></div>
 </article>
-<div class="mt-5"><a class="text-sm underline" href="<?= site_url('shop') ?>">مشاهده کفش‌های فروشگاه</a></div>
+<div class="article-cta"><strong>انتخابت را در فروشگاه پیدا کن</strong><a class="gereh-button" href="<?= site_url('shop') ?>">مشاهده محصولات</a></div>
 </main>
-<?= view('store/partials/footer') ?>
+<?= view('store/partials/footer', ['hideBottomNav'=>true]) ?>

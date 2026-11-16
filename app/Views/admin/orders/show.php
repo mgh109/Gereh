@@ -1,39 +1,27 @@
-<?= view('admin/orders/partials/top', ['title'=>'جزئیات سفارش']) ?>
-<main class="mx-auto max-w-5xl p-5">
-<a href="<?= site_url('admin/orders') ?>" class="text-sm text-stone-500">بازگشت به سفارش‌ها</a>
-<h1 class="my-5 text-2xl font-bold">سفارش <?= esc($order['order_number']) ?></h1>
-<?php if(session()->getFlashdata('order_error')): ?><p role="alert" class="my-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"><?= esc(session()->getFlashdata('order_error')) ?></p><?php endif; ?>
-<?php if(session()->getFlashdata('order_success')): ?><p role="status" class="my-4 rounded-xl bg-green-50 p-4 text-sm text-green-800"><?= esc(session()->getFlashdata('order_success')) ?></p><?php endif; ?>
+<?php $statusLabels=['processing'=>'در حال پردازش','pending_payment'=>'در انتظار پرداخت','shipped'=>'ارسال شده','delivered'=>'تحویل شده','cancelled'=>'لغو شده','payment_review'=>'بررسی پرداخت']; ?>
+<?= view('admin/partials/start',['title'=>'جزئیات سفارش '.$order['order_number'],'subtitle'=>'سفارش‌ها / جزئیات سفارش • '.($order['created_at']??''),'active'=>'orders']) ?>
+<main>
+<?php foreach(['order_error','order_success'] as $notice): ?><?php if(session()->getFlashdata($notice)): ?><p role="status" class="admin-notice <?= $notice==='order_error'?'admin-error':'admin-success' ?>"><?= esc(session()->getFlashdata($notice)) ?></p><?php endif; ?><?php endforeach; ?>
+<div class="admin-form-actions"><a class="admin-button admin-button-soft" href="<?= site_url('admin/orders') ?>">بازگشت به سفارش‌ها</a><span class="admin-badge <?= in_array($order['order_status'],['processing','pending_payment','payment_review'],true)?'admin-badge-warning':($order['order_status']==='cancelled'?'admin-badge-danger':'') ?>"><?= esc($statusLabels[$order['order_status']]??$order['order_status']) ?></span></div>
+<div class="admin-detail-grid">
+<aside class="admin-panel admin-detail-aside"><h2>اطلاعات مشتری</h2><div class="admin-contact">
+<div><h3><?= esc($order['receiver_name']) ?></h3><p><bdi><?= esc($order['receiver_mobile']) ?></bdi></p></div>
+<div><h3>نشانی ارسال</h3><p><?= esc($order['province']) ?>، <?= esc($order['city']) ?>، <?= esc($order['address']) ?></p><p class="admin-muted">کد پستی: <?= esc($order['postal_code']) ?></p></div>
+<div><p>روش ارسال: <?= esc($order['shipping_title']??$order['shipping_method']) ?></p><?php if(!empty($order['tracking_code'])): ?><p>کد رهگیری: <bdi><?= esc($order['tracking_code']) ?></bdi></p><?php endif; ?></div>
+</div></aside>
+<section class="admin-panel admin-detail-main"><h2>اقلام سفارش</h2><div class="admin-table-wrap"><table class="admin-table" style="min-width:500px"><thead><tr><th>محصول</th><th>رنگ و سایز</th><th>تعداد</th><th>مبلغ (تومان)</th></tr></thead><tbody>
+<?php foreach($order['items'] as $item): ?><tr><td><?= esc($item['product_name']) ?><div class="admin-muted"><bdi><?= esc($item['sku']) ?></bdi></div></td><td><?= esc($item['color_name']??'—') ?> / <?= esc($item['size_label']??'—') ?></td><td><?= (int)$item['quantity'] ?></td><td><?= admin_number((int)$item['subtotal_toman']) ?></td></tr><?php endforeach; ?></tbody></table></div>
+<dl class="admin-summary"><div><dt>جمع محصولات</dt><dd><?= admin_number(array_sum(array_column($order['items'],'subtotal_toman'))) ?> تومان</dd></div><div><dt>هزینه ارسال</dt><dd><?= admin_number((int)$order['shipping_toman']) ?> تومان</dd></div><div><dt>مبلغ نهایی</dt><dd><?= admin_number((int)$order['total_toman']) ?> تومان</dd></div><div><dt>وضعیت پرداخت</dt><dd><?= esc(['paid'=>'پرداخت موفق','unpaid'=>'پرداخت نشده','review_required'=>'نیازمند بررسی','failed'=>'ناموفق'][$order['payment_status']]??$order['payment_status']) ?></dd></div></dl>
+</section></div>
 <?php if($order['payment_status']==='unpaid' && $order['order_status']==='pending_payment' && empty($order['payments'])): ?>
-<section class="mb-5 rounded-xl bg-white p-5">
-<h2 class="mb-3 font-bold">لغو سفارش پرداخت‌نشده</h2>
-<form method="post" action="<?= site_url('admin/orders/'.(int)$order['id'].'/fulfillment') ?>" onsubmit="return confirm('سفارش پرداخت‌نشده لغو شود؟')">
-<?= csrf_field() ?><input type="hidden" name="action" value="cancel">
-<button type="submit" class="rounded-lg border border-red-300 px-5 py-3 text-sm text-red-700">لغو و ثبت اعلان مشتری</button>
-</form></section>
+<section class="admin-panel admin-detail-wide"><h2>لغو سفارش پرداخت‌نشده</h2><form method="post" action="<?= site_url('admin/orders/'.(int)$order['id'].'/fulfillment') ?>" onsubmit="return confirm('سفارش پرداخت‌نشده لغو شود؟')"><?= csrf_field() ?><input type="hidden" name="action" value="cancel"><button type="submit">لغو و ثبت اعلان مشتری</button></form></section>
 <?php endif; ?>
 <?php if($order['payment_status']==='paid' && in_array($order['order_status'],['processing','shipped'],true)): ?>
-<section class="mb-5 rounded-xl bg-white p-5">
-<h2 class="mb-3 font-bold">وضعیت ارسال و اطلاع‌رسانی مشتری</h2>
-<form method="post" action="<?= site_url('admin/orders/'.(int)$order['id'].'/fulfillment') ?>" class="grid gap-3 sm:grid-cols-2">
-<?= csrf_field() ?>
-<?php if($order['order_status']==='processing'): ?>
-<input type="hidden" name="action" value="ship">
-<label class="grid gap-2 text-sm">کد رهگیری مرسوله<input type="text" name="tracking_code" required minlength="4" maxlength="100" pattern="[a-zA-Z0-9_-]+" class="rounded-lg border border-stone-200 p-3" placeholder="کد رهگیری"></label>
-<button type="submit" class="rounded-lg bg-[#012f24] p-3 text-white">ثبت ارسال و صف پیامک</button>
-<?php else: ?>
-<input type="hidden" name="action" value="deliver">
-<p class="text-sm">کد رهگیری: <b dir="ltr"><?= esc($order['tracking_code']??'—') ?></b></p>
-<button type="submit" class="rounded-lg bg-[#012f24] p-3 text-white">تأیید تحویل و صف پیامک</button>
-<?php endif; ?>
-</form>
-<p class="mt-3 text-xs text-stone-500">اطلاع‌رسانی فقط در صورت فعال‌بودن الگوی این رویداد و ارسال توسط پردازشگر صف انجام می‌شود.</p>
-</section>
-<?php endif; ?>
-<div class="mb-5 grid gap-4 md:grid-cols-2">
-<section class="rounded-xl bg-white p-5"><h2 class="mb-3 font-bold">اطلاعات تحویل</h2><p><?= esc($order['receiver_name']) ?> — <?= esc($order['receiver_mobile']) ?></p><p class="mt-2 text-sm"><?= esc($order['province']) ?>، <?= esc($order['city']) ?>، <?= esc($order['address']) ?></p><p class="mt-2 text-sm">کد پستی: <?= esc($order['postal_code']) ?></p></section>
-<section class="rounded-xl bg-white p-5"><h2 class="mb-3 font-bold">وضعیت مالی و سفارش</h2><p>وضعیت سفارش: <?= esc($order['order_status']) ?></p><p class="mt-2">وضعیت پرداخت: <?= esc($order['payment_status']) ?></p><p class="mt-2">روش ارسال: <strong><?= esc($order['shipping_title']??$order['shipping_method']) ?></strong></p><p class="mt-2">هزینه ارسال: <?= number_format((int)$order['shipping_toman']) ?> تومان</p><p class="mt-2">جمع نهایی: <strong><?= number_format((int)$order['total_toman']) ?> تومان</strong></p></section>
-</div>
-<section class="mb-5 overflow-x-auto rounded-xl bg-white p-5"><h2 class="mb-3 font-bold">اقلام خریداری‌شده</h2><table class="w-full min-w-[550px] text-right text-sm"><thead><tr><th class="p-2">محصول</th><th>SKU</th><th>سایز / رنگ</th><th>تعداد</th><th>قیمت</th></tr></thead><tbody><?php foreach($order['items'] as $item): ?><tr class="border-t"><td class="p-2"><?= esc($item['product_name']) ?></td><td><?= esc($item['sku']) ?></td><td><?= esc($item['size_label']) ?> / <?= esc($item['color_name']) ?></td><td><?= (int)$item['quantity'] ?></td><td><?= number_format((int)$item['subtotal_toman']) ?> تومان</td></tr><?php endforeach; ?></tbody></table></section>
-<section class="overflow-x-auto rounded-xl bg-white p-5"><h2 class="mb-3 font-bold">تراکنش‌های پرداخت</h2><table class="w-full min-w-[550px] text-right text-sm"><thead><tr><th class="p-2">درگاه</th><th>وضعیت</th><th>مبلغ</th><th>شناسه پیگیری</th></tr></thead><tbody><?php foreach($order['payments'] as $payment): ?><tr class="border-t"><td class="p-2"><?= esc($payment['provider']) ?></td><td><?= esc($payment['status']) ?></td><td><?= number_format((int)$payment['amount_toman']) ?> تومان</td><td><?= esc($payment['ref_id']??'—') ?></td></tr><?php endforeach; ?></tbody></table></section>
-</main></body></html>
+<section class="admin-panel admin-detail-wide"><h2>وضعیت ارسال و اطلاع‌رسانی مشتری</h2><form class="admin-form" method="post" action="<?= site_url('admin/orders/'.(int)$order['id'].'/fulfillment') ?>"><?= csrf_field() ?>
+<?php if($order['order_status']==='processing'): ?><input type="hidden" name="action" value="ship"><label>کد رهگیری مرسوله<input type="text" name="tracking_code" required minlength="4" maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="کد رهگیری" dir="ltr"></label><button type="submit">ثبت ارسال و صف پیامک</button>
+<?php else: ?><input type="hidden" name="action" value="deliver"><p>کد رهگیری: <bdi><?= esc($order['tracking_code']??'—') ?></bdi></p><button type="submit">تأیید تحویل و صف پیامک</button><?php endif; ?>
+</form><p class="admin-muted" style="margin-top:16px">اطلاع‌رسانی در صورت فعال‌بودن الگوی رویداد، توسط پردازشگر صف انجام می‌شود.</p></section><?php endif; ?>
+<section class="admin-panel admin-detail-wide"><h2>تاریخچه پرداخت و پیگیری</h2><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>درگاه</th><th>وضعیت</th><th>مبلغ (تومان)</th><th>شناسه پیگیری</th><th>زمان ثبت</th></tr></thead><tbody>
+<?php foreach($order['payments'] as $payment): ?><tr><td><?= esc($payment['provider']) ?></td><td><?= esc($payment['status']) ?></td><td><?= admin_number((int)$payment['amount_toman']) ?></td><td><bdi><?= esc($payment['ref_id']??'—') ?></bdi></td><td><?= esc(admin_date($payment['created_at']??null,true)) ?></td></tr><?php endforeach; ?>
+<?php if(!$order['payments']): ?><tr><td colspan="5" class="admin-empty">تراکنشی ثبت نشده است.</td></tr><?php endif; ?></tbody></table></div></section>
+</main><?= view('admin/partials/end') ?>

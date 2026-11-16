@@ -1,9 +1,9 @@
 <?= view('store/partials/header', ['title' => 'ورود به حساب | گره', 'description' => 'ورود و ثبت‌نام با شماره موبایل']) ?>
-<main class="gereh-container mx-auto min-h-[65vh] max-w-xl px-4 py-8" id="login-main">
+<main class="login-screen gereh-container mx-auto min-h-[65vh] max-w-xl px-4 py-8" id="login-main">
   <div class="gereh-card rounded-2xl p-6 shadow-sm sm:p-8">
     <a href="<?= site_url('/') ?>" class="gereh-muted text-sm">بازگشت به فروشگاه</a>
-    <h1 class="gereh-heading mt-5 text-2xl font-bold">ورود یا ثبت‌نام</h1>
-    <p class="gereh-muted my-4 text-sm">برای مشاهده سفارش‌ها و پیگیری خرید، شماره موبایل خود را وارد کنید.</p>
+    <h1 class="gereh-heading mt-5 text-2xl font-bold" id="login-title">به گره خوش اومدی</h1>
+    <p class="gereh-muted my-4 text-sm" id="login-description">شماره موبایلت را برای ورود یا ثبت‌نام وارد کن.</p>
     <form id="mobile-form" class="space-y-4" novalidate>
       <label class="block text-sm font-semibold" for="mobile">شماره موبایل</label>
       <input class="gereh-input w-full" id="mobile" type="tel" name="mobile" inputmode="numeric" dir="ltr" autocomplete="tel-national" placeholder="09123456789" maxlength="11" required pattern="09[0-9]{9}">
@@ -16,6 +16,8 @@
       <button class="gereh-button w-full" id="verify-otp" type="submit">ورود به حساب</button>
       <button type="button" class="gereh-muted w-full text-sm" id="change-mobile">اصلاح شماره موبایل</button>
     </form>
+    <p class="login-policy">با ورود، قوانین و حریم خصوصی گره را می‌پذیری.</p>
+    <a class="login-back" href="<?= site_url('account') ?>">بازگشت به حساب کاربری</a>
     <p id="login-message" role="status" aria-live="polite" class="mt-5 text-sm"></p>
   </div>
 </main>
@@ -52,7 +54,7 @@
     event.preventDefault();const button=document.getElementById('send-otp');
     if(!/^09[0-9]{9}$/.test(mobile.value.trim()))return show('شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.',true);
     button.disabled=true;show('در حال درخواست کد...');
-    try{await submit('otp/request',{mobile:mobile.value.trim()});mobileForm.classList.add('hidden');verifyForm.classList.remove('hidden');otp.focus();show('در صورت ارسال موفق، کد به موبایل شما پیامک می‌شود.');}
+    try{await submit('otp/request',{mobile:mobile.value.trim()});mobileForm.classList.add('hidden');verifyForm.classList.remove('hidden');document.getElementById('login-title').textContent='تأیید شماره موبایل';document.getElementById('login-description').textContent='کد ورود به شماره '+mobile.value.trim()+' ارسال شد.';otp.focus();show('در صورت ارسال موفق، کد به موبایل شما پیامک می‌شود.');}
     catch(error){show(error.message,true)}finally{button.disabled=false}
   });
   verifyForm.addEventListener('submit',async event=>{
@@ -62,7 +64,7 @@
     try{await submit('otp/verify',{mobile:mobile.value.trim(),code:otp.value.trim()});window.location.assign(destination);}
     catch(error){show(error.message,true)}finally{button.disabled=false}
   });
-  document.getElementById('change-mobile').addEventListener('click',()=>{verifyForm.classList.add('hidden');mobileForm.classList.remove('hidden');otp.value='';show('')});
+  document.getElementById('change-mobile').addEventListener('click',()=>{verifyForm.classList.add('hidden');mobileForm.classList.remove('hidden');document.getElementById('login-title').textContent='به گره خوش اومدی';document.getElementById('login-description').textContent='شماره موبایلت را برای ورود یا ثبت‌نام وارد کن.';otp.value='';mobile.focus();show('')});
 })();
 </script>
-<?= view('store/partials/footer') ?>
+<?= view('store/partials/footer', ['hideBottomNav'=>true, 'hideFooter'=>true]) ?>

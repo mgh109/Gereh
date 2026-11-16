@@ -14,6 +14,11 @@ class BlogController extends BaseController
             $page=max(1,min(10000,(int)$this->request->getGet('page')));
             $query=(new ArticleModel())->where('status','published')
                 ->where('published_at <=',date('Y-m-d H:i:s'));
+            $search = $this->request->getGet('q');
+            $search = is_string($search) ? mb_substr(trim($search), 0, 160) : '';
+            if ($search !== '') {
+                $query->groupStart()->like('title', $search)->orLike('excerpt', $search)->groupEnd();
+            }
             $total=$query->countAllResults(false);
             $articles=$query->orderBy('published_at','DESC')->findAll(12,($page-1)*12);
             return view('store/blog/index',['articles'=>$articles,'page'=>$page,'pages'=>(int)ceil($total/12)]);

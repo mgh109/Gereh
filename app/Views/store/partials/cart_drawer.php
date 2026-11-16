@@ -1,5 +1,5 @@
 <div id="gereh-cart-overlay" class="fixed inset-0 z-40 bg-black/40" hidden></div>
-<aside id="gereh-cart-drawer" class="fixed inset-y-0 right-0 z-50 flex w-[min(360px,92vw)] flex-col bg-[#f9f4ef] p-5 shadow-2xl" role="dialog" aria-modal="true" aria-label="سبد خرید" tabindex="-1" hidden>
+<aside id="gereh-cart-drawer" data-summary-url="<?= site_url('api/v1/cart') ?>" class="fixed inset-y-0 right-0 z-50 flex w-[min(360px,92vw)] flex-col bg-[#f9f4ef] p-5 shadow-2xl" role="dialog" aria-modal="true" aria-label="سبد خرید" tabindex="-1" hidden>
 <div class="flex items-center justify-between border-b border-stone-200 pb-4">
 <h2 class="text-xl font-bold">سبد خرید من</h2><button type="button" id="gereh-cart-close" class="rounded-lg p-2 text-2xl" aria-label="بستن سبد خرید">×</button>
 </div>
@@ -21,13 +21,14 @@ function render(summary){
   items.replaceChildren();message.textContent='';
   if(!summary?.lines?.length){const p=document.createElement('p');p.textContent='سبد خرید شما خالی است.';p.className='text-sm text-stone-500';items.append(p)}
   else for(const line of summary.lines){
-    const article=document.createElement('article');article.className='rounded-xl bg-white p-4';
+    const article=document.createElement('article');article.className='quick-cart-line';
+    if(line.product.image_url){const image=document.createElement('img');image.src=line.product.image_url;image.alt=line.product.name;image.className='quick-cart-image';article.append(image);}
     const title=document.createElement('a');title.href='<?= site_url('product') ?>/'+encodeURIComponent(line.product.slug);title.className='font-bold';title.textContent=line.product.name;
     const meta=document.createElement('p');meta.className='mt-2 text-xs text-stone-500';meta.textContent=[line.variant.size_label,line.variant.color_name].filter(Boolean).join(' / ');
     const price=document.createElement('p');price.className='mt-3 text-sm';price.textContent='تعداد: '+line.quantity+' • '+money(line.subtotal);
     article.append(title,meta,price);items.append(article);
   }
-  total.textContent=money(summary?.total||0);
+  total.textContent=money(summary?.total||0);document.dispatchEvent(new CustomEvent('gereh:cart-updated',{detail:summary}));
 }
 async function open(summary){
   previousFocus=document.activeElement;panel.hidden=false;overlay.hidden=false;document.body.style.overflow='hidden';panel.focus();

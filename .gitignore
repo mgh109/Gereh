@@ -1,4 +1,6 @@
 /vendor/
+/node_modules/
+/dist/
 /.env
 .env.*
 !.env.example
@@ -18,4 +20,14 @@
 .vscode/
 .DS_Store
 Thumbs.db
+/writable/ui-check/
 *.log
+
+/node_modules/
+/vendor/
+/.env
+.env.*
+!.env.example
+/writable/debugbar/*
+!/writable/debugbar/index.html
+/public/uploads/products/

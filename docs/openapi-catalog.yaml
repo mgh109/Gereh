@@ -12,6 +12,7 @@ paths:
       parameters:
         - { name: page, in: query, schema: { type: integer, minimum: 1 } }
         - { name: per_page, in: query, schema: { type: integer, minimum: 1, maximum: 48 } }
+        - { name: size, in: query, description: Exact active in-stock variant size. Persian and Arabic digits are normalized. Combined with other filters using AND., schema: { type: string, maxLength: 60 }, example: '40' }
         - { name: q, in: query, schema: { type: string } }
         - { name: category, in: query, schema: { type: string } }
         - { name: brand, in: query, schema: { type: string } }

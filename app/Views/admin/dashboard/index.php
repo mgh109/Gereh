@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>پیشخوان | مدیریت گره</title><link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
 <style>
-@font-face{font-family:Estedad;src:local("Estedad"),local("Estedad VF")}*{box-sizing:border-box}
+*{box-sizing:border-box}
 :root{--green:#012f24;--green2:#075d3c;--ink:#263b33;--muted:#81766e;--canvas:#f5f5f2;--sand:#efe3d4;--soft:#f9f4ef;--white:#fff}
 body{margin:0;background:var(--canvas);color:var(--ink);font-family:Estedad,Tahoma,sans-serif;font-size:12px}
 .shell{direction:ltr;display:flex;gap:24px;padding:24px;min-height:100vh;align-items:flex-start}
@@ -38,23 +38,23 @@ body{margin:0;background:var(--canvas);color:var(--ink);font-family:Estedad,Taho
 table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;background:var(--soft);font-weight:500;color:var(--muted)}td{height:64px;border-bottom:1px solid #f0eee9}th,td{padding:0 14px;white-space:nowrap}.status{display:inline-block;padding:6px 12px;border-radius:20px;background:#e7f1ec;color:var(--green2);font-size:10px}.logout{border:0;background:none;color:var(--muted);font:inherit;cursor:pointer}
 @media(max-width:1150px){.shell{gap:16px;padding:16px}.sidebar{flex-basis:230px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.middle{grid-template-columns:1fr}.main{height:auto;min-height:0}.sidebar{height:auto;min-height:0}.nav{height:auto}.attention{height:auto}}
 @media(max-width:760px){.shell{display:flex;flex-direction:column;padding:12px}.sidebar{width:100%;flex-basis:auto;gap:10px;border-radius:16px}.logo{height:44px}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));height:auto}.nav a{height:44px}.side-foot,.rule{display:none}.main{width:100%;height:auto}.topbar{height:auto;flex-wrap:wrap;padding:12px}.account{width:100%}.search{width:100%}.top-actions{display:none}.page-head{height:auto;align-items:flex-start}.page-title h1{font-size:20px}.store-link{width:112px}.stats{gap:10px}.stat{height:125px;padding:12px}.stat-value{font-size:18px}.chart{padding:16px}.orders{padding:12px;overflow:auto}.orders table{min-width:650px}}
-</style>
+</style><link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">
 </head>
 <body>
 <div class="shell">
 <main class="main">
 <header class="topbar">
-<div class="account"><span class="role">مدیر فروشگاه</span><img src="https://www.figma.com/api/mcp/asset/e6cef.svg" alt=""><span class="muted"><?= esc($adminName ?? 'مدیر فروشگاه') ?></span></div>
-<div class="search"><span>جست‌وجو در محصولات، سفارش‌ها و مشتریان…</span><img src="https://www.figma.com/api/mcp/asset/d78e2.svg" alt=""></div>
-<div class="top-actions"><span>پنل مدیریت گره</span><img src="https://www.figma.com/api/mcp/asset/cf9ce.svg" alt=""></div>
+<div class="account"><span class="role">مدیر فروشگاه</span><img src="<?= base_url('assets/figma/admin/e6cef.svg') ?>" alt=""><span class="muted"><?= esc($adminName ?? 'مدیر فروشگاه') ?></span></div>
+<div class="search"><span>جست‌وجو در محصولات، سفارش‌ها و مشتریان…</span><img src="<?= base_url('assets/figma/admin/d78e2.svg') ?>" alt=""></div>
+<div class="top-actions"><span>پنل مدیریت گره</span><img src="<?= base_url('assets/figma/admin/cf9ce.svg') ?>" alt=""></div>
 </header>
 <section class="page-head"><a class="store-link" href="<?= site_url('/') ?>" target="_blank">مشاهده فروشگاه</a><div class="page-title"><h1>پیشخوان</h1><p>نگاهی به وضعیت امروز فروشگاه</p></div></section>
 <section class="dashboard">
 <div class="stats">
-<article class="stat"><div class="stat-head"><span>درآمد امروز</span><img src="https://www.figma.com/api/mcp/asset/5bd26.svg" alt=""></div><strong class="stat-value" id="paid-revenue">—</strong><span class="stat-note">اطلاعات پرداخت‌های ثبت‌شده</span></article>
-<article class="stat"><div class="stat-head"><span>سفارش‌های جدید</span><img src="https://www.figma.com/api/mcp/asset/d88f1.svg" alt=""></div><strong class="stat-value" id="new-orders">—</strong><span class="stat-note">سفارش‌های منتظر پرداخت</span></article>
-<article class="stat"><div class="stat-head"><span>محصولات فعال</span><img src="https://www.figma.com/api/mcp/asset/b7b77.svg" alt=""></div><strong class="stat-value" id="active">—</strong><span class="stat-note">اطلاعات موجودی واقعی</span></article>
-<article class="stat"><div class="stat-head"><span>مشتریان</span><img src="https://www.figma.com/api/mcp/asset/53df4.svg" alt=""></div><strong class="stat-value" id="customer-count">—</strong><span class="stat-note">حساب‌های ثبت‌شده</span></article>
+<article class="stat"><div class="stat-head"><span>درآمد امروز</span><img src="<?= base_url('assets/figma/admin/5bd26.svg') ?>" alt=""></div><strong class="stat-value" id="paid-revenue">—</strong><span class="stat-note">اطلاعات پرداخت‌های ثبت‌شده</span></article>
+<article class="stat"><div class="stat-head"><span>سفارش‌های جدید</span><img src="<?= base_url('assets/figma/admin/d88f1.svg') ?>" alt=""></div><strong class="stat-value" id="new-orders">—</strong><span class="stat-note">سفارش‌های منتظر پرداخت</span></article>
+<article class="stat"><div class="stat-head"><span>محصولات فعال</span><img src="<?= base_url('assets/figma/admin/b7b77.svg') ?>" alt=""></div><strong class="stat-value" id="active">—</strong><span class="stat-note">اطلاعات موجودی واقعی</span></article>
+<article class="stat"><div class="stat-head"><span>مشتریان</span><img src="<?= base_url('assets/figma/admin/53df4.svg') ?>" alt=""></div><strong class="stat-value" id="customer-count">—</strong><span class="stat-note">حساب‌های ثبت‌شده</span></article>
 </div>
 <div class="middle">
 <section class="panel attention"><div class="panel-title">نیازمند توجه</div><div class="attention-list">
@@ -72,19 +72,19 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 </section>
 </main>
 <aside class="sidebar">
-<img class="logo" src="https://www.figma.com/api/mcp/asset/b7853.png" alt="گره">
+<img class="logo" src="<?= base_url('assets/figma/admin/b7853.png') ?>" alt="گره">
 <div class="side-title">مدیریت فروشگاه گره</div><div class="rule"></div>
 <nav class="nav">
-<a class="active" href="<?= site_url('admin') ?>"><img src="https://www.figma.com/api/mcp/asset/e1f74.svg" alt=""><span>پیشخوان</span></a>
-<a href="<?= site_url('admin/products') ?>"><img src="https://www.figma.com/api/mcp/asset/7bc70.svg" alt=""><span>محصولات</span></a>
-<a href="<?= site_url('admin/orders') ?>"><img src="https://www.figma.com/api/mcp/asset/409db.svg" alt=""><span>سفارش‌ها</span></a>
-<a href="#"><img src="https://www.figma.com/api/mcp/asset/7bc70.svg" alt=""><span>موجودی و تنوع‌ها</span></a>
-<a href="<?= site_url('admin/taxonomy') ?>"><img src="https://www.figma.com/api/mcp/asset/f8188.svg" alt=""><span>دسته‌بندی و برندها</span></a>
-<a href="<?= site_url('admin/customers') ?>"><img src="https://www.figma.com/api/mcp/asset/e6cef.svg" alt=""><span>مشتریان</span></a>
-<a href="#"><img src="https://www.figma.com/api/mcp/asset/f8188.svg" alt=""><span>تخفیف‌ها</span></a>
-<a href="<?= site_url('admin/banners') ?>"><img src="https://www.figma.com/api/mcp/asset/26d14.svg" alt=""><span>مدیریت صفحه اصلی</span></a>
-<a href="<?= site_url('admin/articles') ?>"><img src="https://www.figma.com/api/mcp/asset/41638.svg" alt=""><span>مجله و راهنماها</span></a>
-<a href="<?= site_url('admin/settings/sms') ?>"><img src="https://www.figma.com/api/mcp/asset/b1127.svg" alt=""><span>تنظیمات پیامک</span></a>
+<a class="active" href="<?= site_url('admin') ?>"><img src="<?= base_url('assets/figma/admin/e1f74.svg') ?>" alt=""><span>پیشخوان</span></a>
+<a href="<?= site_url('admin/products') ?>"><img src="<?= base_url('assets/figma/admin/7bc70.svg') ?>" alt=""><span>محصولات</span></a>
+<a href="<?= site_url('admin/orders') ?>"><img src="<?= base_url('assets/figma/admin/409db.svg') ?>" alt=""><span>سفارش‌ها</span></a>
+<a href="<?= site_url('admin/inventory') ?>"><img src="<?= base_url('assets/figma/admin/7bc70.svg') ?>" alt=""><span>موجودی و تنوع‌ها</span></a>
+<a href="<?= site_url('admin/taxonomy') ?>"><img src="<?= base_url('assets/figma/admin/f8188.svg') ?>" alt=""><span>دسته‌بندی و برندها</span></a>
+<a href="<?= site_url('admin/customers') ?>"><img src="<?= base_url('assets/figma/admin/e6cef.svg') ?>" alt=""><span>مشتریان</span></a>
+<a href="#"><img src="<?= base_url('assets/figma/admin/f8188.svg') ?>" alt=""><span>تخفیف‌ها</span></a>
+<a href="<?= site_url('admin/banners') ?>"><img src="<?= base_url('assets/figma/admin/26d14.svg') ?>" alt=""><span>مدیریت صفحه اصلی</span></a>
+<a href="<?= site_url('admin/articles') ?>"><img src="<?= base_url('assets/figma/admin/41638.svg') ?>" alt=""><span>مجله و راهنماها</span></a>
+<a href="<?= site_url('admin/settings/sms') ?>"><img src="<?= base_url('assets/figma/admin/b1127.svg') ?>" alt=""><span>تنظیمات پیامک</span></a>
 </nav>
 <div class="rule"></div><div class="side-foot">راهنمای مدیریت　 •　 <form method="post" action="<?= site_url('admin/logout') ?>" style="display:inline"><?= csrf_field() ?><button class="logout" type="submit">خروج</button></form></div>
 </aside>
@@ -100,7 +100,7 @@ setStat('customer-count',formatFa(data.customers)+' نفر');
 }).catch(()=>{['active','paid-revenue','new-orders','customer-count'].forEach(id=>setStat(id,'ناموجود'))});
 fetch('<?= site_url('api/v1/admin/orders?per_page=5') ?>',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(({data})=>{
 const tbody=document.getElementById('recent-orders');tbody.textContent='';
-if(!Array.isArray(data)||!data.length){tbody.insertRow().insertCell().textContent='سفارشی ثبت نشده است.';return}
+if(!Array.isArray(data)||!data.length){const cell=tbody.insertRow().insertCell();cell.colSpan=5;cell.textContent='سفارشی ثبت نشده است.';return}
 for(const order of data){
 const tr=tbody.insertRow();const a=document.createElement('a');a.href='<?= site_url('admin/orders') ?>/'+Number(order.id);a.textContent='مشاهده';tr.insertCell().appendChild(a);
 tr.insertCell().textContent=order.order_status||'—';tr.insertCell().textContent=formatFa(order.total_toman);tr.insertCell().textContent=order.receiver_name||'—';tr.insertCell().textContent=order.order_number||'—';

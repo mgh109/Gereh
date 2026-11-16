@@ -1,0 +1,21 @@
+Options -Indexes
+
+# Only public/ is web-accessible when the project is placed in public_html.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteRule (^|/)\. - [F,L]
+    RewriteRule ^(?:app|vendor|writable|tests|resources|docs|node_modules)(?:/|$) - [F,L,NC]
+    RewriteRule ^(?:composer\.(?:json|lock)|package(?:-lock)?\.json|spark|phpunit\.xml\.dist|README\.md)$ - [F,L,NC]
+
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteRule ^public(?:/|$) - [L]
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Fail closed if the host has disabled rewriting.
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

@@ -1,0 +1,46 @@
+/* Dashboard geometry follows Figma frame 188:45; text remains RTL. */
+body{line-height:1.7}
+.shell{max-width:1440px;margin-inline:auto}
+.main{height:auto;min-height:1072px;overflow:visible}
+.sidebar{height:auto;min-height:1072px;flex-shrink:0}
+.topbar,.account,.search,.top-actions,.page-head,.stats,.middle,.attention-row,.chart-head,.bars,.orders-head,table,.stat-head{direction:ltr}
+.account>* ,.search>* ,.page-title,.stat,.attention-row>span,.chart-head>*,.orders-head>*,th,td{direction:rtl}
+.account{flex-shrink:0;font-size:11px}
+.role{width:110px;text-align:center;flex-shrink:0}
+.search{flex-shrink:1;min-width:0;font-size:11px}
+.search span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-actions{justify-content:flex-end;white-space:nowrap}
+.topbar img,.nav img,.stat-head img{flex:none}
+.page-title{height:76px;text-align:right}
+.page-title h1{line-height:43px}
+.page-title p{line-height:20px}
+.stat-head{height:32px;flex:none}
+.stat-head span{flex:1;text-align:right}
+.stat-value{line-height:43px;text-align:right}
+.stat-note{line-height:17px}
+.stats .stat:nth-child(2) .stat-note{color:#a7771b}
+.panel-title{height:58px;line-height:34px;text-align:left}
+.attention-list{padding-top:16px}
+.attention-row{height:50px;font-size:12px}
+.attention-row a{font-size:10px;white-space:nowrap}
+.chart-head{height:34px}
+.bars{height:184px;padding:16px 0 0;border:0;gap:0;justify-content:space-between}
+.bar-item{flex:0 1 70px;font-size:9px;line-height:15px}
+.bar{background:#bdd0c7;border-radius:6px;flex-shrink:0}
+.bar.highlight{background:var(--green)}
+.chart-total{font-size:11px;font-weight:500;color:var(--muted);margin-top:16px}
+.orders{min-height:338px}
+.orders-head{height:34px;margin-bottom:16px}
+table{table-layout:fixed}
+th{font-size:11px}
+th,td{padding-inline:12px}
+th:nth-child(1){width:13.2%}th:nth-child(2){width:19.8%}th:nth-child(3){width:21.7%}th:nth-child(4){width:24.5%}th:nth-child(5){width:20.8%}
+tbody tr:nth-child(even){background:#fcfcfa}
+td a{color:var(--green2);text-decoration:none}
+.logo{flex:none}.side-title{margin-top:0;line-height:20px}
+.nav{flex:none}.side-foot{flex:none}
+.nav a{line-height:20px}
+.nav a:hover{background:#efe3d4}.nav a.active:hover{background:var(--green)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--green2);outline-offset:3px}
+@media(max-width:1150px){.main{min-height:0}.sidebar{min-height:900px}.account{width:auto}.topbar{gap:12px}.role{width:auto}.top-actions{font-size:12px}.middle{grid-template-columns:1fr}.attention{height:auto}.panel-title{text-align:right}}
+@media(max-width:760px){.shell{flex-direction:column-reverse}.sidebar{min-height:0}.side-title{margin:0}.main{min-height:0}.account{width:100%}.search{width:100%}.page-head{flex-direction:row}.page-title{height:auto}.stat-value{font-size:clamp(14px,4.2vw,18px)}.stat-head{font-size:10px;gap:4px}.chart-head small{max-width:48%;font-size:9px}.chart-head{font-size:13px}.bar-item{font-size:8px}.orders{min-height:220px}}

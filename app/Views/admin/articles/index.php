@@ -1,9 +1,9 @@
-<?= view('admin/orders/partials/top',['title'=>'مقالات']) ?>
-<main class="mx-auto max-w-6xl p-5">
-<header class="mb-6 flex items-center justify-between gap-4"><div><h1 class="text-2xl font-bold">مدیریت مقالات</h1><p class="mt-2 text-sm text-stone-500">محتوای سئویی؛ بدون نمایش در صفحه اصلی</p></div><a class="rounded-xl bg-[#012f24] px-5 py-3 text-sm text-white" href="<?= site_url('admin/articles/create') ?>">افزودن مقاله</a></header>
-<?php if(session()->getFlashdata('article_success')): ?><p role="status" class="mb-5 rounded-xl bg-green-50 p-4 text-green-800"><?= esc(session()->getFlashdata('article_success')) ?></p><?php endif; ?>
-<div class="overflow-x-auto rounded-xl bg-white p-4"><table class="w-full min-w-[600px] text-right text-sm"><thead><tr><th class="p-3">عنوان</th><th>آدرس</th><th>وضعیت</th><th>انتشار</th><th>عملیات</th></tr></thead><tbody>
-<?php foreach($articles as $a): ?><tr class="border-b border-stone-100"><td class="p-3"><?= esc($a['title']) ?></td><td><?= esc($a['slug']) ?></td><td><?= esc($a['status']) ?></td><td><?= esc($a['published_at']??'—') ?></td><td><a class="underline" href="<?= site_url('admin/articles/'.(int)$a['id'].'/edit') ?>">ویرایش</a></td></tr><?php endforeach; ?>
-<?php if(!$articles): ?><tr><td colspan="5" class="p-8 text-center">مقاله‌ای ثبت نشده است.</td></tr><?php endif; ?>
-</tbody></table></div>
-</main></body></html>
+<?= view('admin/partials/start',['title'=>'مجله و راهنماها','subtitle'=>'مقالات سئو، راهنمای خرید و محتوای فروشگاه','active'=>'articles']) ?>
+<main>
+<?php if(session()->getFlashdata('article_success')): ?><p role="status" class="admin-notice admin-success"><?= esc(session()->getFlashdata('article_success')) ?></p><?php endif; ?>
+<form class="admin-toolbar" data-local-filter><input class="admin-search" name="q" type="search" placeholder="جست‌وجوی نوشته…" aria-label="جست‌وجوی نوشته"><select name="status" aria-label="وضعیت نوشته"><option value="">همه وضعیت‌ها</option><option value="published">منتشر شده</option><option value="draft">پیش‌نویس</option></select><button type="submit" class="admin-button admin-button-soft">جست‌وجو</button><a class="admin-button" href="<?= site_url('admin/articles/create') ?>">+ نوشته جدید</a></form>
+<section class="admin-panel"><div class="admin-panel-heading"><h2>نوشته‌ها و راهنماها</h2><span class="admin-muted"><?= count($articles) ?> نوشته</span></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>عنوان</th><th>آدرس</th><th>انتشار</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody>
+<?php foreach($articles as $a): ?><tr data-filter-row data-status="<?= esc($a['status'],'attr') ?>"><td><?= esc($a['title']) ?></td><td><bdi><?= esc($a['slug']) ?></bdi></td><td><?= esc(admin_date($a['published_at']??null)) ?></td><td><span class="admin-badge <?= $a['status']==='published'?'':'admin-badge-warning' ?>"><?= $a['status']==='published'?'منتشر شده':'پیش‌نویس' ?></span></td><td><a href="<?= site_url('admin/articles/'.(int)$a['id'].'/edit') ?>">ویرایش</a></td></tr><?php endforeach; ?>
+<tr data-filter-empty <?= $articles?'hidden':'' ?>><td colspan="5" class="admin-empty">نوشته‌ای برای نمایش وجود ندارد.</td></tr></tbody></table></div></section>
+<aside class="admin-notice"><strong>سئو و راهنماهای فروشگاه</strong><p>عنوان و توضیحات سئو را در فرم ویرایش هر نوشته تنظیم کنید.</p></aside>
+</main><?= view('admin/partials/end') ?>

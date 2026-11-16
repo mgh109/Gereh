@@ -1,0 +1,7 @@
+<header class="home-header bg-gereh-paper">
+<div class="mx-auto w-full max-w-[390px] min-[701px]:max-w-[1120px] relative flex h-[93px] items-center justify-between px-7">
+<button class="absolute right-7 top-[53px] grid size-[25px] place-items-center border-0 bg-transparent p-0" id="menu-open" type="button" aria-label="بازکردن منو" aria-controls="side-menu" aria-expanded="false"><img src="<?= base_url('assets/figma/0ee4b.svg') ?>" alt="" width="25" height="25"></button>
+<a href="<?= site_url('/') ?>" class="absolute left-1/2 top-[34px] flex -translate-x-1/2 flex-col items-center gap-1 [&>img]:h-[35px] [&>img]:w-[50px] [&>img]:object-contain [&>span]:text-[9px] [&>span]:leading-4 [&>span]:font-medium" aria-label="گره، صفحه اصلی"><img src="<?= base_url('assets/figma/b7853.png') ?>" alt="" width="50" height="35"><span>G E R E H</span></a>
+<button type="button" id="cart-drawer-trigger" class="absolute left-7 top-[52px] grid size-[27px] place-items-center border-0 bg-transparent p-0" aria-label="باز کردن سبد خرید" aria-controls="gereh-cart-drawer"><img src="<?= base_url('assets/figma/3067c.svg') ?>" alt="" width="27" height="27"><span class="absolute -left-[11px] top-[10px] grid h-5 min-w-5 place-items-center rounded-full bg-[#cd3528] text-[11px] font-bold text-white" data-cart-count hidden></span></button>
+</div></header>
+

@@ -33,6 +33,16 @@ class CartService
             ->where('p.status', 'active')->where('p.deleted_at', null)
             ->get()->getResultArray();
         $lines = [];
+        $images = [];
+        if ($rows !== []) {
+            $productIds = array_values(array_unique(array_column($rows, 'catalog_product_id')));
+            foreach ($this->db->table('product_media')->select('product_id, file_path')
+                ->whereIn('product_id', $productIds)->where('media_type', 'image')
+                ->orderBy('is_primary', 'DESC')->orderBy('sort_order', 'ASC')->orderBy('id', 'ASC')
+                ->get()->getResultArray() as $image) {
+                $images[$image['product_id']] ??= base_url(ltrim($image['file_path'], '/'));
+            }
+        }
         $total = 0;
         $count = 0;
         foreach ($rows as $row) {
@@ -47,7 +57,7 @@ class CartService
                 'id' => $id, 'product_id' => (int) $row['catalog_product_id'],
                 'color_name' => $row['color_name'], 'size_label' => $row['size_label'],
             ];
-            $product = ['id' => (int) $row['catalog_product_id'], 'name' => $row['product_name'], 'slug' => $row['product_slug']];
+            $product = ['id' => (int) $row['catalog_product_id'], 'name' => $row['product_name'], 'slug' => $row['product_slug'], 'image_url' => $images[$row['catalog_product_id']] ?? null];
             $lines[] = [
                 'id' => $id, 'variant' => $variant, 'product' => $product,
                 'quantity' => $quantity, 'available' => $available,

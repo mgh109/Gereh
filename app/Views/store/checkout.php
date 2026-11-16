@@ -1,5 +1,5 @@
 <?= view('store/partials/header', ['title' => 'تکمیل خرید | گره', 'description' => 'ثبت اطلاعات گیرنده و تکمیل سفارش']) ?>
-<main class="gereh-container mx-auto min-h-[70vh] max-w-5xl px-4 py-8">
+<main class="checkout-screen gereh-container mx-auto min-h-[70vh] max-w-5xl px-4 py-8">
   <header class="mb-6"><a href="<?= site_url('cart') ?>" class="gereh-muted text-sm">بازگشت به سبد خرید</a><h1 class="gereh-heading mt-3 text-2xl font-bold">تکمیل سفارش</h1></header>
   <?php if (!$checkoutEnabled): ?>
     <div role="status" class="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">پرداخت آنلاین هنوز برای این فروشگاه فعال نشده است. می‌توانید اطلاعات سفارش را بررسی کنید، اما تا زمان تأیید درگاه امکان پرداخت وجود ندارد.</div>
@@ -45,7 +45,7 @@
       <div class="mt-3 flex justify-between text-sm"><span>ارسال</span><strong id="shipping-price">—</strong></div>
       <div class="my-4 flex justify-between border-t border-stone-200 pt-4"><strong>مبلغ نهایی</strong><strong id="grand-total">—</strong></div>
       <button type="submit" form="checkout-form" id="pay-button" class="gereh-button mt-4 w-full" <?= !$checkoutEnabled?'disabled':'' ?>>تأیید و انتقال به درگاه</button>
-      <p class="gereh-muted mt-4 text-xs">موجودی و مبلغ نهایی در سرور مجدداً بررسی می‌شود.</p>
+      <p class="gereh-muted mt-4 text-xs">پرداخت مستقیم از طریق درگاه بانکی</p>
     </aside>
   </div>
 </main>
@@ -132,4 +132,4 @@
   });
 })();
 </script>
-<?= view('store/partials/footer') ?>
+<?= view('store/partials/footer', ['hideBottomNav'=>true, 'hideFooter'=>true]) ?>

@@ -1,5 +1,5 @@
-<?= view('admin/orders/partials/top',['title'=>'تنظیمات پیامک']) ?>
-<main class="mx-auto max-w-4xl p-4 sm:p-6">
+<?= view('admin/partials/start', ['title'=>'تنظیمات فروشگاه','subtitle'=>'پیامک و اعلان‌های فروشگاه','active'=>'settings']) ?>
+<nav class="admin-tabs" aria-label="تنظیمات"><a class="is-active" href="<?= site_url('admin/settings/sms') ?>">پیامک و اعلان‌ها</a><a href="<?= site_url('admin/shipping') ?>">ارسال و تعرفه‌ها</a></nav><main class="admin-legacy admin-settings-page">
 <a href="<?= site_url('admin') ?>" class="text-sm text-stone-500">بازگشت به پیشخوان</a>
 <h1 class="my-5 text-2xl font-bold">تنظیمات سرویس پیامکی</h1>
 <p class="mb-5 text-sm text-stone-600">تنظیم ارسال کد ورود با خط خدماتی اشتراکی ملی پیامک؛ رمز و نام کاربری تنها در فایل امن سرور نگهداری می‌شوند.</p>
@@ -79,4 +79,4 @@
 <?php if(!$recent): ?><tr><td colspan="5" class="p-5 text-center">هنوز پیامکی در صف ثبت نشده است.</td></tr><?php endif; ?>
 </tbody></table></div>
 </section>
-</main></body></html>
+</main><?= view('admin/partials/end') ?>

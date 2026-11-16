@@ -12,6 +12,12 @@
 
 Keep the full project under a **private directory outside public_html**; point the domain's document root to `<project>/public`. The `.env`, `app/`, `vendor/`, and `writable/` folders must not be served directly by Apache/Nginx. Do not move `index.php` without carefully updating its root paths.
 
+### Hosting with the project root as document root
+
+If the domain must point to `public_html` (or the main project folder), upload the complete project there, including both `.htaccess` files. The root `.htaccess` internally forwards requests to `public/`, so asset URLs and application URLs do not need a `/public` prefix. It also denies direct requests to private directories and configuration files. Apache/LiteSpeed must support `mod_rewrite` and permit `.htaccess` overrides. Nginx does not read these files: configure its document root to `public/` instead.
+
+Before going live, verify `/`, an application route and a CSS asset, then confirm `/.env`, `/app/Config/Database.php`, `/vendor/autoload.php` and `/writable/` return 403. Do not upload `node_modules`, tests, or development tools. Include `vendor/` and built `public/assets/css/app.css`. Keep the `public` directory in place.
+
 ## Environment
 
 Copy `.env.example` to a server-local `.env` (never commit). Set:

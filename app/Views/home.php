@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= esc($title) ?></title>
+    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
     <style>
-        :root { color-scheme: light; font-family: Tahoma, Arial, sans-serif; }
+        :root { color-scheme: light; font-family: Estedad, Tahoma, sans-serif; }
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f5f5f3; color: #171717; }
         main { width: min(92%, 680px); padding: 48px 32px; background: #fff; border: 1px solid #e8e8e5; border-radius: 20px; text-align: center; }

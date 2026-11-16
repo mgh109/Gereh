@@ -32,11 +32,12 @@ class Storefront extends BaseController
                 'products' => $result['data'],
                 'pagination' => $result['meta'],
                 'brands' => $catalog->brands(),
+                'sizes' => $catalog->sizes(),
             ]);
         } catch (\Throwable $exception) {
             log_message('error', 'Storefront shop catalog: {message}', ['message' => $exception->getMessage()]);
             return view('store/shop', [
-                'products' => [], 'brands' => [],
+                'products' => [], 'brands' => [], 'sizes' => [],
                 'pagination' => ['page' => 1, 'per_page' => 24, 'total' => 0, 'last_page' => 0],
             ]);
         }

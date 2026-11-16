@@ -40,10 +40,13 @@ class CatalogController extends BaseController
                 return $this->failure('پارامتر ورودی نامعتبر است.', 422, [$field => 'Must be a non-negative integer.']);
             }
         }
-        foreach (['sort', 'brand', 'category', 'q'] as $field) {
+        foreach (['sort', 'brand', 'category', 'q', 'size'] as $field) {
             if (isset($filters[$field]) && ! is_string($filters[$field])) {
                 return $this->failure('پارامتر ورودی نامعتبر است.', 422, [$field => 'Must be a string.']);
             }
+        }
+        if (isset($filters['size']) && mb_strlen($filters['size']) > 60) {
+            return $this->failure('سایز نامعتبر است.', 422, ['size'=>'Maximum length is 60.']);
         }
         if (isset($filters['sort']) && ! in_array($filters['sort'], ['', 'newest', 'price_asc', 'price_desc'], true)) {
             return $this->failure('مرتب‌سازی نامعتبر است.', 422, ['sort' => 'Unsupported sort order.']);

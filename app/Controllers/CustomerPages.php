@@ -21,7 +21,7 @@ class CustomerPages extends BaseController
     {
         $customerId = (int) session()->get('customer_id');
         if ($customerId < 1) {
-            return redirect()->to(site_url('login?return=' . rawurlencode('account')));
+            return view('store/account_guest');
         }
 
         try {

@@ -16,7 +16,7 @@ class CatalogEditorController extends BaseController {
             'product'=>$product,
             'categories'=>(new CategoryModel())->orderBy('name')->findAll(),
             'brands'=>(new BrandModel())->orderBy('name')->findAll(),
-            'variants'=>$product?(new ProductVariantModel())->where('product_id',$product['id'])->findAll():[],
+            'variants'=>$product?(new ProductVariantModel())->select('product_variants.*, COALESCE(inventory_items.quantity,0) AS quantity',false)->join('inventory_items','inventory_items.variant_id=product_variants.id','left')->where('product_id',$product['id'])->findAll():[],
             'media'=>$product?(new \App\Models\ProductMediaModel())->where('product_id',$product['id'])->orderBy('sort_order')->findAll():[],
         ]);
     }

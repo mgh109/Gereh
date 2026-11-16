@@ -32,7 +32,7 @@ class AuthController extends BaseController
         }
         $rules = [
             'email' => 'required|valid_email|max_length[190]',
-            'password' => 'required|min_length[8]|max_length[200]',
+            'password' => 'required|max_length[200]',
         ];
 
         if (! $this->validate($rules)) {

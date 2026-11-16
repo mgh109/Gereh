@@ -1,10 +1,13 @@
 <?= view('store/partials/header', ['title' => 'حساب کاربری | گره', 'description' => 'پروفایل و پیگیری سفارش‌های فروشگاه گره']) ?>
-<main class="gereh-container mx-auto min-h-[65vh] max-w-4xl px-4 py-8">
+<main class="account-screen gereh-container mx-auto min-h-[65vh] max-w-4xl px-4 py-8">
   <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-    <h1 class="gereh-heading text-2xl font-bold">حساب کاربری من</h1>
+    <h1 class="gereh-heading text-2xl font-bold">حساب کاربری</h1>
     <button type="button" class="gereh-muted text-sm" id="logout">خروج از حساب</button>
   </div>
-  <section class="gereh-card mb-6 rounded-2xl p-5">
+  <p class="gereh-muted">خریدها و اطلاعاتت را از اینجا مدیریت کن</p>
+  <section class="account-welcome"><h2><?= esc(trim(($customer['first_name'] ?? '').' '.($customer['last_name'] ?? '')) ?: 'کاربر گره') ?>، خوش اومدی</h2><p>حساب شما با شماره موبایل تأیید شده است.</p><a href="#profile" class="mt-3 inline-block text-xs font-bold">ویرایش اطلاعات حساب ‹</a></section>
+  <nav class="account-links" aria-label="مدیریت حساب"><a href="#orders">سفارش‌های من</a><a href="<?= site_url('favorites') ?>">علاقه‌مندی‌ها</a><a href="#profile">اطلاعات حساب</a><a href="<?= site_url('blog') ?>">راهنمای خرید</a></nav>
+  <section id="profile" class="gereh-card mb-6 rounded-2xl p-5" hidden>
     <h2 class="mb-4 font-bold">اطلاعات شخصی</h2>
     <p class="gereh-muted mb-4" dir="ltr"><?= esc($customer['mobile']) ?></p>
     <form id="profile-form" class="grid gap-4 sm:grid-cols-2">
@@ -14,7 +17,7 @@
     </form>
     <p id="profile-message" role="status" aria-live="polite" class="mt-3 text-sm"></p>
   </section>
-  <section class="gereh-card rounded-2xl p-5">
+  <section id="orders" class="gereh-card rounded-2xl p-5" hidden>
     <h2 class="mb-5 font-bold">سفارش‌های من</h2>
     <?php if (empty($orders)): ?>
       <p class="gereh-muted mb-4">هنوز سفارشی ثبت نکرده‌اید.</p><a class="gereh-button" href="<?= site_url('shop') ?>">مشاهده فروشگاه</a>
@@ -32,6 +35,12 @@
 </main>
 <script>
 (()=>{
+  function showAccountSection(){
+    for(const id of ['profile','orders'])document.getElementById(id).hidden=location.hash!=='#'+id;
+    const active=document.getElementById(location.hash.slice(1));
+    if(active && ['profile','orders'].includes(active.id))active.scrollIntoView({block:'start'});
+  }
+  window.addEventListener('hashchange',showAccountSection);showAccountSection();
   async function send(method,path,data){
     const token=await fetch('<?= site_url('api/v1/auth/csrf') ?>',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json());
     const response=await fetch(path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token.data?.token||''},body:JSON.stringify(data)});
@@ -51,4 +60,4 @@
   });
 })();
 </script>
-<?= view('store/partials/footer') ?>
+<?= view('store/partials/footer', ['hideFooter'=>true]) ?>

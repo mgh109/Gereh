@@ -1,6 +1,43 @@
 @import "tailwindcss";
 @source "../../app/Views/**/*.php";
 @source "../../app/Controllers/**/*.php";
+
+/* Self-hosted fonts: no local installation or external font service required. */
+@font-face {
+  font-family: Estedad;
+  src: url("../fonts/Estedad/Estedad-Thin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+}
+@font-face {
+  font-family: Estedad;
+  src: url("../fonts/Estedad/Estedad-Light.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: Estedad;
+  src: url("../fonts/Estedad/Estedad-Medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: Estedad;
+  src: url("../fonts/Estedad/Estedad-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: Estedad;
+  src: url("../fonts/Estedad/Estedad-Black.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
 @theme {
   --color-gereh-900:#012f24;
   --color-gereh-700:#075d3c;

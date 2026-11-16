@@ -26,6 +26,10 @@ final class AdminOrdersService
         $query = $this->db->table('orders o')
             ->select('o.id, o.order_number, o.customer_id, o.receiver_name, o.total_toman, o.payment_status, o.order_status, o.shipping_method, o.created_at, c.mobile AS customer_mobile')
             ->join('customers c', 'c.id = o.customer_id');
+        $term = mb_substr(trim((string) ($filters['q'] ?? '')), 0, 100);
+        if ($term !== '') {
+            $query->groupStart()->like('o.order_number', $term)->orLike('o.receiver_name', $term)->orLike('c.mobile', $term)->groupEnd();
+        }
         foreach (['payment_status' => ['unpaid', 'paid', 'review_required', 'failed'],
                   'order_status' => ['pending_payment', 'processing', 'payment_review', 'cancelled', 'shipped', 'delivered']] as $field => $allowed) {
             $value = $filters[$field] ?? null;

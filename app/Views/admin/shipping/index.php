@@ -1,5 +1,5 @@
-<?= view('admin/orders/partials/top',['title'=>'روش‌های ارسال']) ?>
-<main class="mx-auto max-w-5xl p-4 sm:p-6">
+<?= view('admin/partials/start', ['title'=>'روش‌های ارسال','subtitle'=>'هزینه ارسال و محدوده خدمات','active'=>'settings']) ?>
+<nav class="admin-tabs" aria-label="تنظیمات"><a  href="<?= site_url('admin/settings/sms') ?>">پیامک و اعلان‌ها</a><a class="is-active" href="<?= site_url('admin/shipping') ?>">ارسال و تعرفه‌ها</a></nav><main class="admin-legacy">
 <h1 class="mb-3 text-2xl font-bold">مدیریت روش‌های ارسال</h1>
 <p class="mb-6 text-sm text-stone-600">هزینه‌های ثبت‌شده در این بخش مبنای محاسبه قطعی سمت سرور است. پیش از فعال‌سازی روش سریع یا تحویل حضوری، قرارداد و محدوده ارائه خدمات را تأیید کنید.</p>
 <?php if(session()->getFlashdata('shipping_error')): ?><p role="alert" class="mb-4 rounded-xl bg-red-50 p-4 text-red-700"><?= esc(session()->getFlashdata('shipping_error')) ?></p><?php endif; ?>
@@ -30,4 +30,4 @@
 </form>
 <?php endforeach; ?>
 </div>
-</main></body></html>
+</main><?= view('admin/partials/end') ?>

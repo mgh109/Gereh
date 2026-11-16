@@ -48,11 +48,15 @@ $routes->get('blog/(:segment)', 'BlogController::show/$1');
 $routes->get('size-guide', static fn () => view('store/size_guide'), ['as' => 'store.size-guide']);
 $routes->get('product/(:segment)', 'Storefront::product/$1', ['as' => 'store.product']);
 $routes->get('cart', 'CartController::index', ['as' => 'store.cart']);
+$routes->get('favorites', static fn () => view('store/favorites'), ['as' => 'store.favorites']);
 $routes->get('login', 'CustomerPages::login');
 $routes->get('account', 'CustomerPages::account');
 $routes->get('checkout', 'CustomerPages::checkout');
 $routes->post('cart/add', 'CartController::add', ['filter' => 'csrf']);
 $routes->post('cart/update', 'CartController::update', ['filter' => 'csrf']);
+
+// Keep the commonly typed capitalized entry URL on the canonical admin route.
+$routes->get('Admin', static fn () => redirect()->to('/admin'));
 
 $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static function (RouteCollection $routes) {
     $routes->get('login', 'AuthController::login', ['as' => 'admin.login']);
@@ -62,6 +66,7 @@ $routes->group('admin', ['namespace' => 'App\\Controllers\\Admin'], static funct
     $routes->group('', ['filter' => 'adminauth'], static function (RouteCollection $routes) {
         $routes->get('/', 'DashboardController::index', ['as' => 'admin.dashboard']);
         $routes->get('products', 'ProductsController::index', ['as' => 'admin.products']);
+        $routes->get('inventory', 'InventoryController::index');
         $routes->get('taxonomy', 'TaxonomyController::index');
         $routes->get('customers', 'CustomersController::index');
         $routes->get('customers/(:num)', 'CustomersController::show/$1');

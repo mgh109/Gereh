@@ -27,6 +27,11 @@ class CatalogReadService
         return (new CategoryModel($this->db))->where('status', 'active')->orderBy('sort_order')->findAll(100);
     }
 
+    public function sizes(): array
+    {
+        return SizeFilter::options($this->db, true);
+    }
+
     /**
      * Both SSR and public API use the same filtered, paginated catalog query.
      * All media for the current page is fetched in a single query.
@@ -37,9 +42,14 @@ class CatalogReadService
         $perPage = max(1, min(48, (int) ($filters['per_page'] ?? 24)));
         $query = (new ProductModel($this->db))->where('status', 'active');
 
-        $search = trim((string) ($filters['q'] ?? ''));
+        $search = SizeFilter::text($filters['q'] ?? '', 120);
         if ($search !== '') {
-            $query->like('name', mb_substr($search, 0, 120));
+            $query->groupStart()->like('name', $search)->orLike('slug', $search)
+                ->orWhereIn('id', SizeFilter::variants($this->db, true)->like('sv.sku', $search))->groupEnd();
+        }
+        $size = SizeFilter::normalize($filters['size'] ?? '');
+        if ($size !== '') {
+            $query->whereIn('id', SizeFilter::productIds($this->db, $size, true));
         }
         foreach (['category' => ['categories', 'category_id'], 'brand' => ['brands', 'brand_id']] as $key => [$table, $column]) {
             $slug = trim((string) ($filters[$key] ?? ''));

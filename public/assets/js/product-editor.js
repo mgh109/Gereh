@@ -7,7 +7,14 @@
   function changed() { dirty = true; state.textContent = 'تغییرات ذخیره نشده'; }
   function preview() {
     form.querySelector('[data-preview-name]').textContent = form.elements.name.value || 'نام محصول';
-    form.querySelector('[data-preview-price]').textContent = new Intl.NumberFormat('fa-IR').format(Number(form.elements.price_toman.value) || 0) + ' تومان';
+    const regular=Number(form.elements.price_toman.value)||0, saleInput=form.elements.sale_price_toman;
+    const sale=Number(saleInput.value), discounted=saleInput.value!=='' && Number.isInteger(sale) && sale>0 && sale<regular;
+    saleInput.setCustomValidity(saleInput.value!=='' && !discounted?'قیمت با تخفیف باید بیشتر از صفر و کمتر از قیمت اصلی باشد.':'');
+    const fmt=n=>new Intl.NumberFormat('fa-IR').format(n)+' تومان';
+    form.querySelector('[data-preview-price]').textContent=fmt(discounted?sale:regular);
+    const oldPrice=form.querySelector('[data-preview-regular]'),discount=form.querySelector('[data-preview-discount]');
+    oldPrice.hidden=!discounted;oldPrice.textContent=discounted?fmt(regular):'';
+    discount.hidden=!discounted;discount.textContent=discounted?new Intl.NumberFormat('fa-IR',{maximumFractionDigits:1}).format((regular-sale)/regular*100)+'٪ تخفیف':'';
     form.querySelector('[data-preview-description]').textContent = form.elements.short_description.value;
   }
   form.addEventListener('input', () => { changed(); preview(); });

@@ -24,14 +24,22 @@ class CatalogEditorController extends BaseController {
         ]);
     }
     public function save(?string $id=null) {
-        $rules=['name'=>'required|max_length[220]','slug'=>'permit_empty|regex_match[/^[a-z0-9-]+$/]|max_length[220]','price_toman'=>'required|is_natural|less_than_equal_to[100000000000]','status'=>'required|in_list[draft,active,archived]','new_brand'=>'permit_empty|max_length[160]','product_code'=>'permit_empty|max_length[80]','item_condition'=>'permit_empty|in_list[new,used,stock]','category_id'=>'permit_empty|is_natural_no_zero','brand_id'=>'permit_empty|is_natural_no_zero','meta_title'=>'permit_empty|max_length[255]','meta_description'=>'permit_empty|max_length[320]','alt_text'=>'permit_empty|max_length[255]' ];
+        $rules=['name'=>'required|max_length[220]','slug'=>'permit_empty|regex_match[/^[a-z0-9-]+$/]|max_length[220]','price_toman'=>'required|is_natural|less_than_equal_to[100000000000]','sale_price_toman'=>'permit_empty|is_natural_no_zero|less_than_equal_to[100000000000]','status'=>'required|in_list[draft,active,archived]','new_brand'=>'permit_empty|max_length[160]','product_code'=>'permit_empty|max_length[80]','item_condition'=>'permit_empty|in_list[new,used,stock]','category_id'=>'permit_empty|is_natural_no_zero','brand_id'=>'permit_empty|is_natural_no_zero','meta_title'=>'permit_empty|max_length[255]','meta_description'=>'permit_empty|max_length[320]','alt_text'=>'permit_empty|max_length[255]' ];
         if (!$this->validate($rules)) return redirect()->back()->withInput()->with('errors',$this->validator->getErrors());
+        $regularPrice=(int)$this->request->getPost('price_toman');
+        $saleValue=$this->request->getPost('sale_price_toman');
+        $hasSale=$saleValue!==null && $saleValue!=='';
+        $salePrice=$hasSale?(int)$saleValue:null;
+        if ($hasSale && ($salePrice<=0 || $salePrice >= $regularPrice)) {
+            return redirect()->back()->withInput()->with('errors',['sale_price_toman'=>'قیمت با تخفیف باید بیشتر از صفر و کمتر از قیمت اصلی باشد.']);
+        }
         $data=[
             'name'=>trim((string)$this->request->getPost('name')),
             'slug'=>trim((string)$this->request->getPost('slug')),
             'short_description'=>(string)$this->request->getPost('short_description'),
             'description'=>(string)$this->request->getPost('description'),
-            'price_toman'=>(int)$this->request->getPost('price_toman'),
+            'price_toman'=>$hasSale?$salePrice:$regularPrice,
+            'compare_at_price_toman'=>$hasSale?$regularPrice:null,
             'status'=>(string)$this->request->getPost('status'),
             'meta_title'=>trim((string)$this->request->getPost('meta_title')) ?: null,
             'meta_description'=>trim((string)$this->request->getPost('meta_description')) ?: null,

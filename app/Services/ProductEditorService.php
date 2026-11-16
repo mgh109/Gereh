@@ -17,6 +17,9 @@ final class ProductEditorService
     public function save(?int $id, array $data, array $rows, string $newBrand = '', array $media = []): int
     {
         if (($data['status']??'')==='active' && (int)($data['price_toman']??0)<=0) throw new InvalidArgumentException('برای انتشار، قیمت فروش باید بیشتر از صفر باشد.');
+        if (isset($data['compare_at_price_toman']) && ((int)$data['price_toman']<=0 || (int)$data['compare_at_price_toman'] <= (int)$data['price_toman'])) {
+            throw new InvalidArgumentException('قیمت با تخفیف باید بیشتر از صفر و کمتر از قیمت اصلی باشد.');
+        }
         $db = $this->db;
         $db->transBegin();
         try {

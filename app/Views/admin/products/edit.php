@@ -12,7 +12,10 @@
 <label>دسته‌بندی<select name="category_id"><option value="">بدون دسته</option><?php foreach($categories as $item): ?><option value="<?= (int)$item['id'] ?>" <?= (string)old('category_id',$product['category_id']??'')===(string)$item['id']?'selected':'' ?>><?= esc($item['name']) ?></option><?php endforeach; ?></select></label>
 <label>برند<select name="brand_id" id="editor-brand"><option value="">بدون برند</option><?php foreach($brands as $item): ?><option value="<?= (int)$item['id'] ?>" <?= (string)old('brand_id',$product['brand_id']??'')===(string)$item['id']?'selected':'' ?>><?= esc($item['name']) ?></option><?php endforeach; ?></select></label>
 <details class="admin-field-full" <?= old('new_brand')?'open':'' ?>><summary>+ افزودن برند جدید در همین فرم</summary><label>نام برند جدید<input name="new_brand" maxlength="160" value="<?= esc(old('new_brand',''),'attr') ?>" placeholder="مثلاً ASICS"></label><p class="admin-muted">با ذخیره محصول، برند جدید ایجاد و انتخاب می‌شود.</p></details>
-<label>قیمت فروش (تومان)<input type="number" min="0" max="100000000000" required name="price_toman" value="<?= esc((string)old('price_toman',$product['price_toman']??0),'attr') ?>"></label>
+<?php $hasProductSale = (int)($product['compare_at_price_toman']??0) > (int)($product['price_toman']??0); ?>
+<label>قیمت اصلی (تومان)<input type="number" min="0" max="100000000000" step="1" required name="price_toman" value="<?= esc((string)old('price_toman',$hasProductSale?$product['compare_at_price_toman']:($product['price_toman']??0)),'attr') ?>"></label>
+<label>قیمت با تخفیف (تومان)<input type="number" min="1" max="100000000000" step="1" name="sale_price_toman" value="<?= esc((string)old('sale_price_toman',$hasProductSale?$product['price_toman']:''),'attr') ?>" placeholder="اختیاری"></label>
+<p class="admin-muted admin-field-full">قیمت با تخفیف باید از قیمت اصلی کمتر باشد. برای حذف تخفیف، کادر قیمت با تخفیف را خالی کنید.</p>
 <label>نشانی انگلیسی محصول<input name="slug" pattern="[a-z0-9-]+" maxlength="220" dir="ltr" value="<?= esc(old('slug',$product['slug']??''),'attr') ?>" placeholder="خالی بگذارید تا خودکار ساخته شود"></label>
 <?php if($editorFieldsReady ?? false): ?>
 <label>کد کالا<input name="product_code" maxlength="80" value="<?= esc(old('product_code',$product['product_code']??''),'attr') ?>" placeholder="مثلاً ۱۳۸"></label>
@@ -40,8 +43,8 @@
 <?php if($media): ?><div class="admin-gallery-thumbs"><?php foreach($media as $image): ?><img src="<?= esc(base_url(ltrim($image['file_path'],'/')),'attr') ?>" alt="<?= esc($image['alt_text']??'تصویر محصول','attr') ?>" width="72" height="72"><?php endforeach; ?></div><?php endif; ?>
 <label>افزودن عکس‌ها<input type="file" name="images[]" id="editor-images" multiple accept="image/jpeg,image/png,image/webp"></label><p class="admin-muted">حداکثر ۱۰ عکس در هر بار؛ هر عکس حداکثر ۵ مگابایت. اولین عکس، تصویر اصلی محصول جدید می‌شود.</p><div id="image-previews" class="admin-gallery-thumbs" aria-live="polite"></div>
 <label>متن جایگزین تصاویر جدید<input name="alt_text" maxlength="255" value="<?= esc(old('alt_text',''),'attr') ?>" placeholder="پیش‌فرض: نام محصول"></label>
-</section><section class="admin-panel"><h2>پیش‌نمایش اطلاعات</h2><div id="editor-preview"><strong data-preview-name></strong><p data-preview-price></p><p data-preview-description></p></div><p class="admin-muted">پیش‌نمایش محلی؛ اطلاعات هنوز ذخیره نشده است.</p><?php if($product && $product['status']==='active'): ?><a href="<?= site_url('product/'.$product['slug']) ?>" target="_blank" rel="noopener">مشاهده صفحه منتشرشده</a><?php endif; ?></section>
+</section><section class="admin-panel"><h2>پیش‌نمایش اطلاعات</h2><div id="editor-preview"><strong data-preview-name></strong><p><del data-preview-regular hidden style="color:#81766e"></del><br><strong data-preview-price></strong><small data-preview-discount hidden style="color:#cb3d2e"></small></p><p data-preview-description></p></div><p class="admin-muted">پیش‌نمایش محلی؛ اطلاعات هنوز ذخیره نشده است.</p><?php if($product && $product['status']==='active'): ?><a href="<?= site_url('product/'.$product['slug']) ?>" target="_blank" rel="noopener">مشاهده صفحه منتشرشده</a><?php endif; ?></section>
 </aside></div>
 <div class="admin-form-actions"><button type="submit">ذخیره همه تغییرات</button></div></form></main>
-<script src="<?= base_url('assets/js/product-editor.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/product-editor.js').'?v=20261116-pricing' ?>" defer></script>
 <?= view('admin/partials/end') ?>

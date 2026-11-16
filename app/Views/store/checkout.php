@@ -1,4 +1,5 @@
 <?= view('store/partials/header', ['title' => 'تکمیل خرید | گره', 'description' => 'ثبت اطلاعات گیرنده و تکمیل سفارش']) ?>
+<?php $iranLocations = \App\Services\IranLocations::all(); ?>
 <main class="checkout-screen gereh-container mx-auto min-h-[70vh] max-w-5xl px-4 py-8">
   <header class="mb-6"><a href="<?= site_url('cart') ?>" class="gereh-muted text-sm">بازگشت به سبد خرید</a><h1 class="gereh-heading mt-3 text-2xl font-bold">تکمیل سفارش</h1></header>
   <?php if (!$checkoutEnabled): ?>
@@ -10,8 +11,8 @@
       <form id="checkout-form" class="grid gap-4 sm:grid-cols-2" novalidate>
         <label class="block text-sm">نام و نام خانوادگی گیرنده<input class="gereh-input mt-2 w-full" name="receiver_name" maxlength="160" required autocomplete="name"></label>
         <label class="block text-sm">موبایل گیرنده<input class="gereh-input mt-2 w-full" name="receiver_mobile" type="tel" inputmode="numeric" pattern="09[0-9]{9}" maxlength="11" dir="ltr" required autocomplete="tel"></label>
-        <label class="block text-sm">استان<input class="gereh-input mt-2 w-full" name="province" maxlength="100" required autocomplete="address-level1"></label>
-        <label class="block text-sm">شهر<input class="gereh-input mt-2 w-full" name="city" maxlength="100" required autocomplete="address-level2"></label>
+        <label class="block text-sm">استان<select class="gereh-input mt-2 w-full" name="province" required autocomplete="address-level1"><option value="">استان را انتخاب کنید</option><?php foreach ($iranLocations as $provinceName=>$cities): ?><option value="<?= esc($provinceName, 'attr') ?>"><?= esc($provinceName) ?></option><?php endforeach; ?></select></label>
+        <label class="block text-sm">شهر<select class="gereh-input mt-2 w-full" name="city" required disabled autocomplete="address-level2"><option value="">ابتدا استان را انتخاب کنید</option></select></label>
         <label class="block text-sm sm:col-span-2">آدرس دقیق<textarea class="gereh-input mt-2 w-full" name="address" rows="3" maxlength="2000" required autocomplete="street-address"></textarea></label>
         <label class="block text-sm">کد پستی<input class="gereh-input mt-2 w-full" name="postal_code" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" dir="ltr" required autocomplete="postal-code"></label>
         <div class="sm:col-span-2">
@@ -56,7 +57,17 @@
   const keyName='gereh_checkout_idempotency';
   const fmt=n=>new Intl.NumberFormat('fa-IR').format(Number(n)||0)+' تومان';
   let availableMethods=<?= json_encode($shippingMethods,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?>;
-  let quoteTimer=null;
+  const iranLocations=<?= json_encode($iranLocations,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?>;
+  const provinceSelect=form.elements.namedItem('province'),citySelect=form.elements.namedItem('city');
+  const updateCities=()=>{
+    const previous=citySelect.value,cities=iranLocations[provinceSelect.value]||[];
+    citySelect.replaceChildren(new Option(cities.length?'شهر را انتخاب کنید':'ابتدا استان را انتخاب کنید',''));
+    for(const city of cities)citySelect.add(new Option(city,city));
+    citySelect.disabled=cities.length===0;
+    if(cities.includes(previous))citySelect.value=previous;
+  };
+  updateCities();
+  let quoteRequest=0;
   const priceEl=document.getElementById('shipping-price'),totalEl=document.getElementById('grand-total'),optionsEl=document.getElementById('shipping-options');
   const shippingMessage=document.getElementById('shipping-message');
   const renderQuotes=()=>{
@@ -84,19 +95,20 @@
     button.disabled=!enabled||!quote;
   };
   const updateQuotes=async()=>{
+    const currentRequest=++quoteRequest;
     shippingMessage.textContent='در حال محاسبه هزینه ارسال…';
     button.disabled=true;
     try{
       const province=String(form.elements.namedItem('province')?.value||'').trim();
       const response=await fetch('<?= site_url('api/v1/shipping/quotes') ?>?province='+encodeURIComponent(province),{credentials:'same-origin',cache:'no-store'});
       const result=await response.json();
+      if(currentRequest!==quoteRequest)return;
       if(!response.ok||!result?.success)throw Error(result?.message||'محاسبه ارسال ناموفق بود');
       availableMethods=result.data.methods||[];
       renderQuotes();shippingMessage.textContent=availableMethods.length?'مبلغ‌ها با قیمت فعلی سبد محاسبه شده‌اند.':'هیچ روش ارسال فعالی برای این استان وجود ندارد.';
-    }catch(error){availableMethods=[];renderQuotes();shippingMessage.textContent=error.message;}
+    }catch(error){if(currentRequest!==quoteRequest)return;availableMethods=[];renderQuotes();shippingMessage.textContent=error.message;}
   };
-  form.addEventListener('change',event=>{if(event.target.name==='shipping_method')updateTotal();if(event.target.name==='province')updateQuotes();});
-  form.elements.namedItem('province').addEventListener('input',()=>{clearTimeout(quoteTimer);quoteTimer=setTimeout(updateQuotes,350)});
+  form.addEventListener('change',event=>{if(event.target.name==='shipping_method')updateTotal();if(event.target.name==='province'){citySelect.value='';updateCities();updateQuotes();}});
   renderQuotes();
   form.addEventListener('submit',async event=>{
     event.preventDefault();

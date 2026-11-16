@@ -8,6 +8,7 @@ $routes->get('session/csrf', 'CsrfTokenController::show');
 // Public, read-only catalog endpoints; web SSR uses the same service without internal HTTP.
 $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static function (RouteCollection $routes) {
     $routes->get('home', 'HomeController::index');
+    $routes->get('locations', static fn () => service('response')->setJSON(['success'=>true, 'data'=>\App\Services\IranLocations::all(), 'meta'=>new \stdClass(), 'message'=>null, 'errors'=>null]));
     $routes->get('contact', static fn () => service('response')->setJSON(['success'=>true, 'data'=>(new \App\Services\ContactSettingsService())->read(), 'meta'=>new \stdClass(), 'message'=>null, 'errors'=>null]));
     $routes->get('products', 'CatalogController::products');
     $routes->get('products/(:num)/related', 'CatalogController::related/$1');

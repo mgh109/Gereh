@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS `contact_settings` (
   `email` VARCHAR(254) NOT NULL,
   `postal_code` VARCHAR(10) NOT NULL,
   `address` TEXT NOT NULL,
+  `enamad_link` VARCHAR(2000) NOT NULL DEFAULT '',
+  `enamad_image_url` VARCHAR(2000) NOT NULL DEFAULT '',
   `updated_at` DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 INSERT INTO `contact_settings` (`id`,`phone`,`email`,`postal_code`,`address`)

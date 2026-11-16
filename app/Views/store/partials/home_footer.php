@@ -6,5 +6,8 @@
 <div><h2>راهنمای خرید</h2><a href="<?= site_url('size-guide') ?>">راهنمای انتخاب سایز</a><a href="<?= site_url('account') ?>">ارسال و پیگیری سفارش</a><a href="<?= site_url('blog') ?>">مجله و راهنمای خرید</a><a href="<?= site_url('account') ?>">حساب کاربری</a></div>
 </div>
 <section aria-label="اطلاعات تماس"><h2 class="text-sm font-bold">ارتباط با ما</h2><?= view('store/partials/contact_details') ?></section>
+<?php $badgeContact = (new \App\Services\ContactSettingsService())->read(); if (!empty($badgeContact['enamad_link']) && !empty($badgeContact['enamad_image_url'])): ?>
+<a class="inline-block" href="<?= esc($badgeContact['enamad_link'], 'attr') ?>" target="_blank" rel="noopener" referrerpolicy="origin" aria-label="مشاهده نماد اعتماد الکترونیکی فروشگاه گره"><img src="<?= esc($badgeContact['enamad_image_url'], 'attr') ?>" alt="نماد اعتماد الکترونیکی" width="100" height="110" loading="lazy" referrerpolicy="origin"></a>
+<?php endif; ?>
 <div class="flex justify-between text-[11px] leading-[27px]"><span>قوانین و شرایط استفاده</span><span>حریم خصوصی</span></div><small class="block text-center text-[10px] leading-[29px]">تمام حقوق این وب‌سایت متعلق به گره است.</small>
 </div></footer>

@@ -88,6 +88,7 @@ table{width:100%;border-collapse:collapse;text-align:right}th{height:48px;backgr
 <a href="<?= site_url('admin/shipping') ?>"><span>روش‌های ارسال</span></a>
 <a href="<?= site_url('admin/banners') ?>"><img src="<?= base_url('assets/figma/admin/26d14.svg') ?>" alt=""><span>مدیریت صفحه اصلی</span></a>
 <a href="<?= site_url('admin/articles') ?>"><img src="<?= base_url('assets/figma/admin/41638.svg') ?>" alt=""><span>مجله و راهنماها</span></a>
+<a href="<?= site_url('admin/settings/contact') ?>"><img src="<?= base_url('assets/figma/admin/b1127.svg') ?>" alt=""><span>اطلاعات تماس و اینماد</span></a>
 <a href="<?= site_url('admin/settings/sms') ?>"><img src="<?= base_url('assets/figma/admin/b1127.svg') ?>" alt=""><span>تنظیمات پیامک</span></a>
 </nav>
 <div class="rule"></div><div class="side-foot">راهنمای مدیریت　 •　 <form method="post" action="<?= site_url('admin/logout') ?>" style="display:inline"><?= csrf_field() ?><button class="logout" type="submit">خروج</button></form></div>

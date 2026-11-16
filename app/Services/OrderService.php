@@ -41,6 +41,9 @@ class OrderService
             }
             $recipient[$field] = trim($recipient[$field]);
         }
+        if (!IranLocations::contains($recipient['province'], $recipient['city'])) {
+            throw new InvalidArgumentException('استان و شهر گیرنده را از فهرست معتبر انتخاب کنید.');
+        }
         if (! preg_match('/^09[0-9]{9}$/D', $recipient['receiver_mobile'])
             || ! preg_match('/^[0-9]{10}$/D', $recipient['postal_code'])) {
             throw new InvalidArgumentException('شماره موبایل یا کد پستی نامعتبر است.');

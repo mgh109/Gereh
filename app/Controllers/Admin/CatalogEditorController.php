@@ -14,14 +14,15 @@ class CatalogEditorController extends BaseController {
         if ($id && !$product) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         return view('admin/products/edit',[
             'product'=>$product,
+            'editorFieldsReady'=>\Config\Database::connect()->fieldExists('item_condition','products'),
             'categories'=>(new CategoryModel())->orderBy('name')->findAll(),
             'brands'=>(new BrandModel())->orderBy('name')->findAll(),
             'variants'=>$product?(new ProductVariantModel())->select('product_variants.*, COALESCE(inventory_items.quantity,0) AS quantity',false)->join('inventory_items','inventory_items.variant_id=product_variants.id','left')->where('product_id',$product['id'])->findAll():[],
-            'media'=>$product?(new \App\Models\ProductMediaModel())->where('product_id',$product['id'])->orderBy('sort_order')->findAll():[],
+            'media'=>$product?(new \App\Models\ProductMediaModel())->where('product_id',$product['id'])->orderBy('is_primary','DESC')->orderBy('sort_order')->findAll():[],
         ]);
     }
     public function save(?string $id=null) {
-        $rules=['name'=>'required|max_length[220]','slug'=>'required|regex_match[/^[a-z0-9-]+$/]|max_length[220]','price_toman'=>'required|is_natural','status'=>'required|in_list[draft,active,archived]'];
+        $rules=['name'=>'required|max_length[220]','slug'=>'permit_empty|regex_match[/^[a-z0-9-]+$/]|max_length[220]','price_toman'=>'required|is_natural|less_than_equal_to[100000000000]','status'=>'required|in_list[draft,active,archived]','new_brand'=>'permit_empty|max_length[160]','product_code'=>'permit_empty|max_length[80]','item_condition'=>'permit_empty|in_list[new,used,stock]','category_id'=>'permit_empty|is_natural_no_zero','brand_id'=>'permit_empty|is_natural_no_zero','alt_text'=>'permit_empty|max_length[255]'];
         if (!$this->validate($rules)) return redirect()->back()->withInput()->with('errors',$this->validator->getErrors());
         $data=[
             'name'=>trim((string)$this->request->getPost('name')),
@@ -33,14 +34,40 @@ class CatalogEditorController extends BaseController {
             'category_id'=>$this->request->getPost('category_id') ?: null,
             'brand_id'=>$this->request->getPost('brand_id') ?: null,
         ];
+        $moved=[];
         try {
-            $service=new CatalogService();
-            if ($id) $service->updateProduct((int)$id,$data);
-            else $id=(string)$service->createProduct($data);
-            return redirect()->to(site_url('admin/products/'.$id.'/edit'))->with('success','محصول ذخیره شد.');
+            // Works on existing hosts too; the form explains when the optional columns are missing.
+            $db=\Config\Database::connect();
+            foreach (['product_code','item_condition'] as $field) {
+                if ($db->fieldExists($field,'products')) $data[$field]=trim((string)$this->request->getPost($field)) ?: null;
+                elseif (trim((string)$this->request->getPost($field)) !== '') throw new \InvalidArgumentException('برای ذخیره کد کالا و وضعیت نو/کارکرده، ابتدا بروزرسانی دیتابیس فرم محصول را اجرا کنید.');
+            }
+            $rows=$this->request->getPost('variants') ?? [];
+            if (!is_array($rows) || count($rows)>100) throw new \InvalidArgumentException('حداکثر ۱۰۰ تنوع در هر بار ذخیره مجاز است.');
+            $files=$this->request->getFileMultiple('images') ?? [];
+            $files=array_values(array_filter($files,static fn($file)=>$file->getError()!==UPLOAD_ERR_NO_FILE));
+            if (count($files)>10) throw new \InvalidArgumentException('در هر بار ذخیره حداکثر ۱۰ عکس انتخاب کنید.');
+            // Validate every file before moving any file or writing any database row.
+            foreach ($files as $file) {
+                if (!$file->isValid() || $file->hasMoved()) throw new \InvalidArgumentException('دریافت عکس کامل نشد؛ حجم مجاز آپلود هاست و فایل انتخابی را بررسی کنید.');
+                $dimensions=@getimagesize($file->getTempName());
+                if ($file->getSize()>5*1024*1024 || !in_array($file->getMimeType(),['image/jpeg','image/png','image/webp'],true) || !$dimensions || max($dimensions[0],$dimensions[1])>8000) throw new \InvalidArgumentException('تصاویر باید JPG، PNG یا WebP، حداکثر ۵ مگابایت و ۸۰۰۰ پیکسل باشند.');
+            }
+            $media=[];$directory=FCPATH.'uploads/products/';
+            if ($files && !is_dir($directory) && !mkdir($directory,0755,true) && !is_dir($directory)) throw new \RuntimeException('مسیر آپلود قابل نوشتن نیست.');
+            foreach ($files as $file) {
+                $extension=['image/jpeg'=>'.jpg','image/png'=>'.png','image/webp'=>'.webp'][$file->getMimeType()];
+                $name=bin2hex(random_bytes(16)).$extension;
+                $file->move($directory,$name);$moved[]=$directory.$name;
+                $media[]=['file_path'=>'uploads/products/'.$name,'alt_text'=>(string)($this->request->getPost('alt_text') ?: $data['name'])];
+            }
+            $id=(string)(new \App\Services\ProductEditorService($db))->save($id?(int)$id:null,$data,$rows,trim((string)$this->request->getPost('new_brand')),$media);
+            return redirect()->to(site_url('admin/products/'.$id.'/edit'))->with('success','محصول، تصاویر و تنوع‌ها با موفقیت ذخیره شدند.');
         } catch (\Throwable $e) {
-            log_message('error','Catalog save failed: {message}',['message'=>$e->getMessage()]);
-            return redirect()->back()->withInput()->with('errors',['save'=>$e->getMessage()]);
+            foreach($moved as $path) if(is_file($path)) @unlink($path);
+            log_message('error','Product editor save failed: {message}',['message'=>$e->getMessage()]);
+            $message=$e instanceof \InvalidArgumentException ? $e->getMessage() : 'ذخیره محصول انجام نشد؛ اطلاعات را بررسی و دوباره تلاش کنید.';
+            return redirect()->back()->withInput()->with('errors',['save'=>$message]);
         }
     }
     public function addVariant(string $id) {

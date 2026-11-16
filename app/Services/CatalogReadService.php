@@ -148,7 +148,7 @@ class CatalogReadService
         }
         $id = (int) $product['id'];
         $media = $this->db->table('product_media')->where('product_id', $id)
-            ->orderBy('sort_order')->get()->getResultArray();
+            ->orderBy('is_primary','DESC')->orderBy('sort_order')->get()->getResultArray();
         $variants = $this->db->table('product_variants v')
             ->select('v.*, COALESCE(i.quantity, 0) AS stock')
             ->join('inventory_items i', 'i.variant_id = v.id', 'left')

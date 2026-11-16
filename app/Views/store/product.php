@@ -66,7 +66,10 @@ $firstImage = $images ? base_url(ltrim($images[0]['file_path'], '/')) : null;
 <a href="<?= site_url('size-guide') ?>" class="muted">راهنمای خرید و انتخاب سایز</a>
 </section></div>
 <section class="product-details-section"><h2>معرفی محصول</h2><p><?= nl2br(esc($product['description'] ?? '')) ?></p></section>
-<section class="product-details-section"><h2>مشخصات محصول</h2><p class="muted">اطلاعات سایز و رنگ از تنوع‌های ثبت‌شده محصول نمایش داده می‌شود.</p></section>
+<section class="product-details-section"><h2>مشخصات محصول</h2><?php $conditionLabels=['new'=>'نو','used'=>'کارکرده','stock'=>'استوک']; ?>
+<?php if(!empty($product['product_code'])): ?><p>کد کالا: <?= esc($product['product_code']) ?></p><?php endif; ?>
+<?php if(isset($conditionLabels[$product['item_condition']??''])): ?><p>وضعیت کالا: <?= esc($conditionLabels[$product['item_condition']]) ?></p><?php endif; ?>
+<p class="muted">سایز و رنگ را از بخش انتخاب تنوع بررسی کنید.</p></section>
 <section class="product-details-section"><h2>دیدگاه خریداران</h2><p class="muted">هنوز دیدگاهی ثبت نشده است.</p></section>
 </main>
 <form class="sticky-buy" method="post" action="<?= site_url('cart/add') ?>"><?= csrf_field() ?><input type="hidden" id="selected-variant" name="variant_id" value=""><input type="hidden" name="quantity" value="1"><strong id="sticky-price"><?= number_format((int)$product['price_toman']) ?> تومان</strong><button class="pill" id="add-cart-button" type="submit" disabled>افزودن به سبد خرید</button></form>

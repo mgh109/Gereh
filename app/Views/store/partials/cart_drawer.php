@@ -16,6 +16,20 @@
 const overlay=document.getElementById('gereh-cart-overlay'),panel=document.getElementById('gereh-cart-drawer'),closer=document.getElementById('gereh-cart-close'),items=document.getElementById('gereh-cart-items'),message=document.getElementById('gereh-cart-message'),total=document.getElementById('gereh-cart-total');
 const money=value=>new Intl.NumberFormat('fa-IR').format(Number(value)||0)+' تومان';
 let previousFocus=null;
+let cartRevision=0;
+let removing=false;
+
+async function changeCart(url, method, body){
+  const csrfResponse=await fetch('<?= site_url('api/v1/auth/csrf') ?>',{credentials:'same-origin',cache:'no-store'});
+  const csrf=await csrfResponse.json().catch(()=>null);
+  if(!csrfResponse.ok||!csrf?.data?.token)throw Error('دریافت توکن امنیتی ناموفق بود.');
+  const headers={'X-CSRF-TOKEN':csrf.data.token};
+  if(body)headers['Content-Type']='application/json';
+  const response=await fetch(url,{method,credentials:'same-origin',headers,body:body?JSON.stringify(body):undefined});
+  const result=await response.json().catch(()=>null);
+  if(!response.ok||!result?.success)throw Error(result?.message||'به‌روزرسانی سبد خرید انجام نشد.');
+  return result.data;
+}
 const close=()=>{panel.hidden=true;overlay.hidden=true;document.body.style.overflow='';if(previousFocus)previousFocus.focus()};
 function render(summary){
   items.replaceChildren();message.textContent='';
@@ -26,17 +40,49 @@ function render(summary){
     const title=document.createElement('a');title.href='<?= site_url('product') ?>/'+encodeURIComponent(line.product.slug);title.className='font-bold';title.textContent=line.product.name;
     const meta=document.createElement('p');meta.className='mt-2 text-xs text-stone-500';meta.textContent=[line.variant.size_label,line.variant.color_name].filter(Boolean).join(' / ');
     const price=document.createElement('p');price.className='mt-3 text-sm';price.textContent='تعداد: '+line.quantity+' • '+money(line.subtotal);
-    article.append(title,meta,price);items.append(article);
+    const remove=document.createElement('button');
+    remove.type='button';
+    remove.className='mt-2 rounded-md px-2 py-1 text-sm font-bold text-[#a12d24] hover:underline disabled:opacity-50';
+    remove.textContent='حذف';
+    remove.setAttribute('aria-label','حذف '+line.product.name+' از سبد خرید');
+    remove.dataset.removeVariant=String(line.id);
+    article.append(title,meta,price,remove);items.append(article);
   }
   total.textContent=money(summary?.total||0);document.dispatchEvent(new CustomEvent('gereh:cart-updated',{detail:summary}));
 }
 async function open(summary){
   previousFocus=document.activeElement;panel.hidden=false;overlay.hidden=false;document.body.style.overflow='hidden';panel.focus();
+  const revision=++cartRevision;
   if(summary){render(summary);return}
   message.textContent='در حال دریافت سبد خرید…';
-  try{const response=await fetch('<?= site_url('api/v1/cart') ?>',{credentials:'same-origin',cache:'no-store'});const data=await response.json();if(!response.ok||!data.success)throw Error(data.message||'خطا در دریافت سبد خرید');render(data.data)}
-  catch(error){message.textContent=error.message}
+  try{const response=await fetch('<?= site_url('api/v1/cart') ?>',{credentials:'same-origin',cache:'no-store'});const data=await response.json();if(!response.ok||!data.success)throw Error(data.message||'خطا در دریافت سبد خرید');if(revision===cartRevision)render(data.data)}
+  catch(error){if(revision===cartRevision)message.textContent=error.message}
 }
+items.addEventListener('click',async event=>{
+  const button=event.target.closest('button[data-remove-variant]');
+  if(!button||removing)return;
+  removing=true;
+  cartRevision++;
+  const buttons=[...items.querySelectorAll('button[data-remove-variant]')];
+  const index=buttons.indexOf(button);
+  buttons.forEach(control=>control.disabled=true);
+  message.textContent='در حال حذف محصول…';
+  try{
+    const url='<?= site_url('api/v1/cart/items') ?>/'+encodeURIComponent(button.dataset.removeVariant);
+    const summary=await changeCart(url,'DELETE');
+    cartRevision++;
+    render(summary);
+    message.textContent='محصول از سبد خرید حذف شد.';
+    if(!panel.hidden){
+      const remaining=items.querySelectorAll('button[data-remove-variant]');
+      (remaining[Math.min(index,remaining.length-1)]||closer).focus();
+    }
+  }catch(error){
+    message.textContent=error.message;
+    buttons.forEach(control=>control.disabled=false);
+    if(!panel.hidden)button.focus();
+  }finally{removing=false}
+});
 document.getElementById('cart-drawer-trigger')?.addEventListener('click',()=>open());
 document.querySelectorAll('[data-open-cart]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();open()}));
 closer.addEventListener('click',close);overlay.addEventListener('click',close);
@@ -49,13 +95,8 @@ document.addEventListener('submit',async e=>{
   if(!Number.isInteger(variant)||variant<1)return;
   const button=form.querySelector('[type=submit]');if(button)button.disabled=true;
   try{
-    const csrfResponse=await fetch('<?= site_url('api/v1/auth/csrf') ?>',{credentials:'same-origin',cache:'no-store'});
-    if(!csrfResponse.ok)throw Error('دریافت توکن امنیتی ناموفق بود.');
-    const token=await csrfResponse.json();
-    const response=await fetch('<?= site_url('api/v1/cart/items') ?>',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token.data.token},body:JSON.stringify({variant_id:variant,quantity})});
-    const result=await response.json().catch(()=>null);
-    if(!response.ok||!result?.success)throw Error(result?.message||'افزودن به سبد خرید انجام نشد.');
-    open(result.data);
+    const summary=await changeCart('<?= site_url('api/v1/cart/items') ?>','POST',{variant_id:variant,quantity});
+    open(summary);
   }catch(error){open();message.textContent=error.message}
   finally{if(button)button.disabled=false}
 });

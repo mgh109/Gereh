@@ -137,7 +137,7 @@
       if(!response.ok || !data?.success)throw Error(data?.message||'ثبت سفارش انجام نشد.');
       const redirect=data?.data?.payment?.redirect_url;
       const url=new URL(redirect);
-      if(!['https://www.zarinpal.com','https://sandbox.zarinpal.com'].includes(url.origin))throw Error('نشانی درگاه معتبر نیست.');
+      if(!['https://www.zarinpal.com','https://sandbox.zarinpal.com','https://gateway.zibal.ir'].includes(url.origin))throw Error('نشانی درگاه معتبر نیست.');
       sessionStorage.removeItem(keyName);
       location.assign(url.href);
     }catch(error){message.textContent=error.message;button.disabled=false;}

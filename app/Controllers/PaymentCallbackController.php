@@ -2,17 +2,19 @@
 
 namespace App\Controllers;
 
+use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\PaymentSettlementService;
+use App\Services\Payments\ZibalGateway;
 use App\Services\Payments\ZarinpalGateway;
 use CodeIgniter\API\ResponseTrait;
 use DomainException;
 use Throwable;
 
 /**
- * ZarinPal redirects the shopper here using GET.
+ * Payment providers redirect the shopper here using GET.
  * Callback parameters are untrusted hints, never payment evidence.
  */
-final class ZarinpalCallbackController extends BaseController
+final class PaymentCallbackController extends BaseController
 {
     use ResponseTrait;
 
@@ -25,24 +27,40 @@ final class ZarinpalCallbackController extends BaseController
             || ! in_array($status, ['OK', 'NOK'], true)) {
             return $this->result(false, 'پارامترهای بازگشت پرداخت نامعتبر است.', 400);
         }
+        return $this->verifyCallback(new ZarinpalGateway(), $authority, $status === 'OK');
+    }
+
+    public function zibal()
+    {
+        $this->response->setHeader('Cache-Control', 'no-store, private');
+        $trackId = $this->request->getGet('trackId');
+        $success = $this->request->getGet('success');
+        if (! is_string($trackId) || ! in_array($success, ['0', '1'], true)) {
+            return $this->result(false, 'پارامترهای بازگشت پرداخت نامعتبر است.', 400);
+        }
+        return $this->verifyCallback(new ZibalGateway(), $trackId, $success === '1');
+    }
+
+    private function verifyCallback(PaymentGateway $gateway, string $authority, bool $success)
+    {
         try {
-            $authority = ZarinpalGateway::validateAuthority($authority);
+            $authority = $gateway::validateAuthority($authority);
         } catch (\InvalidArgumentException) {
             return $this->result(false, 'شناسه پرداخت نامعتبر است.', 400);
         }
 
-        // NOK is not proof of payment failure; do not make irreversible
+        // A failed callback is not proof of payment failure; do not make irreversible
         // changes to order state based on client-controlled query parameters.
-        if ($status !== 'OK') {
+        if (! $success) {
             return $this->result(false, 'پرداخت توسط درگاه تأیید نشده است.', 202);
         }
         $throttler = service('throttler');
-        if (! $throttler->check('gereh_payment_callback_' . hash('sha256', $authority), 8, 300)) {
+        if (! $throttler->check('gereh_payment_callback_' . hash('sha256', $gateway->provider() . ':' . $authority), 8, 300)) {
             return $this->result(false, 'تعداد تلاش‌های بررسی پرداخت زیاد است.', 429);
         }
 
         try {
-            $receipt = (new PaymentSettlementService())->settle($authority);
+            $receipt = (new PaymentSettlementService(null, $gateway))->settle($authority);
             return $this->respond([
                 'success' => true, 'data' => $receipt,
                 'meta' => new \stdClass(), 'message' => 'وضعیت پرداخت تأیید شد.', 'errors' => null,

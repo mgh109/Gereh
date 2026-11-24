@@ -42,7 +42,8 @@ $routes->group('api/v1/admin', [
     $routes->get('orders/(:num)', 'OrdersController::show/$1');
 });
 
-$routes->get('payment/zarinpal/callback', 'ZarinpalCallbackController::handle');
+$routes->get('payment/zarinpal/callback', 'PaymentCallbackController::handle');
+$routes->get('payment/zibal/callback', 'PaymentCallbackController::zibal');
 $routes->match(['GET','HEAD'], 'robots.txt', 'SeoController::robots');
 $routes->match(['GET','HEAD'], 'sitemap.xml', 'SeoController::sitemap');
 $routes->match(['GET','HEAD'], '/', 'Storefront::home', ['as' => 'store.home']);

@@ -16,10 +16,14 @@ final class PaymentInitiationService
 {
     private BaseConnection $db;
 
-    public function __construct(?BaseConnection $db = null, private ?ZarinpalGateway $gateway = null)
+    public function __construct(?BaseConnection $db = null, private ?PaymentGateway $gateway = null)
     {
         $this->db = $db ?? Database::connect();
-        $this->gateway ??= new ZarinpalGateway();
+        $this->gateway ??= match ((string) env('GEREH_PAYMENT_PROVIDER', 'zarinpal')) {
+            'zarinpal' => new ZarinpalGateway(),
+            'zibal' => new ZibalGateway(),
+            default => throw new RuntimeException('درگاه پرداخت معتبر تنظیم نشده است.'),
+        };
     }
 
     public function initiate(int $customerId, int $orderId): array
@@ -42,15 +46,21 @@ final class PaymentInitiationService
                 throw new DomainException('سفارش قابل پرداخت نیست.');
             }
             $attempt = $this->db->table('payment_transactions')
-                ->where('order_id', $orderId)->where('provider', 'zarinpal')
+                ->where('order_id', $orderId)
                 ->whereIn('status', ['requesting', 'initiated'])
                 ->orderBy('id', 'DESC')->get()->getRowArray();
             if ($attempt !== null) {
                 if ($attempt['status'] === 'initiated' && ! empty($attempt['authority'])) {
+                    $gateway = match ($attempt['provider']) {
+                        $this->gateway->provider() => $this->gateway,
+                        'zarinpal' => new ZarinpalGateway(),
+                        'zibal' => new ZibalGateway(),
+                        default => throw new DomainException('درگاه پرداخت قبلی معتبر نیست.'),
+                    };
                     $this->db->transCommit();
                     return [
                         'authority' => $attempt['authority'],
-                        'redirect_url' => $this->gateway->startUrl($attempt['authority']),
+                        'redirect_url' => $gateway->startUrl($attempt['authority']),
                         'reused' => true,
                     ];
                 }
@@ -59,7 +69,7 @@ final class PaymentInitiationService
             $now = date('Y-m-d H:i:s');
             if (! $this->db->table('payment_transactions')->insert([
                 'order_id' => $orderId,
-                'provider' => 'zarinpal',
+                'provider' => $this->gateway->provider(),
                 'amount_toman' => (int) $order['total_toman'],
                 'status' => 'requesting',
                 'created_at' => $now,

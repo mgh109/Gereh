@@ -11,7 +11,7 @@ use RuntimeException;
  * All internal prices are integer TOMAN; ZarinPal v4 requests use RIAL.
  * Only fixed provider hosts are contacted (no user-controlled URLs).
  */
-final class ZarinpalGateway
+final class ZarinpalGateway implements PaymentGateway
 {
     private string $merchantId;
     private string $apiBase;
@@ -28,6 +28,11 @@ final class ZarinpalGateway
         $this->apiBase = $sandbox ? 'https://sandbox.zarinpal.com' : 'https://api.zarinpal.com';
         $this->paymentBase = $sandbox ? 'https://sandbox.zarinpal.com' : 'https://www.zarinpal.com';
         $this->callbackUrl = trim($callbackUrl ?? (string) env('ZARINPAL_CALLBACK_URL', ''));
+    }
+
+    public function provider(): string
+    {
+        return 'zarinpal';
     }
 
     public static function tomanToRial(int $amountToman): int

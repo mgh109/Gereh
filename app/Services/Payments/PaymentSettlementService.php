@@ -21,7 +21,7 @@ final class PaymentSettlementService
 
     public function __construct(
         ?BaseConnection $db = null,
-        private ?ZarinpalGateway $gateway = null
+        private ?PaymentGateway $gateway = null
     ) {
         $this->db = $db ?? Database::connect();
         $this->gateway ??= new ZarinpalGateway();
@@ -29,9 +29,9 @@ final class PaymentSettlementService
 
     public function settle(string $authority): array
     {
-        $authority = ZarinpalGateway::validateAuthority($authority);
+        $authority = $this->gateway::validateAuthority($authority);
         $payment = $this->db->table('payment_transactions')
-            ->where('provider', 'zarinpal')->where('authority', $authority)
+            ->where('provider', $this->gateway->provider())->where('authority', $authority)
             ->get()->getRowArray();
         if ($payment === null) {
             throw new DomainException('تراکنش پرداخت پیدا نشد.');
@@ -46,7 +46,7 @@ final class PaymentSettlementService
         // External network access must happen OUTSIDE the SQL transaction.
         $verification = $this->gateway->verify((int) $payment['amount_toman'], $authority);
         if ($verification['code'] !== 100) {
-            // Code 101 means "already verified by gateway", not permission to
+            // An already verified response does not allow us to
             // invent an unrecorded local settlement.
             throw new DomainException('پرداخت قبلاً در درگاه تأیید شده؛ نیازمند تطبیق دستی است.');
         }
@@ -107,7 +107,7 @@ final class PaymentSettlementService
                     'movement_type' => 'sale',
                     'reference_type' => 'order',
                     'reference_id' => $orderId,
-                    'note' => 'ZarinPal verified settlement',
+                    'note' => $this->gateway->provider() . ' verified settlement',
                     'created_at' => $now,
                 ])) {
                     throw new RuntimeException('ثبت گردش موجودی ناموفق بود.');
@@ -165,7 +165,7 @@ final class PaymentSettlementService
                     'id' => (int) $payment['id'], 'type' => get_class($recordFailure),
                 ]);
             }
-            log_message('critical', 'ZarinPal settlement needs review for transaction {id}: {type}', [
+            log_message('critical', 'Payment settlement needs review for transaction {id}: {type}', [
                 'id' => (int) $payment['id'], 'type' => get_class($exception),
             ]);
             throw $exception;

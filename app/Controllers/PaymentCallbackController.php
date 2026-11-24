@@ -18,6 +18,8 @@ final class PaymentCallbackController extends BaseController
 {
     use ResponseTrait;
 
+    private bool $storefrontResult = false;
+
     public function handle()
     {
         $this->response->setHeader('Cache-Control', 'no-store, private');
@@ -32,6 +34,8 @@ final class PaymentCallbackController extends BaseController
 
     public function zibal()
     {
+        $this->storefrontResult = true;
+        $this->response->setHeader('Referrer-Policy', 'no-referrer');
         $this->response->setHeader('Cache-Control', 'no-store, private');
         $trackId = $this->request->getGet('trackId');
         $success = $this->request->getGet('success');
@@ -52,7 +56,7 @@ final class PaymentCallbackController extends BaseController
         // A failed callback is not proof of payment failure; do not make irreversible
         // changes to order state based on client-controlled query parameters.
         if (! $success) {
-            return $this->result(false, 'پرداخت توسط درگاه تأیید نشده است.', 202);
+            return $this->result(false, 'پرداخت توسط درگاه تأیید نشده است.', 202, $authority);
         }
         $throttler = service('throttler');
         if (! $throttler->check('gereh_payment_callback_' . hash('sha256', $gateway->provider() . ':' . $authority), 8, 300)) {
@@ -61,6 +65,9 @@ final class PaymentCallbackController extends BaseController
 
         try {
             $receipt = (new PaymentSettlementService(null, $gateway))->settle($authority);
+            if ($this->storefrontResult) {
+                return $this->result(true, '', 200, $authority);
+            }
             return $this->respond([
                 'success' => true, 'data' => $receipt,
                 'meta' => new \stdClass(), 'message' => 'وضعیت پرداخت تأیید شد.', 'errors' => null,
@@ -75,8 +82,41 @@ final class PaymentCallbackController extends BaseController
         }
     }
 
-    private function result(bool $success, string $message, int $status)
+    private function result(bool $success, string $message, int $status, ?string $authority = null)
     {
+        if ($this->storefrontResult) {
+            $order = null;
+            $customerId = (int) session()->get('customer_id');
+            if ($authority !== null && $customerId > 0) {
+                try {
+                    $order = \Config\Database::connect()->table('payment_transactions p')
+                        ->select('o.order_number, p.amount_toman, p.status')
+                        ->join('orders o', 'o.id = p.order_id')
+                        ->where('p.provider', 'zibal')
+                        ->where('p.authority', $authority)
+                        ->where('o.customer_id', $customerId)
+                        ->get()->getRowArray();
+                } catch (Throwable $exception) {
+                    log_message('error', 'Payment result summary unavailable: {type}', ['type' => get_class($exception)]);
+                }
+            }
+
+            // A later cancelled return cannot undo an already settled order.
+            if (($order['status'] ?? null) === 'paid') {
+                $success = true;
+                $status = 200;
+            }
+
+            return $this->response->setStatusCode($status)->setContentType('text/html')->setBody(
+                view('store/payment_result', [
+                    'paid' => $success,
+                    'retry' => $status === 202,
+                    'message' => $message,
+                    'order' => $order,
+                ])
+            );
+        }
+
         return $this->respond([
             'success' => $success, 'data' => null,
             'meta' => new \stdClass(), 'message' => $message, 'errors' => null,

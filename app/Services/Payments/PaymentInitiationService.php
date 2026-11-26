@@ -14,6 +14,8 @@ use Throwable;
  */
 final class PaymentInitiationService
 {
+    private const TOROB_CLAIM_TIMEOUT_SECONDS = 120;
+
     private BaseConnection $db;
 
     public function __construct(?BaseConnection $db = null, private ?PaymentGateway $gateway = null, bool $useTorobPay = false)
@@ -34,6 +36,12 @@ final class PaymentInitiationService
     {
         if ($customerId < 1 || $orderId < 1) {
             throw new DomainException('سفارش یا مشتری معتبر نیست.');
+        }
+
+        if ($this->gateway instanceof TorobPayGateway
+            && (! $this->db->fieldExists('gateway_token', 'payment_transactions')
+                || ! $this->db->fieldExists('gateway_redirect_url', 'payment_transactions'))) {
+            throw new TorobPayException('payment_schema');
         }
 
         $this->db->transBegin();
@@ -70,7 +78,13 @@ final class PaymentInitiationService
                         'reused' => true,
                     ];
                 }
-                throw new DomainException('درخواست پرداخت قبلی در حال انجام است.');
+                // A TorobPay request cannot redirect until its conditional update
+                // changes requesting to initiated. An expired claim can be replaced.
+                if ($attempt['provider'] !== 'torobpay' || $attempt['status'] !== 'requesting'
+                    || strtotime($attempt['created_at']) >= time() - self::TOROB_CLAIM_TIMEOUT_SECONDS
+                    || ! $this->releaseClaim((int) $attempt['id'])) {
+                    throw new DomainException('درخواست پرداخت قبلی در حال انجام است.');
+                }
             }
             $authority = $this->gateway instanceof TorobPayGateway ? 'gereh-' . bin2hex(random_bytes(16)) : null;
             $now = date('Y-m-d H:i:s');
@@ -108,7 +122,14 @@ final class PaymentInitiationService
                     $this->releaseClaim($paymentId);
                     throw new DomainException('خرید اعتباری برای مبلغ این سفارش در دسترس نیست.');
                 }
-                $result = $this->gateway->requestForOrder($order, $authority);
+                try {
+                    $result = $this->gateway->requestForOrder($order, $authority);
+                } catch (TorobPayException $exception) {
+                    if (in_array($exception->reason, ['auth_rejected', 'auth_response', 'merchant_access', 'token_rejected'], true)) {
+                        $this->releaseClaim($paymentId);
+                    }
+                    throw $exception;
+                }
                 $details = ['gateway_token' => $result['token'], 'gateway_redirect_url' => $result['redirect_url']];
                 unset($result['token']);
             } else {
@@ -135,9 +156,10 @@ final class PaymentInitiationService
         }
     }
 
-    private function releaseClaim(int $paymentId): void
+    private function releaseClaim(int $paymentId): bool
     {
-        $this->db->table('payment_transactions')->where('id', $paymentId)->where('status', 'requesting')
+        $saved = $this->db->table('payment_transactions')->where('id', $paymentId)->where('status', 'requesting')
             ->update(['status' => 'failed']);
+        return $saved && $this->db->affectedRows() === 1;
     }
 }

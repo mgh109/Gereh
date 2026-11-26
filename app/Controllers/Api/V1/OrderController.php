@@ -111,6 +111,17 @@ class OrderController extends BaseController
             return $this->error($exception->getMessage(), 422);
         } catch (\DomainException $exception) {
             return $this->error($exception->getMessage(), 409);
+        } catch (\App\Services\Payments\TorobPayException $exception) {
+            log_message('error', 'TorobPay checkout failed: {reason}, code {code}', [
+                'reason' => $exception->reason, 'code' => $exception->getCode(),
+            ]);
+            $message = match ($exception->reason) {
+                'payment_schema' => 'ساختار ثبت تراکنش ترب‌پی در دیتابیس فروشگاه کامل نیست.',
+                'token_rejected' => 'ترب‌پی درخواست صدور توکن برای این سفارش را رد کرد.',
+                'auth_rejected', 'auth_response', 'merchant_access' => 'دسترسی فروشگاه به درگاه ترب‌پی تأیید نشد.',
+                default => 'ارتباط با ترب‌پی یا دریافت پاسخ معتبر ممکن نیست.',
+            };
+            return $this->error($message, 503);
         } catch (\Throwable $exception) {
             log_message('error', 'Checkout failed: {type}', ['type' => get_class($exception)]);
             return $this->error('ثبت سفارش یا ارتباط با درگاه ممکن نیست.', 503);

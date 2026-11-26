@@ -155,6 +155,7 @@ final class TorobPayClient
             // Never include credentials, token, customer address or provider body in logs.
             $reason = match ($status) {
                 401, 403, 404 => $path === '/api/online/v1/oauth/token' ? 'auth_rejected' : 'merchant_access',
+                400 => $path === self::PAYMENT . 'token' ? 'token_rejected' : 'upstream_http',
                 429 => 'rate_limit',
                 default => 'upstream_http',
             };

@@ -73,7 +73,7 @@ final class TorobPayClient
     {
         $amount = $payload['amount'] ?? null;
         if (! is_int($amount) || $amount < 200000 || $amount > 1000000000
-            || ($payload['paymentMethodTypeDto'] ?? null) !== 'ONLINE_CREDIT'
+            || ! in_array($payload['paymentMethodTypeDto'] ?? null, ['INSTALLMENT', 'ONLINE_CREDIT'], true)
             || ! is_array($payload['cartList'] ?? null) || count($payload['cartList']) !== 1
             || ! is_string($payload['returnURL'] ?? null)
             || parse_url($payload['returnURL'], PHP_URL_SCHEME) !== 'https'
@@ -88,7 +88,7 @@ final class TorobPayClient
             || parse_url($url, PHP_URL_SCHEME) !== 'https'
             || parse_url($url, PHP_URL_USER) !== null
             || parse_url($url, PHP_URL_PASS) !== null) {
-            throw new RuntimeException('پاسخ صدور توکن ترب‌پی معتبر نیست.');
+            throw new TorobPayException('token_response');
         }
         return ['paymentToken' => $token, 'paymentPageUrl' => $url];
     }

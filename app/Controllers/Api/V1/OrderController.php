@@ -116,6 +116,8 @@ class OrderController extends BaseController
                 'reason' => $exception->reason, 'code' => $exception->getCode(),
             ]);
             $message = match ($exception->reason) {
+                'redirect_invalid' => 'نشانی انتقال بازگشتی از ترب‌پی معتبر نیست.',
+                'token_response' => 'پاسخ صدور توکن از ترب‌پی کامل نیست.',
                 'payment_schema' => 'ساختار ثبت تراکنش ترب‌پی در دیتابیس فروشگاه کامل نیست.',
                 'token_rejected' => 'ترب‌پی درخواست صدور توکن برای این سفارش را رد کرد.',
                 'auth_rejected', 'auth_response', 'merchant_access' => 'دسترسی فروشگاه به درگاه ترب‌پی تأیید نشد.',

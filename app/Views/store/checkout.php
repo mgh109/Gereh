@@ -229,8 +229,10 @@ $bankLabel = env('GEREH_PAYMENT_PROVIDER', 'zarinpal') === 'zibal' ? 'زیبال
       if(!response.ok || !data?.success)throw Error(data?.message||'ثبت سفارش انجام نشد.');
       const redirect=data?.data?.payment?.redirect_url;
       const url=new URL(redirect);
-      if(!['https://www.zarinpal.com','https://sandbox.zarinpal.com','https://gateway.zibal.ir','https://cpg.torobpay.com'].includes(url.origin))throw Error('نشانی درگاه معتبر نیست.');
-      if(url.origin!=='https://cpg.torobpay.com')sessionStorage.removeItem(keyName);
+      const torobPay=url.protocol==='https:'&&!url.port&&!url.username&&!url.password
+        &&(url.hostname==='torobpay.com'||url.hostname.endsWith('.torobpay.com'));
+      if(!torobPay&&!['https://www.zarinpal.com','https://sandbox.zarinpal.com','https://gateway.zibal.ir'].includes(url.origin))throw Error('نشانی درگاه معتبر نیست.');
+      if(!torobPay)sessionStorage.removeItem(keyName);
       location.assign(url.href);
     }catch(error){message.textContent=error.message;button.disabled=false;}
   });

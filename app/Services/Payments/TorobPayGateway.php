@@ -41,11 +41,12 @@ final class TorobPayGateway implements PaymentGateway
     private static function validateRedirect(string $url): string
     {
         $parts = parse_url($url);
+        $host = strtolower($parts['host'] ?? '');
         if (! filter_var($url, FILTER_VALIDATE_URL) || ($parts['scheme'] ?? null) !== 'https'
-            || ($parts['host'] ?? null) !== 'cpg.torobpay.com'
+            || ($host !== 'torobpay.com' && ! str_ends_with($host, '.torobpay.com'))
             || isset($parts['user']) || isset($parts['pass'])
             || ($parts['port'] ?? 443) !== 443) {
-            throw new RuntimeException('نشانی درگاه ترب‌پی معتبر نیست.');
+            throw new TorobPayException('redirect_invalid');
         }
         return $url;
     }
@@ -69,7 +70,7 @@ final class TorobPayGateway implements PaymentGateway
         $callback = trim((string) env('TOROBPAY_CALLBACK_URL', site_url('payment/torobpay/callback')));
         $result = $this->client->createPayment([
             'amount' => $amount,
-            'paymentMethodTypeDto' => 'ONLINE_CREDIT',
+            'paymentMethodTypeDto' => (string) env('TOROBPAY_PAYMENT_METHOD', 'INSTALLMENT'),
             'returnURL' => $callback,
             'transactionId' => $authority,
             'mobile' => $mobile,

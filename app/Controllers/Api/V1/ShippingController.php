@@ -44,7 +44,8 @@ final class ShippingController extends BaseController
         $methodCode = $this->request->getGet('method');
         $province = $this->request->getGet('province');
         $client = new \App\Services\Payments\TorobPayClient();
-        $eligible = false;
+        $offer = ['eligible' => false];
+        $unavailable = false;
         if ($customerId > 0 && is_string($methodCode) && is_string($province) && mb_strlen($province) <= 100
             && $client::enabled() && service('throttler')->check('gereh_torob_eligibility_' . $customerId, 30, 60)) {
             try {
@@ -52,12 +53,13 @@ final class ShippingController extends BaseController
                 $quotes = (new ShippingService())->quotes((int) $cart['total'], $province);
                 $totals = array_column($quotes, 'total_toman', 'code');
                 if ($cart['count'] > 0 && isset($totals[$methodCode])) {
-                    $eligible = $client->eligibility((int) $totals[$methodCode])['eligible'];
+                    $offer = $client->eligibility((int) $totals[$methodCode]);
                 }
             } catch (Throwable $exception) {
+                $unavailable = true;
                 log_message('warning', 'TorobPay eligibility unavailable: {type}', ['type' => get_class($exception)]);
             }
         }
-        return $this->respond(['eligible' => $eligible]);
+        return $this->respond($offer + ['unavailable' => $unavailable]);
     }
 }

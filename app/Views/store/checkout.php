@@ -1,5 +1,31 @@
 <?= view('store/partials/header', ['title' => 'تکمیل خرید | گره', 'description' => 'ثبت اطلاعات گیرنده و تکمیل سفارش']) ?>
 <?php $iranLocations = \App\Services\IranLocations::all(); ?>
+<?php
+$torobConfigured = $checkoutEnabled && \App\Services\Payments\TorobPayClient::enabled();
+$bankLabel = env('GEREH_PAYMENT_PROVIDER', 'zarinpal') === 'zibal' ? 'زیبال' : 'زرین‌پال';
+?>
+<style>
+.checkout-methods { display: grid; gap: 8px; }
+.checkout-method {
+  display: flex; align-items: center; gap: 9px; padding: 9px 11px;
+  border: 1px solid #d8cec0; border-radius: 12px; cursor: pointer;
+  font-size: .8125rem; line-height: 1.45;
+}
+.checkout-method[hidden] { display: none; }
+.checkout-method:has(input:checked) { border-color: #21634f; background: #21634f0b; }
+.checkout-method:has(input:focus-visible) { outline: 2px solid #21634f; outline-offset: 2px; }
+.checkout-method:has(input:disabled) { cursor: default; opacity: .65; }
+.checkout-method input { flex: none; accent-color: #21634f; }
+.checkout-method-copy { min-width: 0; flex: 1; }
+.checkout-method-copy small { display: block; margin-block-start: 2px; }
+.checkout-method-price { flex: none; white-space: nowrap; font-size: .75rem; }
+.checkout-method-icon {
+  display: grid; flex: none; place-items: center; width: 34px; height: 34px;
+  border-radius: 8px; background: #e5eee8; color: #123b2c;
+  font-size: .625rem; font-weight: 700;
+}
+.checkout-method-icon-credit { background: #9be761; color: #163d19; }
+</style>
 <main class="checkout-screen gereh-container mx-auto min-h-[70vh] max-w-5xl px-4 py-8">
   <header class="mb-6"><a href="<?= site_url('cart') ?>" class="gereh-muted text-sm">بازگشت به سبد خرید</a><h1 class="gereh-heading mt-3 text-2xl font-bold">تکمیل سفارش</h1></header>
   <?php if (!$checkoutEnabled): ?>
@@ -17,16 +43,16 @@
         <label class="block text-sm">کد پستی<input class="gereh-input mt-2 w-full" name="postal_code" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" dir="ltr" required autocomplete="postal-code"></label>
         <div class="sm:col-span-2">
           <h3 class="mb-2 text-sm font-bold">روش ارسال</h3>
-          <div id="shipping-options" role="radiogroup" aria-label="روش ارسال" class="space-y-3">
+          <div id="shipping-options" role="radiogroup" aria-label="روش ارسال" class="checkout-methods">
           <?php foreach ($shippingMethods as $i=>$method): ?>
-          <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 p-4 text-sm">
-            <input class="mt-1" type="radio" name="shipping_method" value="<?= esc($method['code'],'attr') ?>" <?= $i===0?'checked':'' ?> required>
-            <span class="flex-1"><strong><?= esc($method['title']) ?></strong>
-            <small class="gereh-muted mt-1 block"><?= esc($method['description']??'') ?></small>
+          <label class="checkout-method">
+            <input type="radio" name="shipping_method" value="<?= esc($method['code'],'attr') ?>" <?= $i===0?'checked':'' ?> required>
+            <span class="checkout-method-copy"><strong><?= esc($method['title']) ?></strong>
+            <small class="gereh-muted"><?= esc($method['description']??'') ?></small>
             <?php if($method['estimated_days_min']!==null): ?>
-            <small class="gereh-muted mt-1 block">زمان تقریبی <?= (int)$method['estimated_days_min'] ?> تا <?= (int)($method['estimated_days_max']??$method['estimated_days_min']) ?> روز کاری</small>
+            <small class="gereh-muted">زمان تقریبی <?= (int)$method['estimated_days_min'] ?> تا <?= (int)($method['estimated_days_max']??$method['estimated_days_min']) ?> روز کاری</small>
             <?php endif; ?></span>
-            <strong><?= (int)$method['shipping_toman']===0?'رایگان':number_format((int)$method['shipping_toman']).' تومان' ?></strong>
+            <strong class="checkout-method-price"><?= (int)$method['shipping_toman']===0?'رایگان':number_format((int)$method['shipping_toman']).' تومان' ?></strong>
           </label>
           <?php endforeach; ?>
           </div>
@@ -45,16 +71,23 @@
       <div class="mt-4 flex justify-between text-sm"><span>جمع کالاها</span><strong><?= number_format((int)$cart['total']) ?> تومان</strong></div>
       <div class="mt-3 flex justify-between text-sm"><span>ارسال</span><strong id="shipping-price">—</strong></div>
       <div class="my-4 flex justify-between border-t border-stone-200 pt-4"><strong>مبلغ نهایی</strong><strong id="grand-total">—</strong></div>
-      <?php if ($checkoutEnabled && \App\Services\Payments\TorobPayClient::enabled()): ?>
-        <label class="block text-sm">روش پرداخت
-          <select class="gereh-input mt-2 w-full" name="payment_provider" form="checkout-form">
-            <option value="bank">درگاه بانکی</option>
-            <option value="torobpay" hidden disabled>خرید اعتباری با ترب‌پی</option>
-          </select>
+      <fieldset class="checkout-methods">
+        <legend class="mb-2 text-sm font-bold">روش پرداخت</legend>
+        <label class="checkout-method">
+          <input type="radio" name="payment_provider" form="checkout-form" value="bank" checked <?= !$checkoutEnabled ? 'disabled' : '' ?>>
+          <span class="checkout-method-icon" aria-hidden="true"><?= esc($bankLabel) ?></span>
+          <span class="checkout-method-copy"><strong>پرداخت آنلاین با <?= esc($bankLabel) ?></strong><small class="gereh-muted">پرداخت کامل مبلغ سفارش</small></span>
         </label>
-      <?php endif; ?>
+        <?php if ($torobConfigured): ?>
+          <label id="torobpay-card" class="checkout-method" hidden>
+            <input id="torobpay-method" type="radio" name="payment_provider" form="checkout-form" value="torobpay" disabled>
+            <span class="checkout-method-icon checkout-method-icon-credit" aria-hidden="true">ترب‌پی</span>
+            <span class="checkout-method-copy"><strong>پرداخت اقساطی با ترب‌پی</strong><small class="gereh-muted" id="torobpay-description">خرید اعتباری</small></span>
+          </label>
+          <p id="torobpay-status" class="gereh-muted text-xs" role="status">برای بررسی خرید اقساطی، استان را انتخاب کنید.</p>
+        <?php endif; ?>
+      </fieldset>
       <button type="submit" form="checkout-form" id="pay-button" class="gereh-button mt-4 w-full" <?= !$checkoutEnabled?'disabled':'' ?>>تأیید و انتقال به درگاه</button>
-      <p class="gereh-muted mt-4 text-xs">پرداخت مستقیم از طریق درگاه بانکی</p>
     </aside>
   </div>
 </main>
@@ -82,39 +115,57 @@
     const selected=form.querySelector('input[name="shipping_method"]:checked')?.value;
     optionsEl.replaceChildren();
     for(const method of availableMethods){
-      const label=document.createElement('label');label.className='flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 p-4 text-sm';
-      const input=document.createElement('input');input.type='radio';input.name='shipping_method';input.value=method.code;input.required=true;input.className='mt-1';input.checked=selected===method.code || (!selected&&method===availableMethods[0]);
-      const body=document.createElement('span');body.className='flex-1';
+      const label=document.createElement('label');label.className='checkout-method';
+      const input=document.createElement('input');input.type='radio';input.name='shipping_method';input.value=method.code;input.required=true;input.checked=selected===method.code || (!selected&&method===availableMethods[0]);
+      const body=document.createElement('span');body.className='checkout-method-copy';
       const title=document.createElement('strong');title.textContent=method.title;
-      const detail=document.createElement('small');detail.className='gereh-muted mt-1 block';detail.textContent=method.description||'';
-      const eta=document.createElement('small');eta.className='gereh-muted mt-1 block';
+      const detail=document.createElement('small');detail.className='gereh-muted';detail.textContent=method.description||'';
+      const eta=document.createElement('small');eta.className='gereh-muted';
       if(method.estimated_days_min!==null)eta.textContent='زمان تقریبی '+method.estimated_days_min+' تا '+(method.estimated_days_max??method.estimated_days_min)+' روز کاری';
-      const price=document.createElement('strong');price.textContent=method.shipping_toman===0?'رایگان':fmt(method.shipping_toman);
-      body.append(title,detail,eta);label.append(input,body,price);optionsEl.append(label);
+      const price=document.createElement('strong');price.className='checkout-method-price';price.textContent=method.shipping_toman===0?'رایگان':fmt(method.shipping_toman);
+      body.append(title);
+      if(detail.textContent)body.append(detail);
+      if(eta.textContent)body.append(eta);
+     label.append(input,body,price);optionsEl.append(label);
     }
-    if(!optionsEl.querySelector('input:checked'))optionsEl.querySelector('input')?.click();
+    if(!optionsEl.querySelector('input:checked')&&optionsEl.firstElementChild)optionsEl.querySelector('input').checked=true;
     updateTotal();
   };
-  const paymentSelect=form.elements.namedItem('payment_provider');
+  const creditCard=document.getElementById('torobpay-card');
+  const creditInput=document.getElementById('torobpay-method');
+  const creditStatus=document.getElementById('torobpay-status');
+  const creditDescription=document.getElementById('torobpay-description');
+  const bankInput=document.querySelector('input[name="payment_provider"][value="bank"]');
   let eligibilityRequest=0;
   const updateEligibility=async quote=>{
-    if(!paymentSelect)return;
+    if(!creditCard)return;
     const currentRequest=++eligibilityRequest;
-    const option=paymentSelect.options[1];
-    const wasSelected=paymentSelect.value==='torobpay';
-    option.disabled=true;
-    option.hidden=true;
-    paymentSelect.value='bank';
-    if(!quote || !provinceSelect.value)return;
+    creditInput.disabled=true;
+    creditCard.hidden=true;
+    bankInput.checked=true;
+    creditStatus.hidden=false;
+    if(!quote || !provinceSelect.value){
+      creditStatus.textContent=provinceSelect.value?'برای بررسی خرید اقساطی، روش ارسال را انتخاب کنید.':'برای بررسی خرید اقساطی، استان را انتخاب کنید.';
+      return;
+    }
+    creditStatus.textContent='در حال بررسی امکان خرید اقساطی…';
     const query=new URLSearchParams({method:quote.code,province:provinceSelect.value});
     try{
       const response=await fetch('<?= site_url('api/v1/checkout/torobpay-eligibility') ?>?'+query,{credentials:'same-origin',cache:'no-store'});
       const result=await response.json();
-      if(currentRequest!==eligibilityRequest||!response.ok||result.eligible!==true)return;
-      option.disabled=false;
-      option.hidden=false;
-      if(wasSelected)paymentSelect.value='torobpay';
-    }catch{}
+      if(currentRequest!==eligibilityRequest)return;
+      if(!response.ok || result.unavailable)throw Error();
+      if(result.eligible!==true){
+        creditStatus.textContent='خرید اقساطی برای مبلغ این سفارش در دسترس نیست.';
+        return;
+      }
+      creditDescription.textContent=result.description||'خرید اعتباری';
+      creditInput.disabled=false;
+      creditCard.hidden=false;
+      creditStatus.hidden=true;
+    }catch{
+      if(currentRequest===eligibilityRequest)creditStatus.textContent='بررسی خرید اقساطی موقتاً در دسترس نیست.';
+    }
   };
   const updateTotal=()=>{
     const selected=form.querySelector('input[name="shipping_method"]:checked')?.value;
@@ -136,7 +187,7 @@
       if(currentRequest!==quoteRequest)return;
       if(!response.ok||!result?.success)throw Error(result?.message||'محاسبه ارسال ناموفق بود');
       availableMethods=result.data.methods||[];
-      renderQuotes();shippingMessage.textContent=availableMethods.length?'مبلغ‌ها با قیمت فعلی سبد محاسبه شده‌اند.':'هیچ روش ارسال فعالی برای این استان وجود ندارد.';
+      renderQuotes();shippingMessage.textContent=availableMethods.length?'':'هیچ روش ارسال فعالی برای این استان وجود ندارد.';
     }catch(error){if(currentRequest!==quoteRequest)return;availableMethods=[];renderQuotes();shippingMessage.textContent=error.message;}
   };
   form.addEventListener('change',event=>{if(event.target.name==='shipping_method')updateTotal();if(event.target.name==='province'){citySelect.value='';updateCities();updateQuotes();}});

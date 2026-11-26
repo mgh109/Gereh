@@ -50,7 +50,7 @@ All implementation commits go directly to `main`. Every phase is considered comp
 
 ### ترب‌پی در کنار درگاه بانکی
 
-پس از استقرار کد، از ریشه پروژه در cPanel دستور `php spark migrate --all` را اجرا کنید. مهاجرت `AddTorobPayPaymentDetails` دو ستون nullable به `payment_transactions` اضافه می‌کند. وضعیت را با `php spark migrate:status` بررسی کنید.
+پس از استقرار کد، در phpMyAdmin دیتابیس فعلی گره را انتخاب کنید و از تب Import فایل [2026-11-26-torobpay.sql](database/updates/2026-11-26-torobpay.sql) را وارد کنید. این فایل دو ستون nullable به `payment_transactions` اضافه می‌کند و اجرای دوباره آن ستون تکراری نمی‌سازد. اگر به ترمینال دسترسی دارید، `php spark migrate --all` نیز همین تغییر را اعمال می‌کند.
 
 برای زیبال، `GEREH_PAYMENT_PROVIDER = zibal` را نگه دارید. تنظیمات `TOROBPAY_*` را طبق `.env.example` در `.env` سرور وارد کنید. نشانی بازگشت باید HTTPS باشد و مسیر `/payment/torobpay/callback` درخواست POST درگاه را دریافت کند. گزینه خرید اعتباری بعد از انتخاب روش ارسال و تأیید مبلغ از API ترب‌پی نمایش داده می‌شود.
 

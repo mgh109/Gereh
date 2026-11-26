@@ -8,10 +8,11 @@ final class AddTorobPayPaymentDetails extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('payment_transactions', [
-            'gateway_token' => ['type' => 'TEXT', 'null' => true],
-            'gateway_redirect_url' => ['type' => 'TEXT', 'null' => true],
-        ]);
+        foreach (['gateway_token', 'gateway_redirect_url'] as $column) {
+            if (! $this->db->fieldExists($column, 'payment_transactions')) {
+                $this->forge->addColumn('payment_transactions', [$column => ['type' => 'TEXT', 'null' => true]]);
+            }
+        }
     }
 
     public function down()

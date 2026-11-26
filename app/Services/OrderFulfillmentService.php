@@ -62,7 +62,7 @@ final class OrderFulfillmentService
     }
 
     /**
-     * Cancel only unpaid orders that have never initiated a payment.
+     * Cancel unpaid orders with no active or settled payment.
      * Paid and in-flight payments require an explicit refund workflow.
      */
     public function cancelUnpaid(int $orderId): array
@@ -74,7 +74,8 @@ final class OrderFulfillmentService
             if(!$order)throw new DomainException('سفارش یافت نشد.');
             if($order['payment_status']!=='unpaid'||$order['order_status']!=='pending_payment')
                 throw new DomainException('سفارش قابل لغو مستقیم نیست؛ پرداخت را بررسی کنید.');
-            $payments=$this->db->table('payment_transactions')->where('order_id',$orderId)->countAllResults();
+            $payments = $this->db->table('payment_transactions')->where('order_id', $orderId)
+                ->where('status !=', 'failed')->countAllResults();
             if($payments!==0)throw new DomainException('برای سفارشی با درخواست پرداخت، لغو فقط پس از بررسی مالی مجاز است.');
             if(!$this->db->table('orders')->where('id',$orderId)->update([
                 'order_status'=>'cancelled','updated_at'=>date('Y-m-d H:i:s'),

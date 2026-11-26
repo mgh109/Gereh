@@ -13,14 +13,36 @@
 <?php foreach($order['items'] as $item): ?><tr><td><?= esc($item['product_name']) ?><div class="admin-muted"><bdi><?= esc($item['sku']) ?></bdi></div></td><td><?= esc($item['color_name']??'—') ?> / <?= esc($item['size_label']??'—') ?></td><td><?= (int)$item['quantity'] ?></td><td><?= admin_number((int)$item['subtotal_toman']) ?></td></tr><?php endforeach; ?></tbody></table></div>
 <dl class="admin-summary"><div><dt>جمع محصولات</dt><dd><?= admin_number(array_sum(array_column($order['items'],'subtotal_toman'))) ?> تومان</dd></div><div><dt>هزینه ارسال</dt><dd><?= admin_number((int)$order['shipping_toman']) ?> تومان</dd></div><div><dt>مبلغ نهایی</dt><dd><?= admin_number((int)$order['total_toman']) ?> تومان</dd></div><div><dt>روش پرداخت</dt><dd><?= esc(admin_payment_provider($order['payment_provider'] ?? null)) ?></dd></div><div><dt>وضعیت پرداخت</dt><dd><?= esc(['paid'=>'پرداخت موفق','unpaid'=>'پرداخت نشده','review_required'=>'نیازمند بررسی','failed'=>'ناموفق'][$order['payment_status']]??$order['payment_status']) ?></dd></div></dl>
 </section></div>
-<?php if($order['payment_status']==='unpaid' && $order['order_status']==='pending_payment' && empty($order['payments'])): ?>
-<section class="admin-panel admin-detail-wide"><h2>لغو سفارش پرداخت‌نشده</h2><form method="post" action="<?= site_url('admin/orders/'.(int)$order['id'].'/fulfillment') ?>" onsubmit="return confirm('سفارش پرداخت‌نشده لغو شود؟')"><?= csrf_field() ?><input type="hidden" name="action" value="cancel"><button type="submit">لغو و ثبت اعلان مشتری</button></form></section>
+<?php
+$statusAction = match (true) {
+    $order['payment_status'] === 'paid' && $order['order_status'] === 'processing' => 'ship',
+    $order['payment_status'] === 'paid' && $order['order_status'] === 'shipped' => 'deliver',
+    $order['payment_status'] === 'unpaid' && $order['order_status'] === 'pending_payment'
+        && array_diff(array_column($order['payments'], 'status'), ['failed']) === [] => 'cancel',
+    default => null,
+};
+$nextStatusLabel = ['ship' => 'ارسال شده', 'deliver' => 'تحویل شده', 'cancel' => 'لغو شده'];
+?>
+<section class="admin-panel admin-detail-wide">
+<h2>ویرایش وضعیت سفارش</h2>
+<?php if ($statusAction !== null): ?>
+<form class="admin-form" method="post" action="<?= site_url('admin/orders/'.(int)$order['id'].'/fulfillment') ?>" <?php if ($statusAction === 'cancel'): ?>onsubmit="return confirm('سفارش لغو شود؟')"<?php endif; ?>>
+<?= csrf_field() ?>
+<label>وضعیت سفارش
+<select name="action" required>
+<option value=""><?= esc($statusLabels[$order['order_status']]) ?> (وضعیت فعلی)</option>
+<option value="<?= esc($statusAction, 'attr') ?>"><?= esc($nextStatusLabel[$statusAction]) ?></option>
+</select>
+</label>
+<?php if ($statusAction === 'ship'): ?>
+<label>کد رهگیری مرسوله<input type="text" name="tracking_code" required minlength="4" maxlength="100" pattern="[a-zA-Z0-9_-]+" dir="ltr"></label>
 <?php endif; ?>
-<?php if($order['payment_status']==='paid' && in_array($order['order_status'],['processing','shipped'],true)): ?>
-<section class="admin-panel admin-detail-wide"><h2>وضعیت ارسال و اطلاع‌رسانی مشتری</h2><form class="admin-form" method="post" action="<?= site_url('admin/orders/'.(int)$order['id'].'/fulfillment') ?>"><?= csrf_field() ?>
-<?php if($order['order_status']==='processing'): ?><input type="hidden" name="action" value="ship"><label>کد رهگیری مرسوله<input type="text" name="tracking_code" required minlength="4" maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="کد رهگیری" dir="ltr"></label><button type="submit">ثبت ارسال و صف پیامک</button>
-<?php else: ?><input type="hidden" name="action" value="deliver"><p>کد رهگیری: <bdi><?= esc($order['tracking_code']??'—') ?></bdi></p><button type="submit">تأیید تحویل و صف پیامک</button><?php endif; ?>
-</form><p class="admin-muted" style="margin-top:16px">اطلاع‌رسانی در صورت فعال‌بودن الگوی رویداد، توسط پردازشگر صف انجام می‌شود.</p></section><?php endif; ?>
+<button type="submit">ذخیرهٔ وضعیت</button>
+</form>
+<?php else: ?>
+<p class="admin-muted">برای وضعیت فعلی این سفارش تغییری در دسترس نیست.</p>
+<?php endif; ?>
+</section>
 <section class="admin-panel admin-detail-wide"><h2>تاریخچه پرداخت و پیگیری</h2><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>درگاه</th><th>وضعیت</th><th>مبلغ (تومان)</th><th>شناسه پیگیری</th><th>زمان ثبت</th></tr></thead><tbody>
 <?php foreach($order['payments'] as $payment): ?><tr><td><?= esc(admin_payment_provider($payment['provider'])) ?></td><td><?= esc($payment['status']) ?></td><td><?= admin_number((int)$payment['amount_toman']) ?></td><td><bdi><?= esc($payment['ref_id']??'—') ?></bdi></td><td><?= esc(admin_date($payment['created_at']??null,true)) ?></td></tr><?php endforeach; ?>
 <?php if(!$order['payments']): ?><tr><td colspan="5" class="admin-empty">تراکنشی ثبت نشده است.</td></tr><?php endif; ?></tbody></table></div></section>

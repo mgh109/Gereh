@@ -44,7 +44,7 @@ final class TorobPayClient
         ]);
         $token = $data['access_token'] ?? null;
         if (! is_string($token) || $token === '' || preg_match('/[\r\n]/', $token)) {
-            throw new RuntimeException('توکن احراز هویت ترب‌پی معتبر نیست.');
+            throw new TorobPayException('auth_response');
         }
         $this->accessToken = $token;
         $this->expiresAt = time() + 3300;
@@ -125,7 +125,7 @@ final class TorobPayClient
     {
         $data = $this->send($method, $path, 'Bearer ' . $this->token(), $payload);
         if (($data['successful'] ?? false) !== true || ! is_array($data['response'] ?? null)) {
-            throw new RuntimeException('پاسخ سرویس ترب‌پی معتبر نیست.');
+            throw new TorobPayException('api_response');
         }
         return $data['response'];
     }
@@ -145,15 +145,24 @@ final class TorobPayClient
         } else {
             $options['json'] = $payload;
         }
-        $response = service('curlrequest')->request($method, self::BASE . $path, $options);
+        try {
+            $response = service('curlrequest')->request($method, self::BASE . $path, $options);
+        } catch (\CodeIgniter\HTTP\Exceptions\HTTPException $exception) {
+            throw new TorobPayException('connection', (int) $exception->getCode());
+        }
         $status = $response->getStatusCode();
         if ($status < 200 || $status >= 300) {
             // Never include credentials, token, customer address or provider body in logs.
-            throw new RuntimeException('خطای ارتباط با ترب‌پی (HTTP ' . $status . ').');
+            $reason = match ($status) {
+                401, 403, 404 => $path === '/api/online/v1/oauth/token' ? 'auth_rejected' : 'merchant_access',
+                429 => 'rate_limit',
+                default => 'upstream_http',
+            };
+            throw new TorobPayException($reason, $status);
         }
         $data = json_decode((string) $response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
         if (! is_array($data)) {
-            throw new RuntimeException('پاسخ ترب‌پی قابل پردازش نیست.');
+            throw new TorobPayException('invalid_response', $status);
         }
         return $data;
     }

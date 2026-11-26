@@ -154,7 +154,17 @@ $bankLabel = env('GEREH_PAYMENT_PROVIDER', 'zarinpal') === 'zibal' ? 'زیبال
       const response=await fetch('<?= site_url('api/v1/checkout/torobpay-eligibility') ?>?'+query,{credentials:'same-origin',cache:'no-store'});
       const result=await response.json();
       if(currentRequest!==eligibilityRequest)return;
-      if(!response.ok || result.unavailable)throw Error();
+      if(!response.ok)throw Error();
+      if(result.unavailable){
+        const messages={
+          connection:'ارتباط سرور فروشگاه با ترب‌پی برقرار نشد.',
+          auth_rejected:'احراز هویت فروشگاه در ترب‌پی تأیید نشد.',
+          merchant_access:'دسترسی فروشگاه به خرید اعتباری ترب‌پی تأیید نشد.',
+          rate_limit:'درخواست‌های بررسی ترب‌پی زیاد است. کمی بعد دوباره امتحان کنید.'
+        };
+        creditStatus.textContent=messages[result.reason]||'بررسی خرید اقساطی موقتاً در دسترس نیست.';
+        return;
+      }
       if(result.eligible!==true){
         creditStatus.textContent='خرید اقساطی برای مبلغ این سفارش در دسترس نیست.';
         return;

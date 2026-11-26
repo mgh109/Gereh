@@ -5,6 +5,7 @@ namespace App\Controllers\Api\V1;
 use App\Controllers\BaseController;
 use App\Services\CartService;
 use App\Services\ShippingService;
+use App\Services\Payments\TorobPayException;
 use CodeIgniter\API\ResponseTrait;
 use Throwable;
 
@@ -46,6 +47,7 @@ final class ShippingController extends BaseController
         $client = new \App\Services\Payments\TorobPayClient();
         $offer = ['eligible' => false];
         $unavailable = false;
+        $reason = null;
         if ($customerId > 0 && is_string($methodCode) && is_string($province) && mb_strlen($province) <= 100
             && $client::enabled() && service('throttler')->check('gereh_torob_eligibility_' . $customerId, 30, 60)) {
             try {
@@ -55,11 +57,17 @@ final class ShippingController extends BaseController
                 if ($cart['count'] > 0 && isset($totals[$methodCode])) {
                     $offer = $client->eligibility((int) $totals[$methodCode]);
                 }
+            } catch (TorobPayException $exception) {
+                $unavailable = true;
+                $reason = $exception->reason;
+                log_message('error', 'TorobPay eligibility failed: {reason}, code {code}', [
+                    'reason' => $reason, 'code' => $exception->getCode(),
+                ]);
             } catch (Throwable $exception) {
                 $unavailable = true;
-                log_message('warning', 'TorobPay eligibility unavailable: {type}', ['type' => get_class($exception)]);
+                log_message('error', 'TorobPay eligibility unavailable: {type}', ['type' => get_class($exception)]);
             }
         }
-        return $this->respond($offer + ['unavailable' => $unavailable]);
+        return $this->respond($offer + ['unavailable' => $unavailable, 'reason' => $reason]);
     }
 }

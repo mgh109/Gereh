@@ -17,3 +17,14 @@ function admin_date(?string $value, bool $withTime = false): string
         return $value;
     }
 }
+
+function admin_payment_provider(?string $provider): string
+{
+    return match ($provider) {
+        'torobpay' => 'ترب‌پی (اقساطی)',
+        'zibal' => 'زیبال',
+        'zarinpal' => 'زرین‌پال',
+        null, '' => 'ثبت نشده',
+        default => $provider,
+    };
+}

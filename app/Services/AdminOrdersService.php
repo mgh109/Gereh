@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\Database\BaseBuilder;
 use Config\Database;
 use InvalidArgumentException;
 
@@ -25,6 +26,7 @@ final class AdminOrdersService
 
         $query = $this->db->table('orders o')
             ->select('o.id, o.order_number, o.customer_id, o.receiver_name, o.total_toman, o.payment_status, o.order_status, o.shipping_method, o.created_at, c.mobile AS customer_mobile')
+            ->selectSubquery($this->paymentProviderQuery(), 'payment_provider')
             ->join('customers c', 'c.id = o.customer_id');
         $term = mb_substr(trim((string) ($filters['q'] ?? '')), 0, 100);
         if ($term !== '') {
@@ -61,6 +63,7 @@ final class AdminOrdersService
         }
         $order = $this->db->table('orders o')
             ->select('o.*, c.mobile AS customer_mobile')
+            ->selectSubquery($this->paymentProviderQuery(), 'payment_provider')
             ->join('customers c', 'c.id = o.customer_id')
             ->where('o.id', $id)->get()->getRowArray();
         if ($order === null) {
@@ -73,5 +76,15 @@ final class AdminOrdersService
             ->select('id, provider, authority, ref_id, amount_toman, status, created_at, verified_at')
             ->where('order_id', $id)->orderBy('id', 'DESC')->get()->getResultArray();
         return $order;
+    }
+
+    private function paymentProviderQuery(): BaseBuilder
+    {
+        return $this->db->table('payment_transactions pt')
+            ->select('pt.provider')
+            ->where('pt.order_id = o.id', null, false)
+            ->orderBy("CASE WHEN pt.status = 'paid' THEN 0 ELSE 1 END", 'ASC', false)
+            ->orderBy('pt.id', 'DESC')
+            ->limit(1);
     }
 }

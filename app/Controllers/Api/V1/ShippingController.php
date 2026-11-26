@@ -36,4 +36,28 @@ final class ShippingController extends BaseController
             ],503);
         }
     }
+
+    public function torobPayEligibility()
+    {
+        $this->response->setHeader('Cache-Control', 'no-store, private');
+        $customerId = (int) session()->get('customer_id');
+        $methodCode = $this->request->getGet('method');
+        $province = $this->request->getGet('province');
+        $client = new \App\Services\Payments\TorobPayClient();
+        $eligible = false;
+        if ($customerId > 0 && is_string($methodCode) && is_string($province) && mb_strlen($province) <= 100
+            && $client::enabled() && service('throttler')->check('gereh_torob_eligibility_' . $customerId, 30, 60)) {
+            try {
+                $cart = (new CartService())->summary();
+                $quotes = (new ShippingService())->quotes((int) $cart['total'], $province);
+                $totals = array_column($quotes, 'total_toman', 'code');
+                if ($cart['count'] > 0 && isset($totals[$methodCode])) {
+                    $eligible = $client->eligibility((int) $totals[$methodCode])['eligible'];
+                }
+            } catch (Throwable $exception) {
+                log_message('warning', 'TorobPay eligibility unavailable: {type}', ['type' => get_class($exception)]);
+            }
+        }
+        return $this->respond(['eligible' => $eligible]);
+    }
 }

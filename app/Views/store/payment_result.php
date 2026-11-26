@@ -49,3 +49,7 @@ $description = $paid
     </nav>
 </main>
 <?= view('store/partials/footer', ['hideBottomNav' => true, 'hideFooter' => true]) ?>
+
+<?php if ($clearCheckoutKey ?? false): ?>
+<script>sessionStorage.removeItem('gereh_checkout_idempotency');</script>
+<?php endif; ?>

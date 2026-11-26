@@ -24,6 +24,7 @@ $routes->group('api/v1', ['namespace' => 'App\\Controllers\\Api\\V1'], static fu
     $routes->patch('me', 'CustomerAuthController::updateMe', ['filter' => 'csrf']);
     // Cookie/session cart: CSRF is mandatory for every mutation.
     $routes->get('shipping/quotes', 'ShippingController::index');
+    $routes->get('checkout/torobpay-eligibility', 'ShippingController::torobPayEligibility');
     $routes->get('cart', 'CartController::index');
     $routes->post('cart/items', 'CartController::add', ['filter' => 'csrf']);
     $routes->patch('cart/items/(:num)', 'CartController::update/$1', ['filter' => 'csrf']);
@@ -44,6 +45,7 @@ $routes->group('api/v1/admin', [
 
 $routes->get('payment/zarinpal/callback', 'PaymentCallbackController::handle');
 $routes->get('payment/zibal/callback', 'PaymentCallbackController::zibal');
+$routes->post('payment/torobpay/callback', 'PaymentCallbackController::torobpay');
 $routes->match(['GET','HEAD'], 'robots.txt', 'SeoController::robots');
 $routes->match(['GET','HEAD'], 'sitemap.xml', 'SeoController::sitemap');
 $routes->match(['GET','HEAD'], '/', 'Storefront::home', ['as' => 'store.home']);

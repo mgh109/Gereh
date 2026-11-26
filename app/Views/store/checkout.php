@@ -45,6 +45,14 @@
       <div class="mt-4 flex justify-between text-sm"><span>جمع کالاها</span><strong><?= number_format((int)$cart['total']) ?> تومان</strong></div>
       <div class="mt-3 flex justify-between text-sm"><span>ارسال</span><strong id="shipping-price">—</strong></div>
       <div class="my-4 flex justify-between border-t border-stone-200 pt-4"><strong>مبلغ نهایی</strong><strong id="grand-total">—</strong></div>
+      <?php if ($checkoutEnabled && \App\Services\Payments\TorobPayClient::enabled()): ?>
+        <label class="block text-sm">روش پرداخت
+          <select class="gereh-input mt-2 w-full" name="payment_provider" form="checkout-form">
+            <option value="bank">درگاه بانکی</option>
+            <option value="torobpay" hidden disabled>خرید اعتباری با ترب‌پی</option>
+          </select>
+        </label>
+      <?php endif; ?>
       <button type="submit" form="checkout-form" id="pay-button" class="gereh-button mt-4 w-full" <?= !$checkoutEnabled?'disabled':'' ?>>تأیید و انتقال به درگاه</button>
       <p class="gereh-muted mt-4 text-xs">پرداخت مستقیم از طریق درگاه بانکی</p>
     </aside>
@@ -87,17 +95,40 @@
     if(!optionsEl.querySelector('input:checked'))optionsEl.querySelector('input')?.click();
     updateTotal();
   };
+  const paymentSelect=form.elements.namedItem('payment_provider');
+  let eligibilityRequest=0;
+  const updateEligibility=async quote=>{
+    if(!paymentSelect)return;
+    const currentRequest=++eligibilityRequest;
+    const option=paymentSelect.options[1];
+    const wasSelected=paymentSelect.value==='torobpay';
+    option.disabled=true;
+    option.hidden=true;
+    paymentSelect.value='bank';
+    if(!quote || !provinceSelect.value)return;
+    const query=new URLSearchParams({method:quote.code,province:provinceSelect.value});
+    try{
+      const response=await fetch('<?= site_url('api/v1/checkout/torobpay-eligibility') ?>?'+query,{credentials:'same-origin',cache:'no-store'});
+      const result=await response.json();
+      if(currentRequest!==eligibilityRequest||!response.ok||result.eligible!==true)return;
+      option.disabled=false;
+      option.hidden=false;
+      if(wasSelected)paymentSelect.value='torobpay';
+    }catch{}
+  };
   const updateTotal=()=>{
     const selected=form.querySelector('input[name="shipping_method"]:checked')?.value;
     const quote=availableMethods.find(x=>x.code===selected);
     priceEl.textContent=quote?(quote.shipping_toman===0?'رایگان':fmt(quote.shipping_toman)):'انتخاب روش ارسال';
     totalEl.textContent=quote?fmt(quote.total_toman):'—';
     button.disabled=!enabled||!quote;
+    updateEligibility(quote);
   };
   const updateQuotes=async()=>{
     const currentRequest=++quoteRequest;
     shippingMessage.textContent='در حال محاسبه هزینه ارسال…';
     button.disabled=true;
+    updateEligibility(null);
     try{
       const province=String(form.elements.namedItem('province')?.value||'').trim();
       const response=await fetch('<?= site_url('api/v1/shipping/quotes') ?>?province='+encodeURIComponent(province),{credentials:'same-origin',cache:'no-store'});
@@ -131,14 +162,14 @@
       const response=await fetch('<?= site_url('api/v1/checkout') ?>',{
         method:'POST',credentials:'same-origin',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':csrf.data.token,'Idempotency-Key':key},
-        body:JSON.stringify({recipient,shipping_method:chosen})
+        body:JSON.stringify({recipient,shipping_method:chosen,payment_provider:fields.get('payment_provider')||'bank'})
       });
       const data=await response.json().catch(()=>null);
       if(!response.ok || !data?.success)throw Error(data?.message||'ثبت سفارش انجام نشد.');
       const redirect=data?.data?.payment?.redirect_url;
       const url=new URL(redirect);
-      if(!['https://www.zarinpal.com','https://sandbox.zarinpal.com','https://gateway.zibal.ir'].includes(url.origin))throw Error('نشانی درگاه معتبر نیست.');
-      sessionStorage.removeItem(keyName);
+      if(!['https://www.zarinpal.com','https://sandbox.zarinpal.com','https://gateway.zibal.ir','https://cpg.torobpay.com'].includes(url.origin))throw Error('نشانی درگاه معتبر نیست.');
+      if(url.origin!=='https://cpg.torobpay.com')sessionStorage.removeItem(keyName);
       location.assign(url.href);
     }catch(error){message.textContent=error.message;button.disabled=false;}
   });

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\PaymentSettlementService;
 use App\Services\Payments\ZibalGateway;
+use App\Services\Payments\TorobPayGateway;
 use App\Services\Payments\ZarinpalGateway;
 use CodeIgniter\API\ResponseTrait;
 use DomainException;
@@ -19,6 +20,7 @@ final class PaymentCallbackController extends BaseController
     use ResponseTrait;
 
     private bool $storefrontResult = false;
+    private string $resultProvider = 'zibal';
 
     public function handle()
     {
@@ -45,6 +47,20 @@ final class PaymentCallbackController extends BaseController
         return $this->verifyCallback(new ZibalGateway(), $trackId, $success === '1');
     }
 
+    public function torobpay()
+    {
+        $this->storefrontResult = true;
+        $this->resultProvider = 'torobpay';
+        $this->response->setHeader('Referrer-Policy', 'no-referrer');
+        $this->response->setHeader('Cache-Control', 'no-store, private');
+        $authority = $this->request->getPost('transactionId');
+        $state = $this->request->getPost('state');
+        if (! is_string($authority) || ! in_array($state, ['OK', 'FAILED'], true)) {
+            return $this->result(false, 'پارامترهای بازگشت پرداخت نامعتبر است.', 400);
+        }
+        return $this->verifyCallback(new TorobPayGateway(), $authority, $state === 'OK');
+    }
+
     private function verifyCallback(PaymentGateway $gateway, string $authority, bool $success)
     {
         try {
@@ -55,7 +71,7 @@ final class PaymentCallbackController extends BaseController
 
         // A failed callback is not proof of payment failure; do not make irreversible
         // changes to order state based on client-controlled query parameters.
-        if (! $success) {
+        if (! $success && ! ($gateway instanceof TorobPayGateway)) {
             return $this->result(false, 'پرداخت توسط درگاه تأیید نشده است.', 202, $authority);
         }
         $throttler = service('throttler');
@@ -64,6 +80,10 @@ final class PaymentCallbackController extends BaseController
         }
 
         try {
+            if (! $success && $gateway instanceof TorobPayGateway) {
+                $gateway->markFailedIfReverted($authority);
+                return $this->result(false, 'پرداخت توسط درگاه تأیید نشده است.', 202, $authority);
+            }
             $receipt = (new PaymentSettlementService(null, $gateway))->settle($authority);
             if ($this->storefrontResult) {
                 return $this->result(true, '', 200, $authority);
@@ -92,7 +112,7 @@ final class PaymentCallbackController extends BaseController
                     $order = \Config\Database::connect()->table('payment_transactions p')
                         ->select('o.order_number, p.amount_toman, p.status')
                         ->join('orders o', 'o.id = p.order_id')
-                        ->where('p.provider', 'zibal')
+                        ->where('p.provider', $this->resultProvider)
                         ->where('p.authority', $authority)
                         ->where('o.customer_id', $customerId)
                         ->get()->getRowArray();
@@ -110,6 +130,7 @@ final class PaymentCallbackController extends BaseController
             return $this->response->setStatusCode($status)->setContentType('text/html')->setBody(
                 view('store/payment_result', [
                     'paid' => $success,
+                    'clearCheckoutKey' => $success && $this->resultProvider === 'torobpay',
                     'retry' => $status === 202,
                     'message' => $message,
                     'order' => $order,

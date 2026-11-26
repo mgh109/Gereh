@@ -7,8 +7,7 @@ use InvalidArgumentException;
 
 /**
  * Server-side transport for TorobPay CPG v1.3.31.
- * This client is intentionally not exposed as a checkout route.
- * Callers must bind tokens to local orders and reconcile inventory.
+ * Tokens are bound to local orders by TorobPayGateway.
  */
 final class TorobPayClient
 {
@@ -84,7 +83,7 @@ final class TorobPayClient
         $data = $this->call('POST', self::PAYMENT . 'token', $payload);
         $token = $data['paymentToken'] ?? null;
         $url = $data['paymentPageUrl'] ?? null;
-        if (! is_string($token) || $token === '' || ! is_string($url)
+        if (! is_string($token) || $token === '' || strlen($token) > 2048 || ! is_string($url)
             || ! filter_var($url, FILTER_VALIDATE_URL)
             || parse_url($url, PHP_URL_SCHEME) !== 'https'
             || parse_url($url, PHP_URL_USER) !== null

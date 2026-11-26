@@ -47,3 +47,11 @@ All implementation commits go directly to `main`. Every phase is considered comp
 - Do not run database migrations before hosting and database access are ready.
 - Clearly label demo data and never present mock dashboard metrics as real figures.
 - Commit each cohesive change to `main`, and report the exact commit link and any unverified tests.
+
+### ترب‌پی در کنار درگاه بانکی
+
+پس از استقرار کد، از ریشه پروژه در cPanel دستور `php spark migrate --all` را اجرا کنید. مهاجرت `AddTorobPayPaymentDetails` دو ستون nullable به `payment_transactions` اضافه می‌کند. وضعیت را با `php spark migrate:status` بررسی کنید.
+
+برای زیبال، `GEREH_PAYMENT_PROVIDER = zibal` را نگه دارید. تنظیمات `TOROBPAY_*` را طبق `.env.example` در `.env` سرور وارد کنید. نشانی بازگشت باید HTTPS باشد و مسیر `/payment/torobpay/callback` درخواست POST درگاه را دریافت کند. گزینه خرید اعتباری بعد از انتخاب روش ارسال و تأیید مبلغ از API ترب‌پی نمایش داده می‌شود.
+
+قبل از فعال‌سازی عمومی، بازگشت موفق و ناموفق، تکرار بازگشت و ثبت وضعیت و موجودی سفارش را در محیط آزمون پذیرنده بررسی کنید.

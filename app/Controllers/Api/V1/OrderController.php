@@ -84,7 +84,12 @@ class OrderController extends BaseController
         if (!is_string($shippingMethod) || $shippingMethod === '') {
             return $this->error('روش ارسال را انتخاب کنید.', 422);
         }
+        $provider = $data['payment_provider'] ?? 'bank';
+        if (! in_array($provider, ['bank', 'torobpay'], true)) {
+            return $this->error('روش پرداخت معتبر نیست.', 422);
+        }
         try {
+            $payments = new \App\Services\Payments\PaymentInitiationService(useTorobPay: $provider === 'torobpay');
             $order = (new OrderService())->create(
                 $customerId,
                 (array) session()->get('store_cart'),
@@ -92,7 +97,7 @@ class OrderController extends BaseController
                 $key,
                 $shippingMethod
             );
-            $payment = (new \App\Services\Payments\PaymentInitiationService())->initiate(
+            $payment = $payments->initiate(
                 $customerId,
                 (int) $order['id']
             );

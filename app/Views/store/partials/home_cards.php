@@ -17,10 +17,12 @@ $faNumber = static fn ($value) => strtr(number_format((int) $value), ['0'=>'۰',
         </a>
         <button class="absolute right-[9px] top-[9px] grid size-5 place-items-center border-0 bg-transparent p-0 aria-pressed:rounded-full aria-pressed:bg-[#e8c27d] aria-pressed:shadow-[0_0_0_4px_#e8c27d]" type="button" aria-label="علاقه‌مندی: <?= esc($item['name'], 'attr') ?>" aria-pressed="false" data-favorite data-id="<?= (int) $item['id'] ?>" data-name="<?= esc($item['name'], 'attr') ?>" data-url="<?= esc($url, 'attr') ?>" data-image="<?= esc($item['image_url'] ?? '', 'attr') ?>" data-price="<?= (int)$item['price_toman'] ?>"><img src="<?= base_url('assets/figma/c37a2.svg') ?>" alt="" width="20" height="20"></button>
         <a class="absolute right-[10px] top-[43px] grid h-[18px] w-[17px] place-items-center" href="<?= esc($url, 'attr') ?>" aria-label="انتخاب سایز و خرید <?= esc($item['name'], 'attr') ?>"><img src="<?= base_url('assets/figma/e7fef.svg') ?>" alt="" width="17" height="18"></a>
-        <?php if (!empty($item['image_url'])): ?>
-        <?= view('store/partials/image_badge', ['badge' => $item['image_badge'] ?? null]) ?>
-        <?php endif; ?>
-        <?php if ($sale): ?><span class="absolute left-2 top-[9px] grid h-[18px] w-[38px] place-items-center rounded-lg bg-gereh-700 text-[9px] text-white">حراج</span><?php endif; ?>
+        <div class="absolute left-2 top-[9px] flex flex-col items-start gap-1" style="max-width:70%;pointer-events:none" dir="ltr">
+            <?php if (!empty($item['image_url'])): ?>
+                <?= view('store/partials/image_badge', ['badge' => $item['image_badge'] ?? null]) ?>
+            <?php endif; ?>
+            <?php if ($sale): ?><span class="grid h-[18px] w-[38px] place-items-center rounded-lg bg-gereh-700 text-[9px] text-white">حراج</span><?php endif; ?>
+        </div>
     </div>
     <div class="<?= $compact ? 'mt-px' : 'mt-[3px]' ?> flex h-[22px] items-center justify-between text-[#e9aa00] <?= $compact ? 'text-xs' : 'text-sm' ?>">
         <?php if (isset($item['rating']) && (int) ($item['review_count'] ?? 0) > 0): ?><span aria-label="امتیاز <?= esc((string) $item['rating'], 'attr') ?> از ۵"><?= str_repeat('★', min(5, max(0, (int) round($item['rating'])))) ?></span><small class="text-[10px] text-gereh-muted">(<?= $faNumber($item['review_count']) ?>)</small><?php endif; ?>

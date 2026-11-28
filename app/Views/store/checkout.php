@@ -1,5 +1,4 @@
 <?= view('store/partials/header', ['title' => 'تکمیل خرید | گره', 'description' => 'ثبت اطلاعات گیرنده و تکمیل سفارش']) ?>
-<?php $iranLocations = \App\Services\IranLocations::all(); ?>
 <?php
 $torobConfigured = $checkoutEnabled && \App\Services\Payments\TorobPayClient::enabled();
 $bankLabel = env('GEREH_PAYMENT_PROVIDER', 'zarinpal') === 'zibal' ? 'زیبال' : 'زرین‌پال';
@@ -35,12 +34,12 @@ $bankLabel = env('GEREH_PAYMENT_PROVIDER', 'zarinpal') === 'zibal' ? 'زیبال
     <section class="gereh-card rounded-2xl p-5 sm:p-7">
       <h2 class="mb-5 font-bold">مشخصات تحویل‌گیرنده</h2>
       <form id="checkout-form" class="grid gap-4 sm:grid-cols-2" novalidate>
-        <label class="block text-sm">نام و نام خانوادگی گیرنده<input class="gereh-input mt-2 w-full" name="receiver_name" maxlength="160" required autocomplete="name"></label>
-        <label class="block text-sm">موبایل گیرنده<input class="gereh-input mt-2 w-full" name="receiver_mobile" type="tel" inputmode="numeric" pattern="09[0-9]{9}" maxlength="11" dir="ltr" required autocomplete="tel"></label>
-        <label class="block text-sm">استان<select class="gereh-input mt-2 w-full" name="province" required autocomplete="address-level1"><option value="">استان را انتخاب کنید</option><?php foreach ($iranLocations as $provinceName=>$cities): ?><option value="<?= esc($provinceName, 'attr') ?>"><?= esc($provinceName) ?></option><?php endforeach; ?></select></label>
-        <label class="block text-sm">شهر<select class="gereh-input mt-2 w-full" name="city" required disabled autocomplete="address-level2"><option value="">ابتدا استان را انتخاب کنید</option></select></label>
-        <label class="block text-sm sm:col-span-2">آدرس دقیق<textarea class="gereh-input mt-2 w-full" name="address" rows="3" maxlength="2000" required autocomplete="street-address"></textarea></label>
-        <label class="block text-sm">کد پستی<input class="gereh-input mt-2 w-full" name="postal_code" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" dir="ltr" required autocomplete="postal-code"></label>
+        <label class="block text-sm">نام و نام خانوادگی گیرنده<input class="gereh-input mt-2 w-full" name="receiver_name" value="<?= esc($delivery['receiver_name'] ?? '', 'attr') ?>" maxlength="160" required autocomplete="name"></label>
+        <label class="block text-sm">موبایل گیرنده<input class="gereh-input mt-2 w-full" name="receiver_mobile" value="<?= esc($delivery['receiver_mobile'] ?? '', 'attr') ?>" type="tel" inputmode="numeric" pattern="09[0-9]{9}" maxlength="11" dir="ltr" required autocomplete="tel"></label>
+        <label class="block text-sm">استان<select class="gereh-input mt-2 w-full" name="province" required autocomplete="address-level1"><option value="">استان را انتخاب کنید</option><?php foreach ($iranLocations as $provinceName=>$cities): ?><option value="<?= esc($provinceName, 'attr') ?>" <?= $provinceName === ($delivery['province'] ?? '') ? 'selected' : '' ?>><?= esc($provinceName) ?></option><?php endforeach; ?></select></label>
+        <label class="block text-sm">شهر<select class="gereh-input mt-2 w-full" name="city" required <?= empty($delivery['province']) ? 'disabled' : '' ?> autocomplete="address-level2"><option value=""><?= empty($delivery['province']) ? 'ابتدا استان را انتخاب کنید' : 'شهر را انتخاب کنید' ?></option><?php foreach ($iranLocations[$delivery['province'] ?? ''] ?? [] as $city): ?><option value="<?= esc($city, 'attr') ?>" <?= $city === ($delivery['city'] ?? '') ? 'selected' : '' ?>><?= esc($city) ?></option><?php endforeach; ?></select></label>
+        <label class="block text-sm sm:col-span-2">آدرس دقیق<textarea class="gereh-input mt-2 w-full" name="address" rows="3" maxlength="2000" required autocomplete="street-address"><?= esc($delivery['address'] ?? '') ?></textarea></label>
+        <label class="block text-sm">کد پستی<input class="gereh-input mt-2 w-full" name="postal_code" value="<?= esc($delivery['postal_code'] ?? '', 'attr') ?>" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" dir="ltr" required autocomplete="postal-code"></label>
         <div class="sm:col-span-2">
           <h3 class="mb-2 text-sm font-bold">روش ارسال</h3>
           <div id="shipping-options" role="radiogroup" aria-label="روش ارسال" class="checkout-methods">

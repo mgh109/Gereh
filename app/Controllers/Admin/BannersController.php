@@ -26,35 +26,59 @@ class BannersController extends BaseController
             'show_text'=>$this->request->getPost('show_text')==='1'?1:0,
             'is_active'=>$this->request->getPost('is_active')==='1'?1:0];
         $model=new HomeBannerModel();
-        $id=(int)$this->request->getPost('id');
-        if($id>0 && $model->find($id))$model->update($id,$data);
-        else $model->insert($data);
-        return redirect()->to(site_url('admin/banners'))->with('banner_success','بنر ذخیره شد.');
+        $id=max(0, (int)$this->request->getPost('id'));
+        if ($id > 0 && !$model->find($id)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+        return $this->persist($model, $id, $data, $id === 0);
     }
 
     public function upload(int $id)
     {
         $model=new HomeBannerModel();
         if(!$model->find($id))throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
-        $file=$this->request->getFile('image');
+        return $this->persist($model, $id, [], true);
+    }
+
+    private function persist(HomeBannerModel $model, int $id, array $data, bool $imageRequired = false)
+    {
+        $file = $this->request->getFile('image');
+        $filename = null;
+        $directory = FCPATH . 'uploads/banners/';
+        try {
+            if ($imageRequired || ($file && $file->getError() !== UPLOAD_ERR_NO_FILE)) {
+                $filename = $this->storeImage($file, $directory);
+                $data['image_path'] = 'uploads/banners/' . $filename;
+            }
+            $saved = $id > 0 ? $model->update($id, $data) : $model->insert($data);
+            if (!$saved) {
+                throw new \RuntimeException('ذخیره بنر ناموفق بود.');
+            }
+        } catch (\Throwable $exception) {
+            if ($filename !== null && is_file($directory . $filename)) {
+                @unlink($directory . $filename);
+            }
+            $message = $exception instanceof \InvalidArgumentException
+                ? $exception->getMessage()
+                : 'ذخیره بنر ناموفق بود.';
+            return redirect()->back()->withInput()->with('banner_error', $message);
+        }
+        return redirect()->to(site_url('admin/banners'))->with('banner_success', 'بنر ذخیره شد.');
+    }
+
+    private function storeImage(?\CodeIgniter\HTTP\Files\UploadedFile $file, string $directory): string
+    {
         if(!$file || !$file->isValid() || $file->hasMoved() || $file->getSize()>5*1024*1024)
-            return redirect()->back()->with('banner_error','تصویر معتبر تا ۵ مگابایت انتخاب کنید.');
+            throw new \InvalidArgumentException('تصویر معتبر تا ۵ مگابایت انتخاب کنید.');
         $mime=(string)$file->getMimeType();
         $extensions=['image/jpeg'=>'.jpg','image/png'=>'.png','image/webp'=>'.webp'];
         $dimensions=@getimagesize($file->getTempName());
         if(!isset($extensions[$mime]) || !$dimensions || $dimensions[0]>8000 || $dimensions[1]>8000)
-            return redirect()->back()->with('banner_error','ساختار یا ابعاد تصویر معتبر نیست.');
-        $directory=FCPATH.'uploads/banners/';
+            throw new \InvalidArgumentException('تصویر باید JPG، PNG یا WebP با ابعاد حداکثر ۸۰۰۰ پیکسل باشد.');
         if(!is_dir($directory) && !mkdir($directory,0755,true) && !is_dir($directory))
-            return redirect()->back()->with('banner_error','مسیر ذخیره قابل نوشتن نیست.');
+            throw new \InvalidArgumentException('مسیر ذخیره تصویر قابل نوشتن نیست.');
         $filename=bin2hex(random_bytes(16)).$extensions[$mime];
-        try{
-            $file->move($directory,$filename);
-            $model->update($id,['image_path'=>'uploads/banners/'.$filename]);
-            return redirect()->to(site_url('admin/banners'))->with('banner_success','تصویر ذخیره شد.');
-        }catch(\Throwable $exception){
-            if(is_file($directory.$filename))@unlink($directory.$filename);
-            return redirect()->back()->with('banner_error','آپلود تصویر ناموفق بود.');
-        }
+        $file->move($directory, $filename);
+        return $filename;
     }
 }

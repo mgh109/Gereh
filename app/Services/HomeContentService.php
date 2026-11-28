@@ -3,7 +3,7 @@ namespace App\Services;
 use App\Models\HomeBannerModel;
 class HomeContentService {
     public function banners(): array {
-        $rows=(new HomeBannerModel())->where('is_active',1)->orderBy('sort_order','ASC')->findAll(100);
+        $rows=(new HomeBannerModel())->where('is_active',1)->orderBy('sort_order','ASC')->orderBy('id','DESC')->findAll(100);
         $out=[];
         foreach($rows as $row) {
             $slot=(string)$row['slot'];

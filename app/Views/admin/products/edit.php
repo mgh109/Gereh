@@ -21,6 +21,10 @@
 <label>کد کالا<input name="product_code" maxlength="80" value="<?= esc(old('product_code',$product['product_code']??''),'attr') ?>" placeholder="مثلاً ۱۳۸"></label>
 <label>وضعیت کالا<select name="item_condition"><?php foreach([''=>'تعیین نشده','new'=>'نو','used'=>'کارکرده','stock'=>'استوک'] as $value=>$label): ?><option value="<?= $value ?>" <?= old('item_condition',$product['item_condition']??'')===$value?'selected':'' ?>><?= $label ?></option><?php endforeach; ?></select></label>
 <?php else: ?><p class="admin-muted admin-field-full">فیلد کد کالا و نو/کارکرده پس از اجرای بروزرسانی دیتابیس این نسخه فعال می‌شود.</p><?php endif; ?>
+<?php if ($badgeFieldReady ?? false): ?>
+<label>برچسب روی عکس<input name="image_badge" maxlength="40" list="image-badge-options" value="<?= esc(old('image_badge', $product['image_badge'] ?? ''), 'attr') ?>" placeholder="بدون برچسب"><small>یک گزینه انتخاب کنید یا متن دلخواه بنویسید.</small></label>
+<datalist id="image-badge-options"><option value="اورجینال"><option value="های‌کپی"><option value="کپی"></datalist>
+<?php else: ?><p class="admin-muted admin-field-full">برچسب روی عکس پس از به‌روزرسانی دیتابیس فعال می‌شود.</p><?php endif; ?>
 <label class="admin-field-full">توضیح کوتاه<textarea name="short_description" rows="3"><?= esc(old('short_description',$product['short_description']??'')) ?></textarea></label>
 <label class="admin-field-full">توضیحات کامل<textarea name="description" rows="5"><?= esc(old('description',$product['description']??'')) ?></textarea></label>
 </div></section>

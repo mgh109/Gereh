@@ -10,7 +10,6 @@
 <p class="admin-muted"><?= esc(['hero'=>'بنر اصلی','women'=>'زنانه','men'=>'مردانه','promo'=>'تخفیف'][$banner['slot']]??$banner['slot']) ?> / <?= esc($banner['link_path']) ?></p>
 <details class="admin-banner-card"><summary>ویرایش تصویر و لینک</summary>
 <?= view('admin/banners/fields',['banner'=>$banner]) ?>
-<form class="admin-form" method="post" enctype="multipart/form-data" action="<?= site_url('admin/banners/'.(int)$banner['id'].'/image') ?>"><?= csrf_field() ?><label>تصویر بنر<input type="file" name="image" accept="image/png,image/jpeg,image/webp" required></label><button type="submit">بارگذاری تصویر</button></form>
 </details></article>
 <?php endforeach; ?>
 <?php if(!$banners): ?><p class="admin-muted">هنوز بنری ثبت نشده است؛ از فرم زیر بنر جدید اضافه کنید.</p><?php endif; ?>

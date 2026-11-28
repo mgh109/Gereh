@@ -16,6 +16,7 @@ class CatalogEditorController extends BaseController {
         return view('admin/products/edit',[
             'engagementStats'=>$product&&$engagement->ready()?$engagement->stats((int)$product['id']):null,
             'product'=>$product,
+            'badgeFieldReady'=>\Config\Database::connect()->fieldExists('image_badge', 'products'),
             'editorFieldsReady'=>\Config\Database::connect()->fieldExists('item_condition','products'),
             'categories'=>(new CategoryModel())->orderBy('name')->findAll(),
             'brands'=>(new BrandModel())->orderBy('name')->findAll(),
@@ -24,7 +25,7 @@ class CatalogEditorController extends BaseController {
         ]);
     }
     public function save(?string $id=null) {
-        $rules=['name'=>'required|max_length[220]','slug'=>'permit_empty|regex_match[/^[a-z0-9-]+$/]|max_length[220]','price_toman'=>'required|is_natural|less_than_equal_to[100000000000]','sale_price_toman'=>'permit_empty|is_natural_no_zero|less_than_equal_to[100000000000]','status'=>'required|in_list[draft,active,archived]','new_brand'=>'permit_empty|max_length[160]','product_code'=>'permit_empty|max_length[80]','item_condition'=>'permit_empty|in_list[new,used,stock]','category_id'=>'permit_empty|is_natural_no_zero','brand_id'=>'permit_empty|is_natural_no_zero','meta_title'=>'permit_empty|max_length[255]','meta_description'=>'permit_empty|max_length[320]','alt_text'=>'permit_empty|max_length[255]' ];
+        $rules=['name'=>'required|max_length[220]','slug'=>'permit_empty|regex_match[/^[a-z0-9-]+$/]|max_length[220]','price_toman'=>'required|is_natural|less_than_equal_to[100000000000]','sale_price_toman'=>'permit_empty|is_natural_no_zero|less_than_equal_to[100000000000]','status'=>'required|in_list[draft,active,archived]','new_brand'=>'permit_empty|max_length[160]','product_code'=>'permit_empty|max_length[80]','image_badge'=>'permit_empty|max_length[40]','item_condition'=>'permit_empty|in_list[new,used,stock]','category_id'=>'permit_empty|is_natural_no_zero','brand_id'=>'permit_empty|is_natural_no_zero','meta_title'=>'permit_empty|max_length[255]','meta_description'=>'permit_empty|max_length[320]','alt_text'=>'permit_empty|max_length[255]' ];
         if (!$this->validate($rules)) return redirect()->back()->withInput()->with('errors',$this->validator->getErrors());
         $regularPrice=(int)$this->request->getPost('price_toman');
         $saleValue=$this->request->getPost('sale_price_toman');
@@ -53,6 +54,13 @@ class CatalogEditorController extends BaseController {
             foreach (['product_code','item_condition'] as $field) {
                 if ($db->fieldExists($field,'products')) $data[$field]=trim((string)$this->request->getPost($field)) ?: null;
                 elseif (trim((string)$this->request->getPost($field)) !== '') throw new \InvalidArgumentException('برای ذخیره کد کالا و وضعیت نو/کارکرده، ابتدا بروزرسانی دیتابیس فرم محصول را اجرا کنید.');
+            }
+            $badge = $this->request->getPost('image_badge');
+            if ($badge !== null) {
+                if (!$db->fieldExists('image_badge', 'products')) {
+                    throw new \InvalidArgumentException('برای ذخیره برچسب عکس، بروزرسانی دیتابیس را اجرا کنید.');
+                }
+                $data['image_badge'] = trim((string) $badge) ?: null;
             }
             $rows=$this->request->getPost('variants') ?? [];
             if (!is_array($rows) || count($rows)>100) throw new \InvalidArgumentException('حداکثر ۱۰۰ تنوع در هر بار ذخیره مجاز است.');

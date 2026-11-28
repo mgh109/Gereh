@@ -7,6 +7,13 @@
 <?php
 $images = array_values(array_filter($media, static fn ($m) => ($m['media_type'] ?? 'image') === 'image' && !empty($m['file_path'])));
 $firstImage = $images ? base_url(ltrim($images[0]['file_path'], '/')) : null;
+$hasStock = false;
+foreach ($variants as $variant) {
+    if ((int) ($variant['stock'] ?? 0) > 0) {
+        $hasStock = true;
+        break;
+    }
+}
 ?>
 <main class="product-screen container"><?php if(session()->getFlashdata('cart_error')): ?><p role="alert" style="padding:12px;background:#fff0ec"><?= esc(session()->getFlashdata('cart_error')) ?></p><?php endif; ?>
 <p class="muted"><a href="<?= site_url('shop') ?>">فروشگاه</a> / <?= esc($product['name']) ?></p>
@@ -25,8 +32,8 @@ $firstImage = $images ? base_url(ltrim($images[0]['file_path'], '/')) : null;
 <?php $colors=[];$sizes=[];foreach($variants as $v){$color=trim((string)($v['color_name']??''));$size=trim((string)($v['size_label']??''));if($color!=='')$colors[$color]=true;if($size!=='')$sizes[$size]=true;} ?>
 <?php if ($colors): ?><div class="options"><h3>انتخاب رنگ</h3><div class="choice-group" id="color-options" role="group" aria-label="رنگ"><?php foreach(array_keys($colors) as $color): ?><button type="button" data-value="<?= esc($color,'attr') ?>" aria-pressed="false"><?= esc($color) ?></button><?php endforeach; ?></div></div><?php endif; ?>
 <?php if ($sizes): ?><div class="options"><h3>انتخاب سایز</h3><div class="choice-group" id="size-options" role="group" aria-label="سایز"><?php foreach(array_keys($sizes) as $size): ?><button type="button" data-value="<?= esc($size,'attr') ?>" aria-pressed="false"><?= esc($size) ?></button><?php endforeach; ?></div></div><?php endif; ?>
-<p id="stock-status" class="muted" aria-live="polite">رنگ و سایز موردنظر را انتخاب کنید.</p>
-<?php else: ?><p class="muted">تنوع قابل خرید برای این محصول ثبت نشده است.</p><?php endif; ?>
+<?php endif; ?>
+<p id="stock-status" class="muted" aria-live="polite"><?= $hasStock ? 'موجود در انبار' : 'ناموجود' ?></p>
 <a href="<?= site_url('size-guide') ?>" class="muted">راهنمای خرید و انتخاب سایز</a>
 </section></div>
 <section class="product-details-section"><h2>معرفی محصول</h2><p><?= nl2br(esc($product['description'] ?? '')) ?></p></section>
@@ -41,7 +48,8 @@ $firstImage = $images ? base_url(ltrim($images[0]['file_path'], '/')) : null;
 (()=>{const main=document.getElementById('main-product-image');document.querySelectorAll('.image-thumb').forEach(btn=>btn.addEventListener('click',()=>{if(!main)return;main.src=btn.dataset.src;main.alt=btn.dataset.alt;document.querySelectorAll('.image-thumb').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)))}));
 const variants=<?= json_encode(array_map(static fn($v)=>['id'=>(int)$v['id'],'color'=>trim((string)($v['color_name']??'')),'size'=>trim((string)($v['size_label']??'')),'price'=>(int)($v['price_toman']??$product['price_toman']),'compareAt'=>(int)($v['compare_at_price_toman']??(($v['price_toman']??null)===null?($product['compare_at_price_toman']??0):0)),'stock'=>(int)$v['stock']],$variants),JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?>;
 const basePrice=<?= (int)$product['price_toman'] ?>,baseCompare=<?= (int)($product['compare_at_price_toman']??0) ?>;
-let color='',size='';const colors=document.getElementById('color-options'),sizes=document.getElementById('size-options'),stock=document.getElementById('stock-status');function choose(group,value){group.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.value===value)))}function refresh(){const matched=variants.find(v=>(!colors||v.color===color)&&(!sizes||v.size===size));const current=matched?.price??basePrice,compareAt=matched?.compareAt??baseCompare;const price=new Intl.NumberFormat('fa-IR').format(current)+' تومان';document.getElementById('current-price').textContent=price;document.getElementById('sticky-price').textContent=price;const oldPrice=document.getElementById('old-price'),discount=document.getElementById('discount-percent'),onSale=compareAt>current&&current>0;oldPrice.hidden=!onSale;oldPrice.textContent=onSale?new Intl.NumberFormat('fa-IR').format(compareAt)+' تومان':'';discount.hidden=!onSale;discount.textContent=onSale?new Intl.NumberFormat('fa-IR',{maximumFractionDigits:1}).format((compareAt-current)/compareAt*100)+'٪ تخفیف':'';const ready=(!colors||color)&&(!sizes||size);document.getElementById('selected-variant').value=ready&&matched?.stock>0?matched.id:'';document.getElementById('add-cart-button').disabled=!(ready&&matched?.stock>0);if(stock)stock.textContent=(!colors||color)&&(!sizes||size)?(matched?.stock>0?'موجود: '+matched.stock+' عدد':'ناموجود'):'رنگ و سایز موردنظر را انتخاب کنید.'}
+const initialStockStatus=document.getElementById('stock-status').textContent;
+let color='',size='';const colors=document.getElementById('color-options'),sizes=document.getElementById('size-options'),stock=document.getElementById('stock-status');function choose(group,value){group.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.value===value)))}function refresh(){const matched=variants.find(v=>(!colors||v.color===color)&&(!sizes||v.size===size));const current=matched?.price??basePrice,compareAt=matched?.compareAt??baseCompare;const price=new Intl.NumberFormat('fa-IR').format(current)+' تومان';document.getElementById('current-price').textContent=price;document.getElementById('sticky-price').textContent=price;const oldPrice=document.getElementById('old-price'),discount=document.getElementById('discount-percent'),onSale=compareAt>current&&current>0;oldPrice.hidden=!onSale;oldPrice.textContent=onSale?new Intl.NumberFormat('fa-IR').format(compareAt)+' تومان':'';discount.hidden=!onSale;discount.textContent=onSale?new Intl.NumberFormat('fa-IR',{maximumFractionDigits:1}).format((compareAt-current)/compareAt*100)+'٪ تخفیف':'';const ready=(!colors||color)&&(!sizes||size);document.getElementById('selected-variant').value=ready&&matched?.stock>0?matched.id:'';document.getElementById('add-cart-button').disabled=!(ready&&matched?.stock>0);if(stock)stock.textContent=(!colors||color)&&(!sizes||size)?(matched?.stock>0?'موجود: '+matched.stock+' عدد':'ناموجود'):initialStockStatus}
 colors?.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{color=b.dataset.value;choose(colors,color);refresh()}));sizes?.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{size=b.dataset.value;choose(sizes,size);refresh()}));
 if(colors?.querySelectorAll('button').length===1){color=colors.querySelector('button').dataset.value;choose(colors,color)}
 if(sizes?.querySelectorAll('button').length===1){size=sizes.querySelector('button').dataset.value;choose(sizes,size)}

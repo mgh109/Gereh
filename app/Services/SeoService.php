@@ -35,15 +35,35 @@ final class SeoService
         if(!empty($product['product_code']))$schema['sku']=$product['product_code'];
         $images=[];foreach($media as $image)if(($image['media_type']??'image')==='image'&&!empty($image['file_path']))$images[]=base_url(ltrim($image['file_path'],'/'));
         if($images)$schema['image']=$images;
-        $offers=[];
-        foreach($variants as $variant){
-            $price=(int)($variant['price_toman']??$product['price_toman']);if($price<=0)continue;
-            $offer=['@type'=>'Offer','url'=>$url,'sku'=>$variant['sku'],'priceCurrency'=>'IRR','price'=>$price*10,'availability'=>(int)($variant['stock']??0)>0?'https://schema.org/InStock':'https://schema.org/OutOfStock'];
-            $condition=['new'=>'NewCondition','used'=>'UsedCondition'];if(isset($condition[$product['item_condition']??'']))$offer['itemCondition']='https://schema.org/'.$condition[$product['item_condition']];
-            $offers[]=$offer;
+        $lowestPrice = null;
+        $lowestInStockPrice = null;
+        foreach ($variants as $variant) {
+            $price = (int) ($variant['price_toman'] ?? $product['price_toman']);
+            if ($price <= 0) {
+                continue;
+            }
+            $lowestPrice = min($lowestPrice ?? $price, $price);
+            if ((int) ($variant['stock'] ?? 0) > 0) {
+                $lowestInStockPrice = min($lowestInStockPrice ?? $price, $price);
+            }
+        }
+
+        if ($lowestPrice !== null) {
+            $schema['offers'] = [
+                '@type' => 'Offer',
+                'url' => $url,
+                'priceCurrency' => 'IRR',
+                'price' => ($lowestInStockPrice ?? $lowestPrice) * 10,
+                'availability' => $lowestInStockPrice !== null
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/OutOfStock',
+            ];
+            $condition = ['new' => 'NewCondition', 'used' => 'UsedCondition'];
+            if (isset($condition[$product['item_condition'] ?? ''])) {
+                $schema['offers']['itemCondition'] = 'https://schema.org/' . $condition[$product['item_condition']];
+            }
         }
         if(!empty($product['engagement']['rating_count']))$schema['aggregateRating']=['@type'=>'AggregateRating','ratingValue'=>$product['engagement']['rating'],'ratingCount'=>$product['engagement']['rating_count']];
-        if($offers)$schema['offers']=count($offers)===1?$offers[0]:$offers;
         return $schema;
     }
 
